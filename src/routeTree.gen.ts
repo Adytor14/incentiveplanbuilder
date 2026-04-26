@@ -9,11 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SimulationRouteImport } from './routes/simulation'
 import { Route as ProductWeightsRouteImport } from './routes/product-weights'
 import { Route as PlanBuilderRouteImport } from './routes/plan-builder'
+import { Route as PayoutCurveRouteImport } from './routes/payout-curve'
 import { Route as GoalSettingRouteImport } from './routes/goal-setting'
+import { Route as FairnessRouteImport } from './routes/fairness'
+import { Route as ApprovalRouteImport } from './routes/approval'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SimulationRoute = SimulationRouteImport.update({
+  id: '/simulation',
+  path: '/simulation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductWeightsRoute = ProductWeightsRouteImport.update({
   id: '/product-weights',
   path: '/product-weights',
@@ -24,9 +33,24 @@ const PlanBuilderRoute = PlanBuilderRouteImport.update({
   path: '/plan-builder',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PayoutCurveRoute = PayoutCurveRouteImport.update({
+  id: '/payout-curve',
+  path: '/payout-curve',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GoalSettingRoute = GoalSettingRouteImport.update({
   id: '/goal-setting',
   path: '/goal-setting',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FairnessRoute = FairnessRouteImport.update({
+  id: '/fairness',
+  path: '/fairness',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApprovalRoute = ApprovalRouteImport.update({
+  id: '/approval',
+  path: '/approval',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,40 +61,88 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/approval': typeof ApprovalRoute
+  '/fairness': typeof FairnessRoute
   '/goal-setting': typeof GoalSettingRoute
+  '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
   '/product-weights': typeof ProductWeightsRoute
+  '/simulation': typeof SimulationRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/approval': typeof ApprovalRoute
+  '/fairness': typeof FairnessRoute
   '/goal-setting': typeof GoalSettingRoute
+  '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
   '/product-weights': typeof ProductWeightsRoute
+  '/simulation': typeof SimulationRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/approval': typeof ApprovalRoute
+  '/fairness': typeof FairnessRoute
   '/goal-setting': typeof GoalSettingRoute
+  '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
   '/product-weights': typeof ProductWeightsRoute
+  '/simulation': typeof SimulationRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/goal-setting' | '/plan-builder' | '/product-weights'
+  fullPaths:
+    | '/'
+    | '/approval'
+    | '/fairness'
+    | '/goal-setting'
+    | '/payout-curve'
+    | '/plan-builder'
+    | '/product-weights'
+    | '/simulation'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/goal-setting' | '/plan-builder' | '/product-weights'
-  id: '__root__' | '/' | '/goal-setting' | '/plan-builder' | '/product-weights'
+  to:
+    | '/'
+    | '/approval'
+    | '/fairness'
+    | '/goal-setting'
+    | '/payout-curve'
+    | '/plan-builder'
+    | '/product-weights'
+    | '/simulation'
+  id:
+    | '__root__'
+    | '/'
+    | '/approval'
+    | '/fairness'
+    | '/goal-setting'
+    | '/payout-curve'
+    | '/plan-builder'
+    | '/product-weights'
+    | '/simulation'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApprovalRoute: typeof ApprovalRoute
+  FairnessRoute: typeof FairnessRoute
   GoalSettingRoute: typeof GoalSettingRoute
+  PayoutCurveRoute: typeof PayoutCurveRoute
   PlanBuilderRoute: typeof PlanBuilderRoute
   ProductWeightsRoute: typeof ProductWeightsRoute
+  SimulationRoute: typeof SimulationRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/simulation': {
+      id: '/simulation'
+      path: '/simulation'
+      fullPath: '/simulation'
+      preLoaderRoute: typeof SimulationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/product-weights': {
       id: '/product-weights'
       path: '/product-weights'
@@ -85,11 +157,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanBuilderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payout-curve': {
+      id: '/payout-curve'
+      path: '/payout-curve'
+      fullPath: '/payout-curve'
+      preLoaderRoute: typeof PayoutCurveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/goal-setting': {
       id: '/goal-setting'
       path: '/goal-setting'
       fullPath: '/goal-setting'
       preLoaderRoute: typeof GoalSettingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fairness': {
+      id: '/fairness'
+      path: '/fairness'
+      fullPath: '/fairness'
+      preLoaderRoute: typeof FairnessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/approval': {
+      id: '/approval'
+      path: '/approval'
+      fullPath: '/approval'
+      preLoaderRoute: typeof ApprovalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -104,9 +197,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApprovalRoute: ApprovalRoute,
+  FairnessRoute: FairnessRoute,
   GoalSettingRoute: GoalSettingRoute,
+  PayoutCurveRoute: PayoutCurveRoute,
   PlanBuilderRoute: PlanBuilderRoute,
   ProductWeightsRoute: ProductWeightsRoute,
+  SimulationRoute: SimulationRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
