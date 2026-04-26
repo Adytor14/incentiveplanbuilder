@@ -9,8 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProductWeightsRouteImport } from './routes/product-weights'
+import { Route as PlanBuilderRouteImport } from './routes/plan-builder'
+import { Route as GoalSettingRouteImport } from './routes/goal-setting'
 import { Route as IndexRouteImport } from './routes/index'
 
+const ProductWeightsRoute = ProductWeightsRouteImport.update({
+  id: '/product-weights',
+  path: '/product-weights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanBuilderRoute = PlanBuilderRouteImport.update({
+  id: '/plan-builder',
+  path: '/plan-builder',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GoalSettingRoute = GoalSettingRouteImport.update({
+  id: '/goal-setting',
+  path: '/goal-setting',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +37,61 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/goal-setting': typeof GoalSettingRoute
+  '/plan-builder': typeof PlanBuilderRoute
+  '/product-weights': typeof ProductWeightsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/goal-setting': typeof GoalSettingRoute
+  '/plan-builder': typeof PlanBuilderRoute
+  '/product-weights': typeof ProductWeightsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/goal-setting': typeof GoalSettingRoute
+  '/plan-builder': typeof PlanBuilderRoute
+  '/product-weights': typeof ProductWeightsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/goal-setting' | '/plan-builder' | '/product-weights'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/goal-setting' | '/plan-builder' | '/product-weights'
+  id: '__root__' | '/' | '/goal-setting' | '/plan-builder' | '/product-weights'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GoalSettingRoute: typeof GoalSettingRoute
+  PlanBuilderRoute: typeof PlanBuilderRoute
+  ProductWeightsRoute: typeof ProductWeightsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/product-weights': {
+      id: '/product-weights'
+      path: '/product-weights'
+      fullPath: '/product-weights'
+      preLoaderRoute: typeof ProductWeightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plan-builder': {
+      id: '/plan-builder'
+      path: '/plan-builder'
+      fullPath: '/plan-builder'
+      preLoaderRoute: typeof PlanBuilderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/goal-setting': {
+      id: '/goal-setting'
+      path: '/goal-setting'
+      fullPath: '/goal-setting'
+      preLoaderRoute: typeof GoalSettingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +104,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GoalSettingRoute: GoalSettingRoute,
+  PlanBuilderRoute: PlanBuilderRoute,
+  ProductWeightsRoute: ProductWeightsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
