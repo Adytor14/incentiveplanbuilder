@@ -96,6 +96,16 @@ function PlanBuilder() {
       [role]: prev[role].map((c) => (c.id === id ? { ...c, ...patch } : c)),
     }));
 
+  const updateSub = (componentId: string, subId: string, patch: Partial<SubItem>) =>
+    setComponents((prev) => ({
+      ...prev,
+      [role]: prev[role].map((c) =>
+        c.id === componentId
+          ? { ...c, subItems: c.subItems?.map((s) => (s.id === subId ? { ...s, ...patch } : s)) }
+          : c,
+      ),
+    }));
+
   return (
     <div>
       <PageHeader
