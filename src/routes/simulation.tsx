@@ -134,8 +134,20 @@ function Simulation() {
         {/* Top KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiTile icon={ShieldCheck} tone="success" label="Reps Likely to Hit Target" value="61.4%" hint="Healthy · target 55–65%" />
-          <KpiTile icon={AlertTriangle} tone="warning" label="Probability of Budget Overrun" value="14%" hint="Within tolerance (<20%)" />
-          <KpiTile icon={Activity} tone="info" label="Target Fairness Score" value="0.82" hint="Out of 1.00 · A−" />
+          <KpiTile
+            icon={AlertTriangle}
+            tone={summary.overrun > 20 ? "warning" : "success"}
+            label="Probability of Budget Overrun"
+            value={`${summary.overrun}%`}
+            hint={summary.overrun > 20 ? "Above 20% tolerance" : "Within tolerance (<20%)"}
+          />
+          <KpiTile
+            icon={Activity}
+            tone="info"
+            label="Payout Volatility (CV)"
+            value={summary.volatility.toFixed(2)}
+            hint={`±${summary.ciHalf}% CI · n=${runs.toLocaleString()}`}
+          />
           <KpiTile icon={TrendingUp} tone="primary" label="P90 Payout / Rep" value="$48.2K" hint="P10: $14.6K · P50: $28.1K" />
         </div>
 
