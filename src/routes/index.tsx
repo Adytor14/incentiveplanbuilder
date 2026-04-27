@@ -6,7 +6,6 @@ import {
   Circle,
   Clock,
   Layers,
-  Boxes,
   Target,
   Activity,
   TrendingUp,
@@ -41,12 +40,11 @@ export const Route = createFileRoute("/")({
 
 const STEPS = [
   { n: 1, to: "/plan-builder", label: "Plan Builder", icon: Layers, status: "done", desc: "Components & weights configured for 3 roles" },
-  { n: 2, to: "/product-weights", label: "Product Weights", icon: Boxes, status: "done", desc: "Strategic priorities locked across portfolio" },
-  { n: 3, to: "/goal-setting", label: "Goal Setting Engine", icon: Target, status: "done", desc: "Blended methodology · 60/40 historical/potential" },
-  { n: 4, to: "/simulation", label: "Monte Carlo Simulation", icon: Activity, status: "current", desc: "10,000 scenarios · validating fairness & budget" },
-  { n: 5, to: "/payout-curve", label: "Payout Curve Designer", icon: TrendingUp, status: "todo", desc: "Threshold, accelerator & cap design" },
-  { n: 6, to: "/fairness", label: "Fairness Testing", icon: ShieldCheck, status: "todo", desc: "Cross-region, cross-role equity validation" },
-  { n: 7, to: "/approval", label: "Final Approval", icon: CheckCircle, status: "todo", desc: "Leadership sign-off & launch readiness" },
+  { n: 2, to: "/goal-setting", label: "Goal Setting Engine", icon: Target, status: "done", desc: "Blended methodology · 60/40 historical/potential" },
+  { n: 3, to: "/simulation", label: "Monte Carlo Simulation", icon: Activity, status: "current", desc: "10,000 scenarios · validating fairness & budget" },
+  { n: 4, to: "/payout-curve", label: "Payout Curve Designer", icon: TrendingUp, status: "todo", desc: "Threshold, accelerator & cap design" },
+  { n: 5, to: "/fairness", label: "Fairness Testing", icon: ShieldCheck, status: "todo", desc: "Cross-region, cross-role equity validation" },
+  { n: 6, to: "/approval", label: "Final Approval", icon: CheckCircle, status: "todo", desc: "Leadership sign-off & launch readiness" },
 ] as const;
 
 const trendData = Array.from({ length: 24 }, (_, i) => ({

@@ -3,7 +3,6 @@ import appCss from "../styles.css?url";
 import {
   LayoutGrid,
   Layers,
-  Boxes,
   Target,
   Activity,
   TrendingUp,
@@ -80,12 +79,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 const NAV = [
   { to: "/", label: "Overview", icon: LayoutGrid, step: null },
   { to: "/plan-builder", label: "Plan Builder", icon: Layers, step: 1 },
-  { to: "/product-weights", label: "Product Weights", icon: Boxes, step: 2 },
-  { to: "/goal-setting", label: "Goal Setting", icon: Target, step: 3 },
-  { to: "/simulation", label: "Monte Carlo", icon: Activity, step: 4 },
-  { to: "/payout-curve", label: "Payout Curve", icon: TrendingUp, step: 5 },
-  { to: "/fairness", label: "Fairness Testing", icon: ShieldCheck, step: 6 },
-  { to: "/approval", label: "Final Approval", icon: CheckCircle2, step: 7 },
+  { to: "/goal-setting", label: "Goal Setting", icon: Target, step: 2 },
+  { to: "/simulation", label: "Monte Carlo", icon: Activity, step: 3 },
+  { to: "/payout-curve", label: "Payout Curve", icon: TrendingUp, step: 4 },
+  { to: "/fairness", label: "Fairness Testing", icon: ShieldCheck, step: 5 },
+  { to: "/approval", label: "Final Approval", icon: CheckCircle2, step: 6 },
 ] as const;
 
 function Sidebar() {

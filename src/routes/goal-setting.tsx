@@ -40,10 +40,10 @@ function GoalSetting() {
   return (
     <div>
       <PageHeader
-        step={3}
+        step={2}
         title="Goal Setting Engine"
         description="Choose a methodology, calibrate inputs, then preview rep-level targets before publishing."
-        prev={{ to: "/product-weights", label: "Product Weights" }}
+        prev={{ to: "/plan-builder", label: "Plan Builder" }}
         next={{ to: "/simulation", label: "Run Simulation" }}
       />
       <div className="px-8 py-7 max-w-[1600px] space-y-6">

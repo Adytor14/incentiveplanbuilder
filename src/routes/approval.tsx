@@ -51,7 +51,7 @@ function Approval() {
   return (
     <div>
       <PageHeader
-        step={7}
+        step={6}
         eyebrow="Executive Review Room"
         title="Final Approval Dashboard"
         description="Executive-grade summary of the FY26 plan. Compare versions, capture sign-offs, and launch with confidence."

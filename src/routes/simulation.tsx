@@ -68,7 +68,7 @@ function Simulation() {
   return (
     <div>
       <PageHeader
-        step={4}
+        step={3}
         eyebrow="Decision Engine"
         title="Monte Carlo Simulation"
         description="Stress-test the plan across thousands of futures. Quantify goal fairness, payout volatility and budget overrun probability."

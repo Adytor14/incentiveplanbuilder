@@ -188,7 +188,7 @@ function PlanBuilder() {
         title="Plan Builder"
         description="Compose IC plans for each role by weighting components, then set thresholds, caps and accelerators."
         prev={{ to: "/", label: "Overview" }}
-        next={{ to: "/product-weights", label: "Product Weights" }}
+        next={{ to: "/goal-setting", label: "Goal Setting" }}
       />
       <div className="px-8 py-7 max-w-[1600px] grid grid-cols-1 xl:grid-cols-[260px_1fr] gap-6">
         {/* Role rail */}

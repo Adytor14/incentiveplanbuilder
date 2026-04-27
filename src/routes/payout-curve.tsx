@@ -65,7 +65,7 @@ function PayoutCurve() {
   return (
     <div>
       <PageHeader
-        step={5}
+        step={4}
         title="Payout Curve Designer"
         description="Sculpt the payout schedule. Drag inflection points to balance motivation, fairness and budget."
         prev={{ to: "/simulation", label: "Monte Carlo" }}
