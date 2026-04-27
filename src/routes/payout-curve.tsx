@@ -134,9 +134,17 @@ function PayoutCurve() {
                 Compare to FY25 curve
               </label>
             </div>
-            <div className="px-2 pt-5 pb-2 h-[420px]">
+            <div
+              ref={chartRef}
+              className="relative px-2 pt-5 pb-2 select-none"
+              style={{ height: CHART_HEIGHT, touchAction: "none" }}
+              onPointerMove={handlePointerMove}
+              onPointerUp={endDrag}
+              onPointerLeave={endDrag}
+              onPointerCancel={endDrag}
+            >
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data} margin={{ top: 20, right: 40, left: 10, bottom: 10 }}>
+                <AreaChart data={data} margin={{ top: CHART_TOP, right: CHART_RIGHT, left: 10, bottom: CHART_BOTTOM - 20 }}>
                   <defs>
                     <linearGradient id="payout" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.35} />
@@ -144,8 +152,8 @@ function PayoutCurve() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-                  <XAxis dataKey="x" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} label={{ value: "Attainment", position: "bottom", offset: -5, fontSize: 11, fill: "var(--muted-foreground)" }} />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} label={{ value: "Payout", angle: -90, position: "insideLeft", fontSize: 11, fill: "var(--muted-foreground)" }} />
+                  <XAxis dataKey="x" type="number" domain={[X_MIN, X_MAX]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} label={{ value: "Attainment", position: "bottom", offset: -5, fontSize: 11, fill: "var(--muted-foreground)" }} />
+                  <YAxis type="number" domain={[0, Y_MAX]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} label={{ value: "Payout", angle: -90, position: "insideLeft", fontSize: 11, fill: "var(--muted-foreground)" }} />
                   <Tooltip
                     contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
                     formatter={(v: any) => [`${v}% payout`, ""]}
@@ -153,18 +161,23 @@ function PayoutCurve() {
                   />
                   {showBaseline && <Line type="monotone" dataKey="baseline" stroke="var(--muted-foreground)" strokeDasharray="5 5" strokeWidth={1.5} dot={false} />}
                   <Area type="monotone" dataKey="payout" stroke="var(--chart-1)" strokeWidth={2.5} fill="url(#payout)" dot={false} />
-                  <ReferenceLine x={t} stroke="var(--warning)" strokeDasharray="3 3" />
                   <ReferenceLine x={target} stroke="var(--primary)" strokeWidth={1.5} />
-                  <ReferenceLine x={acc} stroke="var(--info)" strokeDasharray="3 3" />
-                  <ReferenceLine x={sup} stroke="var(--chart-4)" strokeDasharray="3 3" />
-                  <ReferenceLine x={cap} stroke="var(--destructive)" strokeDasharray="3 3" />
-                  <ReferenceDot x={t} y={0} r={6} fill="var(--warning)" stroke="var(--surface)" strokeWidth={2} />
-                  <ReferenceDot x={target} y={100} r={7} fill="var(--primary)" stroke="var(--surface)" strokeWidth={2} />
-                  <ReferenceDot x={acc} y={120} r={6} fill="var(--info)" stroke="var(--surface)" strokeWidth={2} />
-                  <ReferenceDot x={sup} y={170} r={6} fill="var(--chart-4)" stroke="var(--surface)" strokeWidth={2} />
-                  <ReferenceDot x={cap} y={200} r={6} fill="var(--destructive)" stroke="var(--surface)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
+
+              {/* Draggable handle overlay */}
+              <DragOverlay
+                handles={[
+                  { key: "t", x: t, y: 0, color: "var(--warning)", label: "Threshold" },
+                  { key: "acc", x: acc, y: payoutAt(acc), color: "var(--info)", label: "Accelerator" },
+                  { key: "sup", x: sup, y: payoutAt(sup), color: "var(--chart-4)", label: "Super Acc." },
+                  { key: "cap", x: cap, y: Y_MAX, color: "var(--destructive)", label: "Cap" },
+                ]}
+                xToPx={(pct, w) => xToPx(pct, w)}
+                yToPx={(p, h) => yToPx(p, h)}
+                onStart={(k) => setDragging(k)}
+                dragging={dragging}
+              />
             </div>
             <div className="px-5 pb-5 pt-2 grid grid-cols-5 gap-2 border-t border-border">
               <Inflection color="var(--warning)" label="Threshold" value={`${t}%`} payout="0%" />
