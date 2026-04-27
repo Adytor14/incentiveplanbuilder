@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider, SegmentedTabs } from "@/components/ui-kit";
-import { Plus, Trash2, ChevronRight, Lock, Zap, Info, CornerDownRight } from "lucide-react";
+import { Plus, Trash2, ChevronRight, Lock, Zap, Info, CornerDownRight, AlertTriangle, Wand2 } from "lucide-react";
 
 export const Route = createFileRoute("/plan-builder")({
   head: () => ({
@@ -96,14 +96,89 @@ function PlanBuilder() {
       [role]: prev[role].map((c) => (c.id === id ? { ...c, ...patch } : c)),
     }));
 
-  const updateSub = (componentId: string, subId: string, patch: Partial<SubItem>) =>
+  // Auto-rebalance: when one sub-item changes, distribute the delta proportionally
+  // across the remaining sub-items so the product total stays at 100%.
+  const setSubWeight = (componentId: string, subId: string, rawNext: number) =>
     setComponents((prev) => ({
       ...prev,
-      [role]: prev[role].map((c) =>
-        c.id === componentId
-          ? { ...c, subItems: c.subItems?.map((s) => (s.id === subId ? { ...s, ...patch } : s)) }
-          : c,
-      ),
+      [role]: prev[role].map((c) => {
+        if (c.id !== componentId || !c.subItems) return c;
+        const items = c.subItems;
+        const target = items.find((s) => s.id === subId);
+        if (!target) return c;
+
+        // Clamp the changed weight between 0 and 100
+        const nextWeight = Math.max(0, Math.min(100, Math.round(rawNext)));
+        const others = items.filter((s) => s.id !== subId);
+        const remainingBudget = 100 - nextWeight;
+        const othersTotal = others.reduce((s, x) => s + x.weight, 0);
+
+        let adjusted: SubItem[];
+        if (others.length === 0) {
+          adjusted = [{ ...target, weight: 100 }];
+        } else if (othersTotal === 0) {
+          // Distribute remaining budget evenly
+          const each = Math.floor(remainingBudget / others.length);
+          const remainder = remainingBudget - each * others.length;
+          adjusted = items.map((s) => {
+            if (s.id === subId) return { ...s, weight: nextWeight };
+            const idx = others.findIndex((o) => o.id === s.id);
+            return { ...s, weight: each + (idx < remainder ? 1 : 0) };
+          });
+        } else {
+          // Proportional scaling, then integer-rounded with remainder reconciliation
+          const scaled = others.map((s) => (s.weight / othersTotal) * remainingBudget);
+          const floored = scaled.map((v) => Math.floor(v));
+          let leftover = remainingBudget - floored.reduce((a, b) => a + b, 0);
+          // Distribute leftover to items with the largest fractional parts
+          const order = scaled
+            .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+            .sort((a, b) => b.frac - a.frac);
+          const finalOthers = floored.slice();
+          for (let k = 0; k < order.length && leftover > 0; k++) {
+            finalOthers[order[k].i] += 1;
+            leftover -= 1;
+          }
+          adjusted = items.map((s) => {
+            if (s.id === subId) return { ...s, weight: nextWeight };
+            const oi = others.findIndex((o) => o.id === s.id);
+            return { ...s, weight: Math.max(0, finalOthers[oi]) };
+          });
+        }
+
+        return { ...c, subItems: adjusted };
+      }),
+    }));
+
+  // Proportional normalization back to exactly 100% across ALL sub-items.
+  const fixSubTo100 = (componentId: string) =>
+    setComponents((prev) => ({
+      ...prev,
+      [role]: prev[role].map((c) => {
+        if (c.id !== componentId || !c.subItems || c.subItems.length === 0) return c;
+        const items = c.subItems;
+        const total = items.reduce((s, x) => s + x.weight, 0);
+        let adjusted: SubItem[];
+        if (total === 0) {
+          const each = Math.floor(100 / items.length);
+          const remainder = 100 - each * items.length;
+          adjusted = items.map((s, i) => ({ ...s, weight: each + (i < remainder ? 1 : 0) }));
+        } else {
+          const scaled = items.map((s) => (s.weight / total) * 100);
+          const floored = scaled.map((v) => Math.floor(v));
+          let leftover = 100 - floored.reduce((a, b) => a + b, 0);
+          const order = scaled
+            .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+            .sort((a, b) => b.frac - a.frac);
+          const finalW = floored.slice();
+          for (let k = 0; k < order.length && leftover > 0; k++) {
+            finalW[order[k].i] += 1;
+            leftover -= 1;
+          }
+          adjusted = items.map((s, i) => ({ ...s, weight: Math.max(0, finalW[i]) }));
+        }
+        return { ...c, subItems: adjusted };
+      }),
     }));
 
   return (
@@ -298,7 +373,7 @@ function PlanBuilder() {
                                   <td className="px-3 py-2.5 pr-5">
                                     <Slider
                                       value={s.weight}
-                                      onChange={(v) => updateSub(c.id, s.id, { weight: v })}
+                                      onChange={(v) => setSubWeight(c.id, s.id, v)}
                                       max={100}
                                       trackClass={`bg-[var(--chart-${(idx % 5) + 1})] opacity-80`}
                                     />
@@ -307,7 +382,7 @@ function PlanBuilder() {
                                     <input
                                       type="number"
                                       value={s.weight}
-                                      onChange={(e) => updateSub(c.id, s.id, { weight: Number(e.target.value) })}
+                                      onChange={(e) => setSubWeight(c.id, s.id, Number(e.target.value))}
                                       className="w-14 h-7 text-right pr-1 rounded border border-border bg-background text-[12.5px] num font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
                                     />
                                     <span className="text-muted-foreground ml-0.5">%</span>
@@ -323,10 +398,30 @@ function PlanBuilder() {
                             </tbody>
                           </table>
                         </div>
-                        <div className="mt-2 text-[11px] text-muted-foreground flex items-start gap-1.5">
-                          <Info className="size-3 mt-0.5 shrink-0" />
-                          Sub-component weights must sum to 100% within this product.
-                        </div>
+                        {subBalanced ? (
+                          <div className="mt-2 text-[11px] text-muted-foreground flex items-start gap-1.5">
+                            <Info className="size-3 mt-0.5 shrink-0" />
+                            Sub-component weights sum to 100%. Adjusting one slider auto-rebalances the others.
+                          </div>
+                        ) : (
+                          <div className="mt-2 flex items-center justify-between gap-3 rounded-md border border-warning/40 bg-warning/10 px-3 py-2">
+                            <div className="flex items-start gap-2 text-[12px] text-foreground">
+                              <AlertTriangle className="size-3.5 mt-0.5 shrink-0 text-warning" />
+                              <span>
+                                Sub-component weights total <span className="num font-semibold">{subTotal}%</span> —{" "}
+                                {subTotal > 100 ? "over" : "under"} by{" "}
+                                <span className="num font-semibold">{Math.abs(100 - subTotal)}%</span>. They must sum to 100% within this product.
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => fixSubTo100(c.id)}
+                              className="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-md bg-warning text-warning-foreground text-[11.5px] font-semibold hover:opacity-90 shrink-0"
+                            >
+                              <Wand2 className="size-3" /> Fix to 100%
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
