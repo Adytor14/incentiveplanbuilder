@@ -109,19 +109,26 @@ function GoalSetting() {
             </div>
             <div className="p-5 space-y-5">
               {method === "blended" && (
-                <>
-                  <div>
-                    <div className="flex items-baseline justify-between mb-2">
-                      <label className="text-[12px] font-medium">Historical weight (W₁)</label>
-                      <span className="text-[14px] font-semibold num">{w1}%</span>
+                <div className="space-y-4">
+                  {([
+                    { key: "w1" as const, label: "Historical weight (W₁)", hint: "Last year actuals × growth" },
+                    { key: "w2" as const, label: "Potential weight (W₂)", hint: "Territory potential share" },
+                    { key: "w3" as const, label: "Equal Distribution (W₃)", hint: "Total target ÷ headcount" },
+                  ]).map((row) => (
+                    <div key={row.key}>
+                      <div className="flex items-baseline justify-between mb-2">
+                        <label className="text-[12px] font-medium">{row.label}</label>
+                        <span className="text-[14px] font-semibold num">{blend[row.key]}%</span>
+                      </div>
+                      <Slider value={blend[row.key]} onChange={(v) => setBlendWeight(row.key, v)} />
+                      <div className="mt-1 text-[10.5px] text-muted-foreground">{row.hint}</div>
                     </div>
-                    <Slider value={w1} onChange={setW1} />
-                    <div className="mt-1.5 flex items-center justify-between text-[10.5px] text-muted-foreground">
-                      <span>Historical {w1}%</span>
-                      <span>Potential {100 - w1}%</span>
-                    </div>
+                  ))}
+                  <div className="flex items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
+                    <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Blend total</span>
+                    <span className="text-[13px] font-semibold num">{blend.w1 + blend.w2 + blend.w3}%</span>
                   </div>
-                </>
+                </div>
               )}
               <div>
                 <div className="flex items-baseline justify-between mb-2">
@@ -130,23 +137,12 @@ function GoalSetting() {
                 </div>
                 <Slider value={growth} onChange={setGrowth} max={40} />
               </div>
-              <div>
-                <label className="text-[12px] font-medium">Market Scenario</label>
-                <select className="mt-1.5 w-full h-9 rounded-md border border-border bg-background px-2.5 text-[13px]">
-                  <option>Base case · steady demand</option>
-                  <option>Bull · strong launch uptake</option>
-                  <option>Bear · payer pressure</option>
-                </select>
-              </div>
               <div className="rounded-lg border border-info/30 bg-info/5 p-3 flex gap-2.5">
                 <AlertCircle className="size-4 text-info shrink-0 mt-0.5" />
                 <div className="text-[11.5px] text-foreground">
-                  <span className="font-medium text-info">Recommended blend.</span> Pure historical underweights launch territories; pure potential overweights uncertain markets.
+                  <span className="font-medium text-info">Recommended blend.</span> Pure historical underweights launch territories; pure potential overweights uncertain markets; equal distribution adds baseline fairness.
                 </div>
               </div>
-              <button className="w-full h-10 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card">
-                Recalculate Targets
-              </button>
             </div>
           </Card>
 
