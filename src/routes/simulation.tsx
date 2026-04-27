@@ -121,8 +121,12 @@ function Simulation() {
         prev={{ to: "/goal-setting", label: "Goal Setting" }}
         next={{ to: "/payout-curve", label: "Payout Curve" }}
         actions={
-          <button className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-success text-success-foreground text-[13px] font-semibold hover:opacity-90 shadow-card">
-            <Play className="size-3.5" /> Run Simulation
+          <button
+            onClick={runSimulation}
+            disabled={running}
+            className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-success text-success-foreground text-[13px] font-semibold hover:opacity-90 shadow-card disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <Play className="size-3.5" /> {running ? `Running… ${progress}%` : `Run ${runs.toLocaleString()} Simulations`}
           </button>
         }
       />
