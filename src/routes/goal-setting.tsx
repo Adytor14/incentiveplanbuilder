@@ -34,8 +34,29 @@ const PREVIEW = [
 
 function GoalSetting() {
   const [method, setMethod] = useState<Method>("blended");
-  const [w1, setW1] = useState(60);
+  // Blended weights: Historical (W₁), Potential (W₂), Equal Distribution (W₃) — always sum to 100
+  const [blend, setBlend] = useState<{ w1: number; w2: number; w3: number }>({ w1: 50, w2: 30, w3: 20 });
   const [growth, setGrowth] = useState(15);
+
+  // Adjust one blend weight; redistribute the delta proportionally across the other two
+  const setBlendWeight = (key: "w1" | "w2" | "w3", next: number) => {
+    setBlend((prev) => {
+      const clamped = Math.max(0, Math.min(100, Math.round(next)));
+      const others = (["w1", "w2", "w3"] as const).filter((k) => k !== key);
+      const remaining = 100 - clamped;
+      const otherSum = prev[others[0]] + prev[others[1]];
+      let a: number;
+      let b: number;
+      if (otherSum <= 0) {
+        a = Math.round(remaining / 2);
+        b = remaining - a;
+      } else {
+        a = Math.round((prev[others[0]] / otherSum) * remaining);
+        b = remaining - a;
+      }
+      return { ...prev, [key]: clamped, [others[0]]: a, [others[1]]: b } as typeof prev;
+    });
+  };
 
   return (
     <div>
