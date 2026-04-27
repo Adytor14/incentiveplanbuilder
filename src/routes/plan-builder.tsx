@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider, SegmentedTabs } from "@/components/ui-kit";
-import { Plus, Trash2, ChevronRight, Lock, Zap, Info } from "lucide-react";
+import { Plus, Trash2, ChevronRight, Lock, Zap, Info, CornerDownRight } from "lucide-react";
 
 export const Route = createFileRoute("/plan-builder")({
   head: () => ({
@@ -15,6 +15,12 @@ export const Route = createFileRoute("/plan-builder")({
 });
 
 type Role = "rep" | "rbm" | "asm";
+type SubItem = {
+  id: string;
+  name: string;
+  kind: "Goal" | "MBO";
+  weight: number; // weight within parent product (sums to 100)
+};
 type Component = {
   id: string;
   name: string;
@@ -24,6 +30,7 @@ type Component = {
   cap: number;
   accelerator: number;
   locked?: boolean;
+  subItems?: SubItem[];
 };
 
 const ROLE_LABEL: Record<Role, { name: string; sub: string; count: number }> = {
@@ -34,11 +41,35 @@ const ROLE_LABEL: Record<Role, { name: string; sub: string; count: number }> = {
 
 const INITIAL: Record<Role, Component[]> = {
   rep: [
-    { id: "a", name: "Product A — Onclera", category: "Core Brand", weight: 40, threshold: 80, cap: 150, accelerator: 110 },
-    { id: "b", name: "Product B — Velorin", category: "Growth Brand", weight: 30, threshold: 80, cap: 150, accelerator: 110 },
-    { id: "c", name: "New Customer Activation", category: "Strategic", weight: 10, threshold: 70, cap: 200, accelerator: 100 },
-    { id: "d", name: "MBO — Quality Calls", category: "Behavioral", weight: 10, threshold: 0, cap: 100, accelerator: 100 },
-    { id: "e", name: "Contest Overlay", category: "Spiff", weight: 10, threshold: 0, cap: 200, accelerator: 100 },
+    {
+      id: "a",
+      name: "Product A — Onclera",
+      category: "Core Brand",
+      weight: 60,
+      threshold: 80,
+      cap: 150,
+      accelerator: 110,
+      subItems: [
+        { id: "a1", name: "Volume Goal — TRx", kind: "Goal", weight: 60 },
+        { id: "a2", name: "New Writer Activation", kind: "Goal", weight: 20 },
+        { id: "a3", name: "MBO — Quality Calls", kind: "MBO", weight: 10 },
+        { id: "a4", name: "MBO — Speaker Programs", kind: "MBO", weight: 10 },
+      ],
+    },
+    {
+      id: "b",
+      name: "Product B — Velorin",
+      category: "Growth Brand",
+      weight: 40,
+      threshold: 80,
+      cap: 150,
+      accelerator: 110,
+      subItems: [
+        { id: "b1", name: "Volume Goal — NRx", kind: "Goal", weight: 55 },
+        { id: "b2", name: "Market Share Growth", kind: "Goal", weight: 25 },
+        { id: "b3", name: "MBO — Targeted Reach", kind: "MBO", weight: 20 },
+      ],
+    },
   ],
   rbm: [
     { id: "a", name: "Team Attainment", category: "Roll-up", weight: 55, threshold: 80, cap: 150, accelerator: 110 },
@@ -63,6 +94,16 @@ function PlanBuilder() {
     setComponents((prev) => ({
       ...prev,
       [role]: prev[role].map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    }));
+
+  const updateSub = (componentId: string, subId: string, patch: Partial<SubItem>) =>
+    setComponents((prev) => ({
+      ...prev,
+      [role]: prev[role].map((c) =>
+        c.id === componentId
+          ? { ...c, subItems: c.subItems?.map((s) => (s.id === subId ? { ...s, ...patch } : s)) }
+          : c,
+      ),
     }));
 
   return (
@@ -162,99 +203,136 @@ function PlanBuilder() {
             </div>
 
             <div className="divide-y divide-border">
-              {list.map((c, idx) => (
-                <div key={c.id} className="px-5 py-5 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
-                  <div>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="size-2.5 rounded-sm"
-                            style={{ background: `var(--chart-${(idx % 5) + 1})` }}
-                          />
-                          <div className="text-[14px] font-semibold text-foreground truncate">{c.name}</div>
-                          {c.locked && <Lock className="size-3 text-muted-foreground" />}
+              {list.map((c, idx) => {
+                const subTotal = c.subItems?.reduce((s, x) => s + x.weight, 0) ?? 0;
+                const subBalanced = !c.subItems || subTotal === 100;
+                return (
+                  <div key={c.id} className="px-5 py-5">
+                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
+                      <div>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="size-2.5 rounded-sm"
+                                style={{ background: `var(--chart-${(idx % 5) + 1})` }}
+                              />
+                              <div className="text-[14px] font-semibold text-foreground truncate">{c.name}</div>
+                              {c.locked && <Lock className="size-3 text-muted-foreground" />}
+                            </div>
+                            <div className="text-[11.5px] text-muted-foreground mt-1 ml-4.5">{c.category}</div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="text-[22px] font-semibold tracking-tight num">{c.weight}%</div>
+                            <div className="text-[10.5px] text-muted-foreground -mt-0.5">component weight</div>
+                          </div>
                         </div>
-                        <div className="text-[11.5px] text-muted-foreground mt-1 ml-4.5">{c.category}</div>
+                        <div className="mt-3">
+                          <Slider
+                            value={c.weight}
+                            onChange={(v) => update(c.id, { weight: v })}
+                            max={100}
+                            trackClass={`bg-[var(--chart-${(idx % 5) + 1})]`}
+                          />
+                        </div>
+                        <div className="mt-3 flex items-center gap-2">
+                          <button className="text-[11.5px] text-muted-foreground hover:text-destructive inline-flex items-center gap-1">
+                            <Trash2 className="size-3" /> Remove
+                          </button>
+                          <span className="text-border-strong">·</span>
+                          <button className="text-[11.5px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+                            <Zap className="size-3" /> Add accelerator tier
+                          </button>
+                        </div>
                       </div>
-                      <div className="text-right shrink-0">
-                        <div className="text-[22px] font-semibold tracking-tight num">{c.weight}%</div>
-                        <div className="text-[10.5px] text-muted-foreground -mt-0.5">component weight</div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        <NumField label="Threshold" suffix="%" value={c.threshold} onChange={(v) => update(c.id, { threshold: v })} />
+                        <NumField label="Acc. @" suffix="%" value={c.accelerator} onChange={(v) => update(c.id, { accelerator: v })} />
+                        <NumField label="Cap" suffix="%" value={c.cap} onChange={(v) => update(c.id, { cap: v })} />
                       </div>
                     </div>
-                    <div className="mt-3">
-                      <Slider
-                        value={c.weight}
-                        onChange={(v) => update(c.id, { weight: v })}
-                        max={100}
-                        trackClass={`bg-[var(--chart-${(idx % 5) + 1})]`}
-                      />
-                    </div>
-                    <div className="mt-3 flex items-center gap-2">
-                      <button className="text-[11.5px] text-muted-foreground hover:text-destructive inline-flex items-center gap-1">
-                        <Trash2 className="size-3" /> Remove
-                      </button>
-                      <span className="text-border-strong">·</span>
-                      <button className="text-[11.5px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-                        <Zap className="size-3" /> Add accelerator tier
-                      </button>
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-3 gap-2">
-                    <NumField label="Threshold" suffix="%" value={c.threshold} onChange={(v) => update(c.id, { threshold: v })} />
-                    <NumField label="Acc. @" suffix="%" value={c.accelerator} onChange={(v) => update(c.id, { accelerator: v })} />
-                    <NumField label="Cap" suffix="%" value={c.cap} onChange={(v) => update(c.id, { cap: v })} />
+                    {c.subItems && (
+                      <div className="mt-5 ml-4 pl-5 border-l-2 border-dashed border-border">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <CornerDownRight className="size-3.5 text-muted-foreground" />
+                            <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
+                              Goals & MBOs within {c.name.split("—")[1]?.trim() ?? c.name}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge tone={subBalanced ? "success" : "warning"}>
+                              {subBalanced ? "Balanced 100%" : `${subTotal}% (${subTotal > 100 ? "+" : ""}${subTotal - 100})`}
+                            </Badge>
+                            <button className="h-7 px-2.5 inline-flex items-center gap-1 rounded-md border border-border bg-background text-[11.5px] font-medium hover:bg-muted">
+                              <Plus className="size-3" /> Add sub-item
+                            </button>
+                          </div>
+                        </div>
+                        <div className="rounded-md border border-border overflow-hidden">
+                          <table className="w-full text-[12.5px]">
+                            <thead>
+                              <tr className="bg-muted/40 text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground">
+                                <th className="text-left font-medium px-3 py-2">Sub-component</th>
+                                <th className="text-left font-medium px-3 py-2 w-[70px]">Type</th>
+                                <th className="text-left font-medium px-3 py-2">Weight allocation</th>
+                                <th className="text-right font-medium px-3 py-2 w-[80px]">Weight</th>
+                                <th className="px-3 py-2 w-[40px]" />
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                              {c.subItems.map((s, si) => (
+                                <tr key={s.id} className="hover:bg-muted/20">
+                                  <td className="px-3 py-2.5 font-medium">
+                                    <span
+                                      className="inline-block size-1.5 rounded-full mr-2 align-middle opacity-70"
+                                      style={{ background: `var(--chart-${(idx % 5) + 1})` }}
+                                    />
+                                    {s.name}
+                                  </td>
+                                  <td className="px-3 py-2.5">
+                                    <Badge tone={s.kind === "Goal" ? "info" : "neutral"}>{s.kind}</Badge>
+                                  </td>
+                                  <td className="px-3 py-2.5 pr-5">
+                                    <Slider
+                                      value={s.weight}
+                                      onChange={(v) => updateSub(c.id, s.id, { weight: v })}
+                                      max={100}
+                                      trackClass={`bg-[var(--chart-${(idx % 5) + 1})] opacity-80`}
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2.5 text-right num font-semibold">
+                                    <input
+                                      type="number"
+                                      value={s.weight}
+                                      onChange={(e) => updateSub(c.id, s.id, { weight: Number(e.target.value) })}
+                                      className="w-14 h-7 text-right pr-1 rounded border border-border bg-background text-[12.5px] num font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                                    />
+                                    <span className="text-muted-foreground ml-0.5">%</span>
+                                  </td>
+                                  <td className="px-3 py-2.5 text-right">
+                                    <button className="text-muted-foreground hover:text-destructive">
+                                      <Trash2 className="size-3.5" />
+                                    </button>
+                                  </td>
+                                  {si === -1 && <td />}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="mt-2 text-[11px] text-muted-foreground flex items-start gap-1.5">
+                          <Info className="size-3 mt-0.5 shrink-0" />
+                          Sub-component weights must sum to 100% within this product.
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </Card>
-
-          <Card className="p-0">
-            <div className="px-5 pt-5 pb-3 flex items-center justify-between">
-              <div>
-                <div className="text-[14px] font-semibold tracking-tight">Component Summary</div>
-                <div className="text-[12px] text-muted-foreground mt-0.5">Snapshot used downstream by Goal Setting & Payout Curve</div>
-              </div>
-              <Link to="/product-weights" className="text-[12px] text-primary font-medium inline-flex items-center gap-1">
-                Continue to Product Weights <ChevronRight className="size-3.5" />
-              </Link>
-            </div>
-            <table className="w-full text-[13px]">
-              <thead>
-                <tr className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground bg-muted/40">
-                  <th className="text-left font-medium px-5 py-2.5">Component</th>
-                  <th className="text-left font-medium px-5 py-2.5">Category</th>
-                  <th className="text-right font-medium px-5 py-2.5">Weight</th>
-                  <th className="text-right font-medium px-5 py-2.5">Threshold</th>
-                  <th className="text-right font-medium px-5 py-2.5">Accelerator</th>
-                  <th className="text-right font-medium px-5 py-2.5 pr-6">Cap</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {list.map((c, i) => (
-                  <tr key={c.id} className="hover:bg-muted/30">
-                    <td className="px-5 py-3 font-medium">
-                      <span className="inline-block size-2 rounded-sm mr-2 align-middle" style={{ background: `var(--chart-${(i % 5) + 1})` }} />
-                      {c.name}
-                    </td>
-                    <td className="px-5 py-3 text-muted-foreground">{c.category}</td>
-                    <td className="px-5 py-3 text-right num font-medium">{c.weight}%</td>
-                    <td className="px-5 py-3 text-right num text-muted-foreground">{c.threshold}%</td>
-                    <td className="px-5 py-3 text-right num text-muted-foreground">{c.accelerator}%</td>
-                    <td className="px-5 py-3 text-right num text-muted-foreground pr-6">{c.cap}%</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t border-border-strong bg-muted/30">
-                  <td className="px-5 py-3 font-semibold" colSpan={2}>Total</td>
-                  <td className={`px-5 py-3 text-right num font-semibold ${balanced ? "text-success" : "text-warning"}`}>{totalWeight}%</td>
-                  <td colSpan={3} />
-                </tr>
-              </tfoot>
-            </table>
           </Card>
         </div>
       </div>
