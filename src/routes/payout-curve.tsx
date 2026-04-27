@@ -305,3 +305,77 @@ function Diag({ icon: Icon, label, value, tone }: any) {
     </div>
   );
 }
+
+type HandleKey = "t" | "acc" | "sup" | "cap";
+type Handle = { key: HandleKey; x: number; y: number; color: string; label: string };
+
+function DragOverlay({
+  handles,
+  xToPx,
+  yToPx,
+  onStart,
+  dragging,
+}: {
+  handles: Handle[];
+  xToPx: (pct: number, plotW: number) => number;
+  yToPx: (payout: number, plotH: number) => number;
+  onStart: (k: HandleKey) => void;
+  dragging: HandleKey | null;
+}) {
+  const ref = useRef<SVGSVGElement>(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+
+  // Observe size of overlay (matches parent chart container)
+  useMemo(() => {
+    if (typeof window === "undefined") return;
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const r = el.getBoundingClientRect();
+      setSize({ w: r.width, h: r.height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Inner plot dimensions match constants in PayoutCurve
+  const CHART_LEFT = 50;
+  const CHART_RIGHT = 40;
+  const CHART_TOP = 20;
+  const CHART_BOTTOM = 30;
+  const plotW = Math.max(0, size.w - CHART_LEFT - CHART_RIGHT);
+  const plotH = Math.max(0, size.h - CHART_TOP - CHART_BOTTOM);
+
+  return (
+    <svg
+      ref={ref}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ overflow: "visible" }}
+    >
+      {handles.map((h) => {
+        const cx = xToPx(h.x, plotW);
+        const cy = yToPx(h.y, plotH);
+        const active = dragging === h.key;
+        return (
+          <g key={h.key} transform={`translate(${cx}, ${cy})`} className="pointer-events-auto" style={{ cursor: "grab" }}>
+            {/* hit target */}
+            <circle
+              r={14}
+              fill="transparent"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+                onStart(h.key);
+              }}
+            />
+            <circle r={active ? 9 : 7} fill={h.color} stroke="var(--surface)" strokeWidth={2} />
+            <circle r={active ? 13 : 0} fill={h.color} fillOpacity={0.18} />
+            <text y={-14} textAnchor="middle" fontSize={10} fill="var(--muted-foreground)" fontWeight={600}>
+              {h.label} · {h.x}%
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
