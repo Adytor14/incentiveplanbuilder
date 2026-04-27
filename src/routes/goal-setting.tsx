@@ -137,15 +137,15 @@ function GoalSetting() {
                     <div key={row.key}>
                       <div className="flex items-baseline justify-between mb-2">
                         <label className="text-[12px] font-medium">{row.label}</label>
-                        <span className="text-[14px] font-semibold num">{blend[row.key]}%</span>
+                        <span className="text-[14px] font-semibold num">{safe[row.key]}%</span>
                       </div>
-                      <Slider value={blend[row.key]} onChange={(v) => setBlendWeight(row.key, v)} />
+                      <Slider value={safe[row.key]} onChange={(v) => setBlendWeight(row.key, v)} />
                       <div className="mt-1 text-[10.5px] text-muted-foreground">{row.hint}</div>
                     </div>
                   ))}
                   <div className="flex items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
                     <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Blend total</span>
-                    <span className="text-[13px] font-semibold num">{blend.w1 + blend.w2 + blend.w3}%</span>
+                    <span className="text-[13px] font-semibold num">{safe.w1 + safe.w2 + safe.w3}%</span>
                   </div>
                 </div>
               )}
