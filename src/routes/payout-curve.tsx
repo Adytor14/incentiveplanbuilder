@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider } from "@/components/ui-kit";
-import { GitCompareArrows, Save, Zap, TrendingUp } from "lucide-react";
+import { GitCompareArrows, Save, Zap, TrendingUp, Move } from "lucide-react";
 import {
   ResponsiveContainer,
   LineChart,
