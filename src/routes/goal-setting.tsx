@@ -32,11 +32,30 @@ const PREVIEW = [
   { rep: "L. García", region: "W", lyActuals: 890, potential: 1340, suggested: 1085, override: 1140 },
 ];
 
+const DEFAULT_BLEND = { w1: 50, w2: 30, w3: 20 };
+
+// Validate W1/W2/W3 — fall back to safe defaults if any are missing, NaN, negative, or don't sum to 100
+function safeBlend(input: Partial<{ w1: number; w2: number; w3: number }> | null | undefined) {
+  if (!input || typeof input !== "object") return { ...DEFAULT_BLEND };
+  const keys = ["w1", "w2", "w3"] as const;
+  const valid = keys.every((k) => {
+    const v = (input as any)[k];
+    return typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 100;
+  });
+  if (!valid) return { ...DEFAULT_BLEND };
+  const sum = (input.w1 ?? 0) + (input.w2 ?? 0) + (input.w3 ?? 0);
+  if (sum !== 100) return { ...DEFAULT_BLEND };
+  return { w1: input.w1!, w2: input.w2!, w3: input.w3! };
+}
+
 function GoalSetting() {
   const [method, setMethod] = useState<Method>("blended");
   // Blended weights: Historical (W₁), Potential (W₂), Equal Distribution (W₃) — always sum to 100
-  const [blend, setBlend] = useState<{ w1: number; w2: number; w3: number }>({ w1: 50, w2: 30, w3: 20 });
-  const [growth, setGrowth] = useState(15);
+  const [blend, setBlend] = useState<{ w1: number; w2: number; w3: number }>(DEFAULT_BLEND);
+  const safe = safeBlend(blend); // guard before render
+  const growthState = useState(15);
+  const growth = growthState[0];
+  const setGrowth = growthState[1];
 
   // Adjust one blend weight; redistribute the delta proportionally across the other two
   const setBlendWeight = (key: "w1" | "w2" | "w3", next: number) => {
