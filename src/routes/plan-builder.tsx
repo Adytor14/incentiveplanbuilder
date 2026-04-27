@@ -15,6 +15,12 @@ export const Route = createFileRoute("/plan-builder")({
 });
 
 type Role = "rep" | "rbm" | "asm";
+type SubItem = {
+  id: string;
+  name: string;
+  kind: "Goal" | "MBO";
+  weight: number; // weight within parent product (sums to 100)
+};
 type Component = {
   id: string;
   name: string;
@@ -24,6 +30,7 @@ type Component = {
   cap: number;
   accelerator: number;
   locked?: boolean;
+  subItems?: SubItem[];
 };
 
 const ROLE_LABEL: Record<Role, { name: string; sub: string; count: number }> = {
@@ -34,11 +41,35 @@ const ROLE_LABEL: Record<Role, { name: string; sub: string; count: number }> = {
 
 const INITIAL: Record<Role, Component[]> = {
   rep: [
-    { id: "a", name: "Product A — Onclera", category: "Core Brand", weight: 40, threshold: 80, cap: 150, accelerator: 110 },
-    { id: "b", name: "Product B — Velorin", category: "Growth Brand", weight: 30, threshold: 80, cap: 150, accelerator: 110 },
-    { id: "c", name: "New Customer Activation", category: "Strategic", weight: 10, threshold: 70, cap: 200, accelerator: 100 },
-    { id: "d", name: "MBO — Quality Calls", category: "Behavioral", weight: 10, threshold: 0, cap: 100, accelerator: 100 },
-    { id: "e", name: "Contest Overlay", category: "Spiff", weight: 10, threshold: 0, cap: 200, accelerator: 100 },
+    {
+      id: "a",
+      name: "Product A — Onclera",
+      category: "Core Brand",
+      weight: 60,
+      threshold: 80,
+      cap: 150,
+      accelerator: 110,
+      subItems: [
+        { id: "a1", name: "Volume Goal — TRx", kind: "Goal", weight: 60 },
+        { id: "a2", name: "New Writer Activation", kind: "Goal", weight: 20 },
+        { id: "a3", name: "MBO — Quality Calls", kind: "MBO", weight: 10 },
+        { id: "a4", name: "MBO — Speaker Programs", kind: "MBO", weight: 10 },
+      ],
+    },
+    {
+      id: "b",
+      name: "Product B — Velorin",
+      category: "Growth Brand",
+      weight: 40,
+      threshold: 80,
+      cap: 150,
+      accelerator: 110,
+      subItems: [
+        { id: "b1", name: "Volume Goal — NRx", kind: "Goal", weight: 55 },
+        { id: "b2", name: "Market Share Growth", kind: "Goal", weight: 25 },
+        { id: "b3", name: "MBO — Targeted Reach", kind: "MBO", weight: 20 },
+      ],
+    },
   ],
   rbm: [
     { id: "a", name: "Team Attainment", category: "Roll-up", weight: 55, threshold: 80, cap: 150, accelerator: 110 },
