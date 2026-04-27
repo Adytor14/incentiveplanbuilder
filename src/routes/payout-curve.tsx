@@ -47,6 +47,16 @@ function buildCurve(t: number, target: number, acc: number, sup: number, cap: nu
   return out;
 }
 
+// Chart geometry — must match AreaChart margin below
+const CHART_LEFT = 50;   // left margin (incl. y-axis label & ticks ≈ 10 + 40)
+const CHART_RIGHT = 40;
+const CHART_TOP = 20;
+const CHART_BOTTOM = 30;
+const CHART_HEIGHT = 420;
+const X_MIN = 0;
+const X_MAX = 200;
+const Y_MAX = 200;
+
 function PayoutCurve() {
   const [t, setT] = useState(80);
   const [target] = useState(100);
@@ -54,13 +64,48 @@ function PayoutCurve() {
   const [sup, setSup] = useState(130);
   const [cap, setCap] = useState(150);
   const [showBaseline, setShowBaseline] = useState(true);
+  const [dragging, setDragging] = useState<null | "t" | "acc" | "sup" | "cap">(null);
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const data = useMemo(() => buildCurve(t, target, acc, sup, cap), [t, target, acc, sup, cap]);
 
-  const previews = [85, 100, 115, 135, 150].map((x) => {
+  // Convert attainment % → pixel x within the plot area
+  const xToPx = (pct: number, plotW: number) =>
+    CHART_LEFT + ((pct - X_MIN) / (X_MAX - X_MIN)) * plotW;
+  // Convert payout % → pixel y within the plot area (inverted)
+  const yToPx = (payout: number, plotH: number) =>
+    CHART_TOP + (1 - payout / Y_MAX) * plotH;
+
+  // Find payout at a given attainment from the curve data
+  const payoutAt = (x: number) => {
     const row = data.find((d) => d.x >= x);
-    return { x, payout: row?.payout ?? 0 };
-  });
+    return row?.payout ?? 0;
+  };
+
+  // Drag clamps per handle so points cannot cross each other
+  const clampFor = (key: "t" | "acc" | "sup" | "cap", v: number) => {
+    if (key === "t") return Math.max(50, Math.min(95, v));
+    if (key === "acc") return Math.max(101, Math.min(sup - 2, v));
+    if (key === "sup") return Math.max(acc + 2, Math.min(cap - 2, v));
+    return Math.max(sup + 2, Math.min(200, v)); // cap
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragging || !chartRef.current) return;
+    const rect = chartRef.current.getBoundingClientRect();
+    const plotW = rect.width - CHART_LEFT - CHART_RIGHT;
+    const px = e.clientX - rect.left - CHART_LEFT;
+    const pct = Math.round((px / plotW) * (X_MAX - X_MIN) + X_MIN);
+    const v = clampFor(dragging, pct);
+    if (dragging === "t") setT(v);
+    else if (dragging === "acc") setAcc(v);
+    else if (dragging === "sup") setSup(v);
+    else setCap(v);
+  };
+
+  const endDrag = () => setDragging(null);
+
+  const previews = [85, 100, 115, 135, 150].map((x) => ({ x, payout: payoutAt(x) }));
 
   return (
     <div>
