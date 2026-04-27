@@ -2,10 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider } from "@/components/ui-kit";
-import { GitCompareArrows, Save, Zap, TrendingUp, Move } from "lucide-react";
+import { GitCompareArrows, Save, Zap, TrendingUp } from "lucide-react";
 import {
   ResponsiveContainer,
-  LineChart,
   Line,
   AreaChart,
   Area,
@@ -13,7 +12,6 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  ReferenceDot,
   ReferenceLine,
 } from "recharts";
 
