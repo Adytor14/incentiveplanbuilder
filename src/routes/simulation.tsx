@@ -180,21 +180,57 @@ function Simulation() {
                   <span className="text-[14px] font-semibold num">{runs.toLocaleString()}</span>
                 </div>
                 <Slider value={runs} onChange={setRuns} min={1000} max={50000} step={1000} />
+                <div className="mt-2 grid grid-cols-5 gap-1">
+                  {RUN_PRESETS.map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => setRuns(n)}
+                      className={`h-7 rounded-md text-[11px] font-medium border transition-colors ${
+                        runs === n
+                          ? "border-primary bg-primary-muted text-primary"
+                          : "border-border bg-background text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {n >= 1000 ? `${n / 1000}k` : n}
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-1.5 text-[10.5px] text-muted-foreground">
+                  Larger n → tighter CI (±{summary.ciHalf}%) · longer runtime
+                </div>
               </div>
-              <div>
-                <label className="text-[12px] font-medium">Market Scenario</label>
-                <select className="mt-1.5 w-full h-9 rounded-md border border-border bg-background px-2.5 text-[13px]">
-                  <option>All scenarios (probability-weighted)</option>
-                  <option>Base case only</option>
-                  <option>Bull case only</option>
-                  <option>Bear case only</option>
-                </select>
-              </div>
+
+              <button
+                onClick={runSimulation}
+                disabled={running}
+                className="w-full h-10 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90 shadow-card inline-flex items-center justify-center gap-1.5 disabled:opacity-60"
+              >
+                <Play className="size-3.5" />
+                {running ? `Running… ${progress}%` : `Run ${runs.toLocaleString()} Simulations`}
+              </button>
+
+              {running && (
+                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+                </div>
+              )}
+
               <div className="rounded-lg bg-muted/50 border border-border p-3 space-y-1.5">
-                <div className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Last Run</div>
-                <div className="text-[12.5px] num">12,000 simulations · 4.2s</div>
-                <div className="text-[11px] text-muted-foreground">Run #14 · 2 hr ago by S. Mehta</div>
-                <button className="mt-2 w-full h-8 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted inline-flex items-center justify-center gap-1.5">
+                <div className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Last Run · Summary Outputs</div>
+                <div className="text-[12.5px] num">{lastRun.runs.toLocaleString()} simulations · {(lastRun.durationMs / 1000).toFixed(1)}s</div>
+                <div className="grid grid-cols-2 gap-1.5 pt-1">
+                  <div className="rounded-md bg-background border border-border px-2 py-1.5">
+                    <div className="text-[9.5px] uppercase tracking-[0.06em] text-muted-foreground">Volatility</div>
+                    <div className="text-[13px] font-semibold num">{lastRun.volatility.toFixed(2)}</div>
+                  </div>
+                  <div className="rounded-md bg-background border border-border px-2 py-1.5">
+                    <div className="text-[9.5px] uppercase tracking-[0.06em] text-muted-foreground">Overrun P</div>
+                    <div className={`text-[13px] font-semibold num ${lastRun.overrun > 20 ? "text-warning-foreground" : "text-success"}`}>
+                      {lastRun.overrun}%
+                    </div>
+                  </div>
+                </div>
+                <button className="mt-1 w-full h-8 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted inline-flex items-center justify-center gap-1.5">
                   <RefreshCw className="size-3" /> View previous runs
                 </button>
               </div>
