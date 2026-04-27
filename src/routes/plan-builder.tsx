@@ -96,14 +96,89 @@ function PlanBuilder() {
       [role]: prev[role].map((c) => (c.id === id ? { ...c, ...patch } : c)),
     }));
 
-  const updateSub = (componentId: string, subId: string, patch: Partial<SubItem>) =>
+  // Auto-rebalance: when one sub-item changes, distribute the delta proportionally
+  // across the remaining sub-items so the product total stays at 100%.
+  const setSubWeight = (componentId: string, subId: string, rawNext: number) =>
     setComponents((prev) => ({
       ...prev,
-      [role]: prev[role].map((c) =>
-        c.id === componentId
-          ? { ...c, subItems: c.subItems?.map((s) => (s.id === subId ? { ...s, ...patch } : s)) }
-          : c,
-      ),
+      [role]: prev[role].map((c) => {
+        if (c.id !== componentId || !c.subItems) return c;
+        const items = c.subItems;
+        const target = items.find((s) => s.id === subId);
+        if (!target) return c;
+
+        // Clamp the changed weight between 0 and 100
+        const nextWeight = Math.max(0, Math.min(100, Math.round(rawNext)));
+        const others = items.filter((s) => s.id !== subId);
+        const remainingBudget = 100 - nextWeight;
+        const othersTotal = others.reduce((s, x) => s + x.weight, 0);
+
+        let adjusted: SubItem[];
+        if (others.length === 0) {
+          adjusted = [{ ...target, weight: 100 }];
+        } else if (othersTotal === 0) {
+          // Distribute remaining budget evenly
+          const each = Math.floor(remainingBudget / others.length);
+          const remainder = remainingBudget - each * others.length;
+          adjusted = items.map((s) => {
+            if (s.id === subId) return { ...s, weight: nextWeight };
+            const idx = others.findIndex((o) => o.id === s.id);
+            return { ...s, weight: each + (idx < remainder ? 1 : 0) };
+          });
+        } else {
+          // Proportional scaling, then integer-rounded with remainder reconciliation
+          const scaled = others.map((s) => (s.weight / othersTotal) * remainingBudget);
+          const floored = scaled.map((v) => Math.floor(v));
+          let leftover = remainingBudget - floored.reduce((a, b) => a + b, 0);
+          // Distribute leftover to items with the largest fractional parts
+          const order = scaled
+            .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+            .sort((a, b) => b.frac - a.frac);
+          const finalOthers = floored.slice();
+          for (let k = 0; k < order.length && leftover > 0; k++) {
+            finalOthers[order[k].i] += 1;
+            leftover -= 1;
+          }
+          adjusted = items.map((s) => {
+            if (s.id === subId) return { ...s, weight: nextWeight };
+            const oi = others.findIndex((o) => o.id === s.id);
+            return { ...s, weight: Math.max(0, finalOthers[oi]) };
+          });
+        }
+
+        return { ...c, subItems: adjusted };
+      }),
+    }));
+
+  // Proportional normalization back to exactly 100% across ALL sub-items.
+  const fixSubTo100 = (componentId: string) =>
+    setComponents((prev) => ({
+      ...prev,
+      [role]: prev[role].map((c) => {
+        if (c.id !== componentId || !c.subItems || c.subItems.length === 0) return c;
+        const items = c.subItems;
+        const total = items.reduce((s, x) => s + x.weight, 0);
+        let adjusted: SubItem[];
+        if (total === 0) {
+          const each = Math.floor(100 / items.length);
+          const remainder = 100 - each * items.length;
+          adjusted = items.map((s, i) => ({ ...s, weight: each + (i < remainder ? 1 : 0) }));
+        } else {
+          const scaled = items.map((s) => (s.weight / total) * 100);
+          const floored = scaled.map((v) => Math.floor(v));
+          let leftover = 100 - floored.reduce((a, b) => a + b, 0);
+          const order = scaled
+            .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+            .sort((a, b) => b.frac - a.frac);
+          const finalW = floored.slice();
+          for (let k = 0; k < order.length && leftover > 0; k++) {
+            finalW[order[k].i] += 1;
+            leftover -= 1;
+          }
+          adjusted = items.map((s, i) => ({ ...s, weight: Math.max(0, finalW[i]) }));
+        }
+        return { ...c, subItems: adjusted };
+      }),
     }));
 
   return (
