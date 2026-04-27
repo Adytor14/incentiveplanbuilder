@@ -65,7 +65,7 @@ function Fairness() {
   return (
     <div>
       <PageHeader
-        step={6}
+        step={5}
         eyebrow="Leadership Decision Screen"
         title="Fairness Testing Dashboard"
         description="Validate that targets are achievable and equitable across reps, regions and roles before approval."
