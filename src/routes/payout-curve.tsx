@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider } from "@/components/ui-kit";
 import { GitCompareArrows, Save, Zap, TrendingUp } from "lucide-react";
 import {
   ResponsiveContainer,
-  LineChart,
   Line,
   AreaChart,
   Area,
@@ -13,7 +12,6 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  ReferenceDot,
   ReferenceLine,
 } from "recharts";
 
@@ -47,6 +45,16 @@ function buildCurve(t: number, target: number, acc: number, sup: number, cap: nu
   return out;
 }
 
+// Chart geometry — must match AreaChart margin below
+const CHART_LEFT = 50;   // left margin (incl. y-axis label & ticks ≈ 10 + 40)
+const CHART_RIGHT = 40;
+const CHART_TOP = 20;
+const CHART_BOTTOM = 30;
+const CHART_HEIGHT = 420;
+const X_MIN = 0;
+const X_MAX = 200;
+const Y_MAX = 200;
+
 function PayoutCurve() {
   const [t, setT] = useState(80);
   const [target] = useState(100);
@@ -54,13 +62,48 @@ function PayoutCurve() {
   const [sup, setSup] = useState(130);
   const [cap, setCap] = useState(150);
   const [showBaseline, setShowBaseline] = useState(true);
+  const [dragging, setDragging] = useState<null | "t" | "acc" | "sup" | "cap">(null);
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const data = useMemo(() => buildCurve(t, target, acc, sup, cap), [t, target, acc, sup, cap]);
 
-  const previews = [85, 100, 115, 135, 150].map((x) => {
+  // Convert attainment % → pixel x within the plot area
+  const xToPx = (pct: number, plotW: number) =>
+    CHART_LEFT + ((pct - X_MIN) / (X_MAX - X_MIN)) * plotW;
+  // Convert payout % → pixel y within the plot area (inverted)
+  const yToPx = (payout: number, plotH: number) =>
+    CHART_TOP + (1 - payout / Y_MAX) * plotH;
+
+  // Find payout at a given attainment from the curve data
+  const payoutAt = (x: number) => {
     const row = data.find((d) => d.x >= x);
-    return { x, payout: row?.payout ?? 0 };
-  });
+    return row?.payout ?? 0;
+  };
+
+  // Drag clamps per handle so points cannot cross each other
+  const clampFor = (key: "t" | "acc" | "sup" | "cap", v: number) => {
+    if (key === "t") return Math.max(50, Math.min(95, v));
+    if (key === "acc") return Math.max(101, Math.min(sup - 2, v));
+    if (key === "sup") return Math.max(acc + 2, Math.min(cap - 2, v));
+    return Math.max(sup + 2, Math.min(200, v)); // cap
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragging || !chartRef.current) return;
+    const rect = chartRef.current.getBoundingClientRect();
+    const plotW = rect.width - CHART_LEFT - CHART_RIGHT;
+    const px = e.clientX - rect.left - CHART_LEFT;
+    const pct = Math.round((px / plotW) * (X_MAX - X_MIN) + X_MIN);
+    const v = clampFor(dragging, pct);
+    if (dragging === "t") setT(v);
+    else if (dragging === "acc") setAcc(v);
+    else if (dragging === "sup") setSup(v);
+    else setCap(v);
+  };
+
+  const endDrag = () => setDragging(null);
+
+  const previews = [85, 100, 115, 135, 150].map((x) => ({ x, payout: payoutAt(x) }));
 
   return (
     <div>
@@ -89,9 +132,17 @@ function PayoutCurve() {
                 Compare to FY25 curve
               </label>
             </div>
-            <div className="px-2 pt-5 pb-2 h-[420px]">
+            <div
+              ref={chartRef}
+              className="relative px-2 pt-5 pb-2 select-none"
+              style={{ height: CHART_HEIGHT, touchAction: "none" }}
+              onPointerMove={handlePointerMove}
+              onPointerUp={endDrag}
+              onPointerLeave={endDrag}
+              onPointerCancel={endDrag}
+            >
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data} margin={{ top: 20, right: 40, left: 10, bottom: 10 }}>
+                <AreaChart data={data} margin={{ top: CHART_TOP, right: CHART_RIGHT, left: 10, bottom: CHART_BOTTOM - 20 }}>
                   <defs>
                     <linearGradient id="payout" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.35} />
@@ -99,8 +150,8 @@ function PayoutCurve() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-                  <XAxis dataKey="x" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} label={{ value: "Attainment", position: "bottom", offset: -5, fontSize: 11, fill: "var(--muted-foreground)" }} />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} label={{ value: "Payout", angle: -90, position: "insideLeft", fontSize: 11, fill: "var(--muted-foreground)" }} />
+                  <XAxis dataKey="x" type="number" domain={[X_MIN, X_MAX]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} label={{ value: "Attainment", position: "bottom", offset: -5, fontSize: 11, fill: "var(--muted-foreground)" }} />
+                  <YAxis type="number" domain={[0, Y_MAX]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} label={{ value: "Payout", angle: -90, position: "insideLeft", fontSize: 11, fill: "var(--muted-foreground)" }} />
                   <Tooltip
                     contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
                     formatter={(v: any) => [`${v}% payout`, ""]}
@@ -108,18 +159,23 @@ function PayoutCurve() {
                   />
                   {showBaseline && <Line type="monotone" dataKey="baseline" stroke="var(--muted-foreground)" strokeDasharray="5 5" strokeWidth={1.5} dot={false} />}
                   <Area type="monotone" dataKey="payout" stroke="var(--chart-1)" strokeWidth={2.5} fill="url(#payout)" dot={false} />
-                  <ReferenceLine x={t} stroke="var(--warning)" strokeDasharray="3 3" />
                   <ReferenceLine x={target} stroke="var(--primary)" strokeWidth={1.5} />
-                  <ReferenceLine x={acc} stroke="var(--info)" strokeDasharray="3 3" />
-                  <ReferenceLine x={sup} stroke="var(--chart-4)" strokeDasharray="3 3" />
-                  <ReferenceLine x={cap} stroke="var(--destructive)" strokeDasharray="3 3" />
-                  <ReferenceDot x={t} y={0} r={6} fill="var(--warning)" stroke="var(--surface)" strokeWidth={2} />
-                  <ReferenceDot x={target} y={100} r={7} fill="var(--primary)" stroke="var(--surface)" strokeWidth={2} />
-                  <ReferenceDot x={acc} y={120} r={6} fill="var(--info)" stroke="var(--surface)" strokeWidth={2} />
-                  <ReferenceDot x={sup} y={170} r={6} fill="var(--chart-4)" stroke="var(--surface)" strokeWidth={2} />
-                  <ReferenceDot x={cap} y={200} r={6} fill="var(--destructive)" stroke="var(--surface)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
+
+              {/* Draggable handle overlay */}
+              <DragOverlay
+                handles={[
+                  { key: "t", x: t, y: 0, color: "var(--warning)", label: "Threshold" },
+                  { key: "acc", x: acc, y: payoutAt(acc), color: "var(--info)", label: "Accelerator" },
+                  { key: "sup", x: sup, y: payoutAt(sup), color: "var(--chart-4)", label: "Super Acc." },
+                  { key: "cap", x: cap, y: Y_MAX, color: "var(--destructive)", label: "Cap" },
+                ]}
+                xToPx={(pct, w) => xToPx(pct, w)}
+                yToPx={(p, h) => yToPx(p, h)}
+                onStart={(k) => setDragging(k)}
+                dragging={dragging}
+              />
             </div>
             <div className="px-5 pb-5 pt-2 grid grid-cols-5 gap-2 border-t border-border">
               <Inflection color="var(--warning)" label="Threshold" value={`${t}%`} payout="0%" />
@@ -245,5 +301,79 @@ function Diag({ icon: Icon, label, value, tone }: any) {
       </div>
       <Badge tone={tone}>{value}</Badge>
     </div>
+  );
+}
+
+type HandleKey = "t" | "acc" | "sup" | "cap";
+type Handle = { key: HandleKey; x: number; y: number; color: string; label: string };
+
+function DragOverlay({
+  handles,
+  xToPx,
+  yToPx,
+  onStart,
+  dragging,
+}: {
+  handles: Handle[];
+  xToPx: (pct: number, plotW: number) => number;
+  yToPx: (payout: number, plotH: number) => number;
+  onStart: (k: HandleKey) => void;
+  dragging: HandleKey | null;
+}) {
+  const ref = useRef<SVGSVGElement>(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+
+  // Observe size of overlay (matches parent chart container)
+  useMemo(() => {
+    if (typeof window === "undefined") return;
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const r = el.getBoundingClientRect();
+      setSize({ w: r.width, h: r.height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Inner plot dimensions match constants in PayoutCurve
+  const CHART_LEFT = 50;
+  const CHART_RIGHT = 40;
+  const CHART_TOP = 20;
+  const CHART_BOTTOM = 30;
+  const plotW = Math.max(0, size.w - CHART_LEFT - CHART_RIGHT);
+  const plotH = Math.max(0, size.h - CHART_TOP - CHART_BOTTOM);
+
+  return (
+    <svg
+      ref={ref}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ overflow: "visible" }}
+    >
+      {handles.map((h) => {
+        const cx = xToPx(h.x, plotW);
+        const cy = yToPx(h.y, plotH);
+        const active = dragging === h.key;
+        return (
+          <g key={h.key} transform={`translate(${cx}, ${cy})`} className="pointer-events-auto" style={{ cursor: "grab" }}>
+            {/* hit target */}
+            <circle
+              r={14}
+              fill="transparent"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+                onStart(h.key);
+              }}
+            />
+            <circle r={active ? 9 : 7} fill={h.color} stroke="var(--surface)" strokeWidth={2} />
+            <circle r={active ? 13 : 0} fill={h.color} fillOpacity={0.18} />
+            <text y={-14} textAnchor="middle" fontSize={10} fill="var(--muted-foreground)" fontWeight={600}>
+              {h.label} · {h.x}%
+            </text>
+          </g>
+        );
+      })}
+    </svg>
   );
 }
