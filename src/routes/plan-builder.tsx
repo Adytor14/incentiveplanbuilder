@@ -373,7 +373,7 @@ function PlanBuilder() {
                                   <td className="px-3 py-2.5 pr-5">
                                     <Slider
                                       value={s.weight}
-                                      onChange={(v) => updateSub(c.id, s.id, { weight: v })}
+                                      onChange={(v) => setSubWeight(c.id, s.id, v)}
                                       max={100}
                                       trackClass={`bg-[var(--chart-${(idx % 5) + 1})] opacity-80`}
                                     />
@@ -382,7 +382,7 @@ function PlanBuilder() {
                                     <input
                                       type="number"
                                       value={s.weight}
-                                      onChange={(e) => updateSub(c.id, s.id, { weight: Number(e.target.value) })}
+                                      onChange={(e) => setSubWeight(c.id, s.id, Number(e.target.value))}
                                       className="w-14 h-7 text-right pr-1 rounded border border-border bg-background text-[12.5px] num font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
                                     />
                                     <span className="text-muted-foreground ml-0.5">%</span>
