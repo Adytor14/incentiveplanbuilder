@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SimulationRouteImport } from './routes/simulation'
-import { Route as ProductWeightsRouteImport } from './routes/product-weights'
 import { Route as PlanBuilderRouteImport } from './routes/plan-builder'
 import { Route as PayoutCurveRouteImport } from './routes/payout-curve'
 import { Route as GoalSettingRouteImport } from './routes/goal-setting'
@@ -21,11 +20,6 @@ import { Route as IndexRouteImport } from './routes/index'
 const SimulationRoute = SimulationRouteImport.update({
   id: '/simulation',
   path: '/simulation',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProductWeightsRoute = ProductWeightsRouteImport.update({
-  id: '/product-weights',
-  path: '/product-weights',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanBuilderRoute = PlanBuilderRouteImport.update({
@@ -66,7 +60,6 @@ export interface FileRoutesByFullPath {
   '/goal-setting': typeof GoalSettingRoute
   '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
-  '/product-weights': typeof ProductWeightsRoute
   '/simulation': typeof SimulationRoute
 }
 export interface FileRoutesByTo {
@@ -76,7 +69,6 @@ export interface FileRoutesByTo {
   '/goal-setting': typeof GoalSettingRoute
   '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
-  '/product-weights': typeof ProductWeightsRoute
   '/simulation': typeof SimulationRoute
 }
 export interface FileRoutesById {
@@ -87,7 +79,6 @@ export interface FileRoutesById {
   '/goal-setting': typeof GoalSettingRoute
   '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
-  '/product-weights': typeof ProductWeightsRoute
   '/simulation': typeof SimulationRoute
 }
 export interface FileRouteTypes {
@@ -99,7 +90,6 @@ export interface FileRouteTypes {
     | '/goal-setting'
     | '/payout-curve'
     | '/plan-builder'
-    | '/product-weights'
     | '/simulation'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -109,7 +99,6 @@ export interface FileRouteTypes {
     | '/goal-setting'
     | '/payout-curve'
     | '/plan-builder'
-    | '/product-weights'
     | '/simulation'
   id:
     | '__root__'
@@ -119,7 +108,6 @@ export interface FileRouteTypes {
     | '/goal-setting'
     | '/payout-curve'
     | '/plan-builder'
-    | '/product-weights'
     | '/simulation'
   fileRoutesById: FileRoutesById
 }
@@ -130,7 +118,6 @@ export interface RootRouteChildren {
   GoalSettingRoute: typeof GoalSettingRoute
   PayoutCurveRoute: typeof PayoutCurveRoute
   PlanBuilderRoute: typeof PlanBuilderRoute
-  ProductWeightsRoute: typeof ProductWeightsRoute
   SimulationRoute: typeof SimulationRoute
 }
 
@@ -141,13 +128,6 @@ declare module '@tanstack/react-router' {
       path: '/simulation'
       fullPath: '/simulation'
       preLoaderRoute: typeof SimulationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/product-weights': {
-      id: '/product-weights'
-      path: '/product-weights'
-      fullPath: '/product-weights'
-      preLoaderRoute: typeof ProductWeightsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/plan-builder': {
@@ -202,7 +182,6 @@ const rootRouteChildren: RootRouteChildren = {
   GoalSettingRoute: GoalSettingRoute,
   PayoutCurveRoute: PayoutCurveRoute,
   PlanBuilderRoute: PlanBuilderRoute,
-  ProductWeightsRoute: ProductWeightsRoute,
   SimulationRoute: SimulationRoute,
 }
 export const routeTree = rootRouteImport
