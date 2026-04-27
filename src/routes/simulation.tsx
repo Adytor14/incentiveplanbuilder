@@ -46,11 +46,57 @@ const SCENARIOS = [
   { id: "bear", name: "Bear · Payer Pressure", color: "var(--chart-3)", mean: 89, sd: 22, prob: 16, budget: 60.8, hit: 41 },
 ];
 
+const RUN_PRESETS = [1000, 5000, 10000, 25000, 50000];
+
 function Simulation() {
   const [variability, setVariability] = useState(18);
   const [runs, setRuns] = useState(10000);
   const [growth, setGrowth] = useState(15);
   const [view, setView] = useState<"distribution" | "scenarios">("distribution");
+  const [running, setRunning] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [lastRun, setLastRun] = useState<{ runs: number; durationMs: number; volatility: number; overrun: number; at: number }>({
+    runs: 12000,
+    durationMs: 4200,
+    volatility: 0.21,
+    overrun: 14,
+    at: Date.now() - 2 * 60 * 60 * 1000,
+  });
+
+  // Derived summary outputs — deterministic preview from inputs
+  const summary = useMemo(() => {
+    const noise = Math.max(0.5, 1 - Math.log10(runs) / 5);
+    const volatility = Math.min(0.6, (variability / 100) * 1.15 * noise);
+    const overrun = Math.max(0, Math.min(95, Math.round((variability - 10) * 1.4 + growth * 0.4)));
+    const ciHalf = +(variability / Math.sqrt(runs / 100)).toFixed(2);
+    return { volatility: +volatility.toFixed(3), overrun, ciHalf };
+  }, [variability, growth, runs]);
+
+  const runSimulation = () => {
+    if (running) return;
+    setRunning(true);
+    setProgress(0);
+    const start = performance.now();
+    const totalMs = Math.min(2400, 200 + runs * 0.04);
+    const tickMs = 60;
+    let elapsed = 0;
+    const id = setInterval(() => {
+      elapsed += tickMs;
+      const pct = Math.min(100, Math.round((elapsed / totalMs) * 100));
+      setProgress(pct);
+      if (pct >= 100) {
+        clearInterval(id);
+        setRunning(false);
+        setLastRun({
+          runs,
+          durationMs: Math.round(performance.now() - start),
+          volatility: summary.volatility,
+          overrun: summary.overrun,
+          at: Date.now(),
+        });
+      }
+    }, tickMs);
+  };
 
   const distData = useMemo(() => gaussian(80, 102, variability), [variability]);
   const heatmap = useMemo(() => {
