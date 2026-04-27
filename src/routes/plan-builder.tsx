@@ -398,10 +398,30 @@ function PlanBuilder() {
                             </tbody>
                           </table>
                         </div>
-                        <div className="mt-2 text-[11px] text-muted-foreground flex items-start gap-1.5">
-                          <Info className="size-3 mt-0.5 shrink-0" />
-                          Sub-component weights must sum to 100% within this product.
-                        </div>
+                        {subBalanced ? (
+                          <div className="mt-2 text-[11px] text-muted-foreground flex items-start gap-1.5">
+                            <Info className="size-3 mt-0.5 shrink-0" />
+                            Sub-component weights sum to 100%. Adjusting one slider auto-rebalances the others.
+                          </div>
+                        ) : (
+                          <div className="mt-2 flex items-center justify-between gap-3 rounded-md border border-warning/40 bg-warning/10 px-3 py-2">
+                            <div className="flex items-start gap-2 text-[12px] text-foreground">
+                              <AlertTriangle className="size-3.5 mt-0.5 shrink-0 text-warning" />
+                              <span>
+                                Sub-component weights total <span className="num font-semibold">{subTotal}%</span> —{" "}
+                                {subTotal > 100 ? "over" : "under"} by{" "}
+                                <span className="num font-semibold">{Math.abs(100 - subTotal)}%</span>. They must sum to 100% within this product.
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => fixSubTo100(c.id)}
+                              className="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-md bg-warning text-warning-foreground text-[11.5px] font-semibold hover:opacity-90 shrink-0"
+                            >
+                              <Wand2 className="size-3" /> Fix to 100%
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
