@@ -143,6 +143,9 @@ function GoalSetting() {
                   <span className="font-medium text-info">Recommended blend.</span> Pure historical underweights launch territories; pure potential overweights uncertain markets; equal distribution adds baseline fairness.
                 </div>
               </div>
+              <button className="w-full h-10 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card">
+                Recalculate Targets
+              </button>
             </div>
           </Card>
 
