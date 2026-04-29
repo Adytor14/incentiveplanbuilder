@@ -107,7 +107,7 @@ function Sidebar() {
             <Sparkles className="size-4.5 text-sidebar-primary-foreground" strokeWidth={2.5} />
           </div>
           <div>
-            <div className="text-[15px] font-semibold tracking-tight text-sidebar-foreground">Helix IC</div>
+            <div className="text-[15px] font-semibold tracking-tight text-sidebar-foreground">IC Design</div>
             <div className="text-[11px] text-sidebar-foreground/60 -mt-0.5">Plan Design Studio</div>
           </div>
         </Link>
