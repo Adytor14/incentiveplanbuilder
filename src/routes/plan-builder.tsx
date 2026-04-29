@@ -283,7 +283,7 @@ function PlanBuilder() {
                 const subBalanced = !c.subItems || subTotal === 100;
                 return (
                   <div key={c.id} className="px-5 py-5">
-                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
+                    <div>
                       <div>
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -314,17 +314,7 @@ function PlanBuilder() {
                           <button className="text-[11.5px] text-muted-foreground hover:text-destructive inline-flex items-center gap-1">
                             <Trash2 className="size-3" /> Remove
                           </button>
-                          <span className="text-border-strong">·</span>
-                          <button className="text-[11.5px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-                            <Zap className="size-3" /> Add accelerator tier
-                          </button>
                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-2">
-                        <NumField label="Threshold" suffix="%" value={c.threshold} onChange={(v) => update(c.id, { threshold: v })} />
-                        <NumField label="Acc. @" suffix="%" value={c.accelerator} onChange={(v) => update(c.id, { accelerator: v })} />
-                        <NumField label="Cap" suffix="%" value={c.cap} onChange={(v) => update(c.id, { cap: v })} />
                       </div>
                     </div>
 
