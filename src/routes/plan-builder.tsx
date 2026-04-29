@@ -190,7 +190,44 @@ function PlanBuilder() {
         prev={{ to: "/", label: "Overview" }}
         next={{ to: "/goal-setting", label: "Goal Setting" }}
       />
-      <div className="px-8 py-7 max-w-[1600px] grid grid-cols-1 xl:grid-cols-[260px_1fr] gap-6">
+      <div className="px-8 py-7 max-w-[1600px] space-y-6">
+        {/* Data Inputs */}
+        <Card className="p-0">
+          <div className="px-5 pt-5 pb-3 border-b border-border flex items-center justify-between">
+            <div>
+              <div className="text-[14px] font-semibold tracking-tight flex items-center gap-2">
+                <Database className="size-3.5 text-primary" /> Data Inputs
+              </div>
+              <div className="text-[12px] text-muted-foreground mt-0.5">Source data feeding the plan builder</div>
+            </div>
+            <Badge tone="success">Synced · 2 hr ago</Badge>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
+            <div className="p-5">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
+                <Database className="size-3.5" /> Previous Year Sales
+              </div>
+              <div className="mt-2 text-[22px] font-semibold tracking-tight num">$1.24B</div>
+              <div className="text-[11.5px] text-muted-foreground mt-0.5">FY25 actuals · 24 months historical</div>
+            </div>
+            <div className="p-5">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
+                <Users className="size-3.5" /> No. of Sales Reps
+              </div>
+              <div className="mt-2 text-[22px] font-semibold tracking-tight num">1,247</div>
+              <div className="text-[11.5px] text-muted-foreground mt-0.5">Eligible · 84 RBMs · 12 ASMs</div>
+            </div>
+            <div className="p-5">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
+                <MapIcon className="size-3.5" /> Territory Potential
+              </div>
+              <div className="mt-2 text-[22px] font-semibold tracking-tight num">$1.62B</div>
+              <div className="text-[11.5px] text-muted-foreground mt-0.5">Modeled opportunity · 12 regions</div>
+            </div>
+          </div>
+        </Card>
+
+      <div className="grid grid-cols-1 xl:grid-cols-[260px_1fr] gap-6">
         {/* Role rail */}
         <div className="space-y-4">
           <Card className="p-0">
