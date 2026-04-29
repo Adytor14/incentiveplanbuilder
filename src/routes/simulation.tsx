@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider, SegmentedTabs } from "@/components/ui-kit";
-import { Play, Activity, AlertTriangle, TrendingUp, ShieldCheck, Layers3, RefreshCw } from "lucide-react";
+import { Play, Activity, TrendingUp, ShieldCheck, Layers3, RefreshCw } from "lucide-react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -12,12 +12,6 @@ import {
   Tooltip,
   CartesianGrid,
   ReferenceLine,
-  BarChart,
-  Bar,
-  Cell,
-  ScatterChart,
-  Scatter,
-  ZAxis,
 } from "recharts";
 
 export const Route = createFileRoute("/simulation")({
