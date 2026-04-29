@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider, SegmentedTabs } from "@/components/ui-kit";
-import { Plus, Trash2, ChevronRight, Lock, Info, CornerDownRight, AlertTriangle, Wand2, Database, Users, Map as MapIcon } from "lucide-react";
+import { Plus, Trash2, ChevronRight, Lock, Info, CornerDownRight, AlertTriangle, Wand2, Database, Users, Map as MapIcon, Pencil, AlertCircle } from "lucide-react";
+import { useDataInputs } from "@/lib/data-inputs";
 
 export const Route = createFileRoute("/plan-builder")({
   head: () => ({
@@ -84,6 +85,10 @@ const INITIAL: Record<Role, Component[]> = {
 };
 
 function PlanBuilder() {
+  const { inputs, hydrated } = useDataInputs();
+  const role = useState<Role>("rep")[0];
+  const setRole = useState<Role>("rep")[1];
+  // (kept original two-line structure replaced below by single statement)
   const [role, setRole] = useState<Role>("rep");
   const [components, setComponents] = useState(INITIAL);
   const list = components[role];
