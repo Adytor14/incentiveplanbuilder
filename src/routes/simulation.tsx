@@ -114,12 +114,12 @@ function Simulation() {
   return (
     <div>
       <PageHeader
-        step={3}
+        step={4}
         eyebrow="Decision Engine"
         title="Monte Carlo Simulation"
-        description="Stress-test the plan across thousands of futures. Quantify goal fairness, payout volatility and budget overrun probability."
-        prev={{ to: "/goal-setting", label: "Goal Setting" }}
-        next={{ to: "/payout-curve", label: "Payout Curve" }}
+        description="Stress-test the plan across thousands of futures. Quantify goal fairness and payout volatility."
+        prev={{ to: "/payout-curve", label: "Payout Curve" }}
+        next={{ to: "/fairness", label: "Fairness Testing" }}
         actions={
           <button
             onClick={runSimulation}
@@ -132,15 +132,8 @@ function Simulation() {
       />
       <div className="px-8 py-7 max-w-[1600px] space-y-6">
         {/* Top KPIs */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           <KpiTile icon={ShieldCheck} tone="success" label="Reps Likely to Hit Target" value="61.4%" hint="Healthy · target 55–65%" />
-          <KpiTile
-            icon={AlertTriangle}
-            tone={summary.overrun > 20 ? "warning" : "success"}
-            label="Probability of Budget Overrun"
-            value={`${summary.overrun}%`}
-            hint={summary.overrun > 20 ? "Above 20% tolerance" : "Within tolerance (<20%)"}
-          />
           <KpiTile
             icon={Activity}
             tone="info"
@@ -282,66 +275,6 @@ function Simulation() {
                 <Pill label="Std Dev" value={`${variability}%`} />
               </div>
             </Card>
-
-            {/* Risk Heatmap */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <Card className="p-0">
-                <div className="px-5 pt-5 pb-3">
-                  <div className="text-[14px] font-semibold tracking-tight">Risk Heatmap · Region × Quarter</div>
-                  <div className="text-[12px] text-muted-foreground mt-0.5">Probability of missing quarterly target (%)</div>
-                </div>
-                <div className="px-5 pb-5">
-                  <div className="grid grid-cols-[40px_repeat(4,1fr)] gap-1.5 text-[10.5px]">
-                    <div />
-                    {["Q1", "Q2", "Q3", "Q4"].map((q) => (
-                      <div key={q} className="text-center text-muted-foreground font-medium pb-1">{q}</div>
-                    ))}
-                    {["NE", "SE", "MW", "SW", "W"].map((r, ri) => (
-                      <FragmentRow key={r} r={r} cells={heatmap.filter((h) => h.region === r)} ri={ri} />
-                    ))}
-                  </div>
-                  <div className="mt-4 flex items-center justify-between text-[10.5px] text-muted-foreground">
-                    <span>Low risk</span>
-                    <div className="flex h-2 flex-1 mx-3 rounded-sm overflow-hidden">
-                      {Array.from({ length: 10 }).map((_, i) => (
-                        <div key={i} className="flex-1" style={{ background: `color-mix(in oklch, var(--success) ${100 - i * 10}%, var(--destructive) ${i * 10}%)` }} />
-                      ))}
-                    </div>
-                    <span>High risk</span>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-0">
-                <div className="px-5 pt-5 pb-3">
-                  <div className="text-[14px] font-semibold tracking-tight">Budget Overrun Probability</div>
-                  <div className="text-[12px] text-muted-foreground mt-0.5">By payout cap setting</div>
-                </div>
-                <div className="px-2 pb-3 h-[230px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[
-                      { cap: "130%", risk: 4 },
-                      { cap: "140%", risk: 9 },
-                      { cap: "150%", risk: 14 },
-                      { cap: "160%", risk: 22 },
-                      { cap: "175%", risk: 36 },
-                      { cap: "200%", risk: 58 },
-                    ]} margin={{ top: 10, right: 16, left: 0, bottom: 5 }}>
-                      <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="cap" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
-                      <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
-                      <ReferenceLine y={20} stroke="var(--warning)" strokeDasharray="4 4" label={{ value: "Tolerance 20%", fontSize: 10, fill: "var(--warning)", position: "right" }} />
-                      <Bar dataKey="risk" radius={[6, 6, 0, 0]}>
-                        {[4, 9, 14, 22, 36, 58].map((v, i) => (
-                          <Cell key={i} fill={v <= 20 ? "var(--success)" : v <= 40 ? "var(--warning)" : "var(--destructive)"} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
-            </div>
 
             {/* Scenario comparison */}
             <Card className="p-0">
