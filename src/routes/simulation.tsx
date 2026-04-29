@@ -309,28 +309,6 @@ function Simulation() {
   );
 }
 
-function FragmentRow({ r, cells, ri }: { r: string; cells: any[]; ri: number }) {
-  return (
-    <>
-      <div className="flex items-center text-muted-foreground font-medium">{r}</div>
-      {cells.map((c, i) => {
-        const intensity = c.value / 100;
-        const bg = `color-mix(in oklch, var(--success) ${100 - intensity * 100}%, var(--destructive) ${intensity * 100}%)`;
-        return (
-          <div
-            key={i}
-            className="aspect-[2/1] rounded-md grid place-items-center text-[11px] font-semibold text-white num"
-            style={{ background: bg }}
-            title={`${r} ${c.quarter}: ${c.value}% risk`}
-          >
-            {c.value}
-          </div>
-        );
-      })}
-    </>
-  );
-}
-
 function KpiTile({ icon: Icon, tone, label, value, hint }: any) {
   const map = {
     success: { bg: "bg-success/10", text: "text-success" },
