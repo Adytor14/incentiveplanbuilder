@@ -15,6 +15,18 @@ export const Route = createFileRoute("/plan-builder")({
   component: PlanBuilder,
 });
 
+function DataTile({ icon: Icon, label, value, hint }: { icon: any; label: string; value: string; hint: string }) {
+  return (
+    <div className="p-5">
+      <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
+        <Icon className="size-3.5" /> {label}
+      </div>
+      <div className="mt-2 text-[22px] font-semibold tracking-tight num">{value}</div>
+      <div className="text-[11.5px] text-muted-foreground mt-0.5">{hint}</div>
+    </div>
+  );
+}
+
 type Role = "rep" | "rbm" | "asm";
 type SubItem = {
   id: string;
@@ -464,17 +476,6 @@ function PlanBuilder() {
   );
 }
 
-function DataTile({ icon: Icon, label, value, hint }: { icon: any; label: string; value: string; hint: string }) {
-  return (
-    <div className="p-5">
-      <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
-        <Icon className="size-3.5" /> {label}
-      </div>
-      <div className="mt-2 text-[22px] font-semibold tracking-tight num">{value}</div>
-      <div className="text-[11.5px] text-muted-foreground mt-0.5">{hint}</div>
-    </div>
-  );
-}
 
 function NumField({ label, suffix, value, onChange }: { label: string; suffix: string; value: number; onChange: (v: number) => void }) {
   return (
