@@ -99,17 +99,6 @@ function Simulation() {
   };
 
   const distData = useMemo(() => gaussian(80, 102, variability), [variability]);
-  const heatmap = useMemo(() => {
-    const rows = ["NE", "SE", "MW", "SW", "W"];
-    const cols = ["Q1", "Q2", "Q3", "Q4"];
-    return rows.flatMap((r, ri) =>
-      cols.map((c, ci) => ({
-        region: r,
-        quarter: c,
-        value: 60 + Math.round(Math.sin(ri + ci) * 18 + Math.random() * 22),
-      }))
-    );
-  }, []);
 
   return (
     <div>
