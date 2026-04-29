@@ -106,10 +106,12 @@ function DataInputsPage() {
   return (
     <div>
       <PageHeader
+        step={0}
         eyebrow="Pre-Flight"
         title="Plan Data Inputs"
         description="Enter the source data that will drive component weighting, goal setting and payout simulation. You can revisit and edit these at any time."
         prev={{ to: "/", label: "Overview" }}
+        next={{ to: "/plan-builder", label: "Plan Builder" }}
       />
       <div className="px-8 py-7 max-w-[1100px] space-y-6">
         <Card className="p-0">

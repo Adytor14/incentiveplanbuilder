@@ -201,7 +201,7 @@ function PlanBuilder() {
         step={1}
         title="Plan Builder"
         description="Compose IC plans for each role by weighting components, then set thresholds, caps and accelerators."
-        prev={{ to: "/", label: "Overview" }}
+        prev={{ to: "/data-inputs", label: "Data Inputs" }}
         next={{ to: "/goal-setting", label: "Goal Setting" }}
       />
       <div className="px-8 py-7 max-w-[1600px] space-y-6">
