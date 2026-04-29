@@ -458,6 +458,7 @@ function PlanBuilder() {
           </Card>
         </div>
       </div>
+      </div>
     </div>
   );
 }
