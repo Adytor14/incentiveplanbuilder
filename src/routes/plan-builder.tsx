@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider, SegmentedTabs } from "@/components/ui-kit";
-import { Plus, Trash2, ChevronRight, Lock, Zap, Info, CornerDownRight, AlertTriangle, Wand2 } from "lucide-react";
+import { Plus, Trash2, ChevronRight, Lock, Info, CornerDownRight, AlertTriangle, Wand2, Database, Users, Map as MapIcon } from "lucide-react";
 
 export const Route = createFileRoute("/plan-builder")({
   head: () => ({
