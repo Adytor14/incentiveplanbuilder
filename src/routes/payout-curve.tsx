@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider } from "@/components/ui-kit";
-import { GitCompareArrows, Save, Zap, TrendingUp } from "lucide-react";
+import { GitCompareArrows, Save } from "lucide-react";
 import {
   ResponsiveContainer,
   Line,
@@ -108,11 +108,11 @@ function PayoutCurve() {
   return (
     <div>
       <PageHeader
-        step={4}
+        step={3}
         title="Payout Curve Designer"
         description="Sculpt the payout schedule. Drag inflection points to balance motivation, fairness and budget."
-        prev={{ to: "/simulation", label: "Monte Carlo" }}
-        next={{ to: "/fairness", label: "Fairness Testing" }}
+        prev={{ to: "/goal-setting", label: "Goal Setting" }}
+        next={{ to: "/simulation", label: "Monte Carlo" }}
         actions={
           <button className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card">
             <Save className="size-3.5" /> Save Curve
@@ -230,9 +230,8 @@ function PayoutCurve() {
             </div>
             <div className="p-3 space-y-1.5">
               {[
-                { n: "FY25 Plan (live)", t: "80/100/110/130/150", active: false },
-                { n: "Aggressive Launch", t: "75/100/105/120/175", active: false },
-                { n: "Conservative", t: "85/100/115/135/140", active: false },
+                { n: "Launch Curve", t: "75/100/105/120/175", active: false },
+                { n: "Growth Curve", t: "85/100/115/135/140", active: false },
                 { n: "Current Draft", t: `${t}/${target}/${acc}/${sup}/${cap}`, active: true },
               ].map((c) => (
                 <div key={c.n} className={`p-3 rounded-md border ${c.active ? "border-primary/30 bg-primary-muted/30" : "border-border hover:bg-muted/40"}`}>
@@ -243,15 +242,6 @@ function PayoutCurve() {
                   <div className="text-[11px] text-muted-foreground mt-0.5 num">{c.t}</div>
                 </div>
               ))}
-            </div>
-          </Card>
-
-          <Card className="p-5">
-            <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium mb-3">Curve Diagnostics</div>
-            <div className="space-y-2.5">
-              <Diag icon={Zap} label="Slope steepness" value="Moderate" tone="success" />
-              <Diag icon={TrendingUp} label="Avg payout @ 100%" value="100% (1×)" tone="success" />
-              <Diag icon={Zap} label="Cap exposure" value={`${(cap - 100)}% upside`} tone="info" />
             </div>
           </Card>
         </div>
