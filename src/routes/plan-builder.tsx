@@ -193,40 +193,39 @@ function PlanBuilder() {
         next={{ to: "/goal-setting", label: "Goal Setting" }}
       />
       <div className="px-8 py-7 max-w-[1600px] space-y-6">
-        {/* Data Inputs */}
+        {/* Data Inputs (entered on /data-inputs) */}
         <Card className="p-0">
           <div className="px-5 pt-5 pb-3 border-b border-border flex items-center justify-between">
             <div>
               <div className="text-[14px] font-semibold tracking-tight flex items-center gap-2">
                 <Database className="size-3.5 text-primary" /> Data Inputs
               </div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">Source data feeding the plan builder</div>
+              <div className="text-[12px] text-muted-foreground mt-0.5">Manually entered before this step · drives weighting and goal setting</div>
             </div>
-            <Badge tone="success">Synced · 2 hr ago</Badge>
+            <Link
+              to="/data-inputs"
+              className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
+            >
+              <Pencil className="size-3" /> Edit inputs
+            </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
-            <div className="p-5">
-              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
-                <Database className="size-3.5" /> Previous Year Sales
+          {hydrated && !inputs ? (
+            <div className="px-5 py-4 flex items-start gap-2.5 bg-warning/10 border-t border-warning/30">
+              <AlertCircle className="size-4 text-warning shrink-0 mt-0.5" />
+              <div className="text-[12.5px]">
+                <div className="font-medium text-foreground">No data inputs entered yet.</div>
+                <div className="text-muted-foreground">
+                  <Link to="/data-inputs" className="text-primary font-medium hover:underline">Enter Previous Year Sales, No. of Sales Reps and Territory Potential</Link> to seed the plan.
+                </div>
               </div>
-              <div className="mt-2 text-[22px] font-semibold tracking-tight num">$1.24B</div>
-              <div className="text-[11.5px] text-muted-foreground mt-0.5">FY25 actuals · 24 months historical</div>
             </div>
-            <div className="p-5">
-              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
-                <Users className="size-3.5" /> No. of Sales Reps
-              </div>
-              <div className="mt-2 text-[22px] font-semibold tracking-tight num">1,247</div>
-              <div className="text-[11.5px] text-muted-foreground mt-0.5">Eligible · 84 RBMs · 12 ASMs</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
+              <DataTile icon={Database} label="Previous Year Sales" value={inputs ? `$${inputs.previousYearSales.toLocaleString()}M` : "—"} hint="FY25 actuals" />
+              <DataTile icon={Users} label="No. of Sales Reps" value={inputs ? inputs.salesReps.toLocaleString() : "—"} hint="Eligible field-facing reps" />
+              <DataTile icon={MapIcon} label="Territory Potential" value={inputs ? `$${inputs.territoryPotential.toLocaleString()}M` : "—"} hint="Modeled opportunity" />
             </div>
-            <div className="p-5">
-              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
-                <MapIcon className="size-3.5" /> Territory Potential
-              </div>
-              <div className="mt-2 text-[22px] font-semibold tracking-tight num">$1.62B</div>
-              <div className="text-[11.5px] text-muted-foreground mt-0.5">Modeled opportunity · 12 regions</div>
-            </div>
-          </div>
+          )}
         </Card>
 
       <div className="grid grid-cols-1 xl:grid-cols-[260px_1fr] gap-6">
