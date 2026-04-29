@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider } from "@/components/ui-kit";
-import { History, Equal, Map, Sparkles, Check, Edit3, AlertCircle } from "lucide-react";
+import { Sparkles, Check, Edit3, AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/goal-setting")({
   head: () => ({
@@ -81,34 +81,28 @@ function GoalSetting() {
         title="Goal Setting Engine"
         description="Choose a methodology, calibrate inputs, then preview rep-level targets before publishing."
         prev={{ to: "/plan-builder", label: "Plan Builder" }}
-        next={{ to: "/simulation", label: "Run Simulation" }}
+        next={{ to: "/payout-curve", label: "Payout Curve" }}
       />
       <div className="px-8 py-7 max-w-[1600px] space-y-6">
-        {/* Method cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Method card — only Blended */}
+        <div className="grid grid-cols-1 gap-4">
           {METHODS.map((m) => {
-            const active = method === m.id;
             const Icon = m.icon;
             return (
               <button
                 key={m.id}
                 onClick={() => setMethod(m.id)}
-                className={`text-left p-5 rounded-xl border transition-all ${
-                  active
-                    ? "border-primary bg-primary-muted/40 shadow-elevated ring-1 ring-primary/20"
-                    : "border-border bg-surface hover:border-border-strong shadow-card"
-                }`}
+                className="text-left p-5 rounded-xl border border-primary bg-primary-muted/40 shadow-elevated ring-1 ring-primary/20"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className={`size-10 rounded-lg grid place-items-center ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                  <div className="size-10 rounded-lg grid place-items-center bg-primary text-primary-foreground">
                     <Icon className="size-4.5" />
                   </div>
-                  {active && <div className="size-5 rounded-full bg-primary text-primary-foreground grid place-items-center"><Check className="size-3" strokeWidth={3} /></div>}
-                  {m.id === "blended" && !active && <Badge tone="primary">Recommended</Badge>}
+                  <div className="size-5 rounded-full bg-primary text-primary-foreground grid place-items-center"><Check className="size-3" strokeWidth={3} /></div>
                 </div>
                 <div className="text-[14px] font-semibold tracking-tight">{m.name}</div>
                 <div className="text-[12px] text-muted-foreground mt-0.5">{m.desc}</div>
-                <div className="mt-3 px-2.5 py-1.5 rounded-md bg-muted/60 border border-border">
+                <div className="mt-3 px-2.5 py-1.5 rounded-md bg-muted/60 border border-border inline-block">
                   <div className="text-[10px] font-mono text-muted-foreground">{m.formula}</div>
                 </div>
               </button>
