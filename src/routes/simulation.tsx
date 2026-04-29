@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider, SegmentedTabs } from "@/components/ui-kit";
-import { Play, Activity, AlertTriangle, TrendingUp, ShieldCheck, Layers3, RefreshCw } from "lucide-react";
+import { Play, Activity, TrendingUp, ShieldCheck, Layers3, RefreshCw } from "lucide-react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -12,12 +12,6 @@ import {
   Tooltip,
   CartesianGrid,
   ReferenceLine,
-  BarChart,
-  Bar,
-  Cell,
-  ScatterChart,
-  Scatter,
-  ZAxis,
 } from "recharts";
 
 export const Route = createFileRoute("/simulation")({
@@ -99,17 +93,6 @@ function Simulation() {
   };
 
   const distData = useMemo(() => gaussian(80, 102, variability), [variability]);
-  const heatmap = useMemo(() => {
-    const rows = ["NE", "SE", "MW", "SW", "W"];
-    const cols = ["Q1", "Q2", "Q3", "Q4"];
-    return rows.flatMap((r, ri) =>
-      cols.map((c, ci) => ({
-        region: r,
-        quarter: c,
-        value: 60 + Math.round(Math.sin(ri + ci) * 18 + Math.random() * 22),
-      }))
-    );
-  }, []);
 
   return (
     <div>
@@ -317,28 +300,6 @@ function Simulation() {
         </div>
       </div>
     </div>
-  );
-}
-
-function FragmentRow({ r, cells, ri }: { r: string; cells: any[]; ri: number }) {
-  return (
-    <>
-      <div className="flex items-center text-muted-foreground font-medium">{r}</div>
-      {cells.map((c, i) => {
-        const intensity = c.value / 100;
-        const bg = `color-mix(in oklch, var(--success) ${100 - intensity * 100}%, var(--destructive) ${intensity * 100}%)`;
-        return (
-          <div
-            key={i}
-            className="aspect-[2/1] rounded-md grid place-items-center text-[11px] font-semibold text-white num"
-            style={{ background: bg }}
-            title={`${r} ${c.quarter}: ${c.value}% risk`}
-          >
-            {c.value}
-          </div>
-        );
-      })}
-    </>
   );
 }
 
