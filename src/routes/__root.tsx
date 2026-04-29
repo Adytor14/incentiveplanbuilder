@@ -11,6 +11,7 @@ import {
   Sparkles,
   Search,
   Bell,
+  Database,
 } from "lucide-react";
 
 function NotFoundComponent() {
@@ -78,6 +79,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 const NAV = [
   { to: "/", label: "Overview", icon: LayoutGrid, step: null },
+  { to: "/data-inputs", label: "Data Inputs", icon: Database, step: null },
   { to: "/plan-builder", label: "Plan Builder", icon: Layers, step: 1 },
   { to: "/goal-setting", label: "Goal Setting", icon: Target, step: 2 },
   { to: "/payout-curve", label: "Payout Curve", icon: TrendingUp, step: 3 },
