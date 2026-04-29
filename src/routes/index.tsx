@@ -76,10 +76,10 @@ function Overview() {
             </p>
             <div className="mt-6 flex items-center gap-3">
               <Link
-                to="/plan-builder"
+                to="/data-inputs"
                 className="h-10 px-4 inline-flex items-center gap-2 rounded-md bg-white text-primary text-[13px] font-semibold hover:bg-white/90 shadow-elevated"
               >
-                Continue Plan Design <ArrowRight className="size-4" />
+                Start with Data Inputs <ArrowRight className="size-4" />
               </Link>
               <Link
                 to="/approval"
