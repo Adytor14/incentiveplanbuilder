@@ -14,13 +14,10 @@ export const Route = createFileRoute("/goal-setting")({
   component: GoalSetting,
 });
 
-type Method = "historical" | "equal" | "potential" | "blended";
+type Method = "blended";
 
 const METHODS = [
-  { id: "historical" as Method, name: "Historical-based", icon: History, desc: "Last year sales × growth %", formula: "Target = LY × (1 + Growth)" },
-  { id: "equal" as Method, name: "Equal Distribution", icon: Equal, desc: "Total target ÷ headcount", formula: "Target = Σ Sales / N reps" },
-  { id: "potential" as Method, name: "Territory Potential", icon: Map, desc: "Potential × opportunity share", formula: "Target = Potential × Share" },
-  { id: "blended" as Method, name: "Blended (Recommended)", icon: Sparkles, desc: "Weighted hybrid approach", formula: "(Hist × W₁) + (Pot × W₂)" },
+  { id: "blended" as Method, name: "Blended (Recommended)", icon: Sparkles, desc: "Weighted hybrid: historical, potential, equal", formula: "(Hist × W₁) + (Pot × W₂) + (Equal × W₃)" },
 ];
 
 const PREVIEW = [
