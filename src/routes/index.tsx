@@ -158,7 +158,7 @@ function Overview() {
           <div className="px-5 pb-5 space-y-1.5">
             {STEPS.map((s) => {
               const Icon = s.icon;
-              const done = s.status === "done";
+              const done = (s.status as string) === "done";
               const current = s.status === "current";
               return (
                 <Link
