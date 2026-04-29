@@ -161,12 +161,11 @@ function GoalSetting() {
 
           {/* Target preview */}
           <div className="space-y-5">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
                 { l: "Total Target", v: "$1.42B", h: "+15.2% YoY", t: "primary" as const },
                 { l: "Avg Rep Target", v: "$1.14M", h: "P50: $1.12M", t: "neutral" as const },
                 { l: "Manual Overrides", v: "23", h: "1.8% of reps", t: "warning" as const },
-                { l: "Forecast Confidence", v: "84%", h: "Above 80% bar", t: "success" as const },
               ].map((s) => (
                 <Card key={s.l} className="p-4">
                   <div className="text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground font-medium">{s.l}</div>
