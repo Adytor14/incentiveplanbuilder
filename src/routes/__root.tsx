@@ -47,6 +47,15 @@ export const Route = createRootRoute({
         content:
           "Design, simulate, and approve pharma incentive compensation plans with confidence.",
       },
+      { property: "og:title", content: "Helix IC — Incentive Compensation Design Platform" },
+      { name: "twitter:title", content: "Helix IC — Incentive Compensation Design Platform" },
+      { name: "description", content: "Design and simulate strategic incentive compensation plans for pharma sales teams." },
+      { property: "og:description", content: "Design and simulate strategic incentive compensation plans for pharma sales teams." },
+      { name: "twitter:description", content: "Design and simulate strategic incentive compensation plans for pharma sales teams." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7fd75d9d-3392-47d8-b386-0cc6f21e9756/id-preview-8b7eb6b2--a2dff3e4-6590-4886-9142-7a572dee1061.lovable.app-1777459163059.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7fd75d9d-3392-47d8-b386-0cc6f21e9756/id-preview-8b7eb6b2--a2dff3e4-6590-4886-9142-7a572dee1061.lovable.app-1777459163059.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
