@@ -23,7 +23,7 @@ export function PageHeader({ step, eyebrow, title, description, prev, next, acti
                   <span className="size-5 rounded-full bg-primary text-primary-foreground grid place-items-center text-[10px]">
                     {step}
                   </span>
-                  Step {step} of 6
+                  Step {step} of 7
                 </span>
               )}
               {eyebrow && (
