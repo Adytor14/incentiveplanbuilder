@@ -86,9 +86,6 @@ const INITIAL: Record<Role, Component[]> = {
 
 function PlanBuilder() {
   const { inputs, hydrated } = useDataInputs();
-  const role = useState<Role>("rep")[0];
-  const setRole = useState<Role>("rep")[1];
-  // (kept original two-line structure replaced below by single statement)
   const [role, setRole] = useState<Role>("rep");
   const [components, setComponents] = useState(INITIAL);
   const list = components[role];
