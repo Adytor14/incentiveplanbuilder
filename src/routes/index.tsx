@@ -14,6 +14,7 @@ import {
   Sparkles,
   Users,
   DollarSign,
+  Database,
 } from "lucide-react";
 import {
   AreaChart,
@@ -39,9 +40,10 @@ export const Route = createFileRoute("/")({
 });
 
 const STEPS = [
-  { n: 1, to: "/plan-builder", label: "Plan Builder", icon: Layers, status: "done", desc: "Components & weights configured for 3 roles" },
-  { n: 2, to: "/goal-setting", label: "Goal Setting Engine", icon: Target, status: "done", desc: "Blended methodology · 60/40 historical/potential" },
-  { n: 3, to: "/payout-curve", label: "Payout Curve Designer", icon: TrendingUp, status: "current", desc: "Threshold, accelerator & cap design" },
+  { n: 0, to: "/data-inputs", label: "Data Inputs", icon: Database, status: "current", desc: "Enter previous year sales, sales reps and territory potential" },
+  { n: 1, to: "/plan-builder", label: "Plan Builder", icon: Layers, status: "todo", desc: "Components & weights configured for 3 roles" },
+  { n: 2, to: "/goal-setting", label: "Goal Setting Engine", icon: Target, status: "todo", desc: "Blended methodology · 60/40 historical/potential" },
+  { n: 3, to: "/payout-curve", label: "Payout Curve Designer", icon: TrendingUp, status: "todo", desc: "Threshold, accelerator & cap design" },
   { n: 4, to: "/simulation", label: "Monte Carlo Simulation", icon: Activity, status: "todo", desc: "10,000 scenarios · validating fairness & budget" },
   { n: 5, to: "/fairness", label: "Fairness Testing", icon: ShieldCheck, status: "todo", desc: "Cross-region, cross-role equity validation" },
   { n: 6, to: "/approval", label: "Final Approval", icon: CheckCircle, status: "todo", desc: "Leadership sign-off & launch readiness" },
@@ -74,10 +76,10 @@ function Overview() {
             </p>
             <div className="mt-6 flex items-center gap-3">
               <Link
-                to="/plan-builder"
+                to="/data-inputs"
                 className="h-10 px-4 inline-flex items-center gap-2 rounded-md bg-white text-primary text-[13px] font-semibold hover:bg-white/90 shadow-elevated"
               >
-                Continue Plan Design <ArrowRight className="size-4" />
+                Start with Data Inputs <ArrowRight className="size-4" />
               </Link>
               <Link
                 to="/approval"
@@ -156,7 +158,7 @@ function Overview() {
           <div className="px-5 pb-5 space-y-1.5">
             {STEPS.map((s) => {
               const Icon = s.icon;
-              const done = s.status === "done";
+              const done = (s.status as string) === "done";
               const current = s.status === "current";
               return (
                 <Link

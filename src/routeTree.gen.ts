@@ -14,6 +14,7 @@ import { Route as PlanBuilderRouteImport } from './routes/plan-builder'
 import { Route as PayoutCurveRouteImport } from './routes/payout-curve'
 import { Route as GoalSettingRouteImport } from './routes/goal-setting'
 import { Route as FairnessRouteImport } from './routes/fairness'
+import { Route as DataInputsRouteImport } from './routes/data-inputs'
 import { Route as ApprovalRouteImport } from './routes/approval'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -42,6 +43,11 @@ const FairnessRoute = FairnessRouteImport.update({
   path: '/fairness',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DataInputsRoute = DataInputsRouteImport.update({
+  id: '/data-inputs',
+  path: '/data-inputs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApprovalRoute = ApprovalRouteImport.update({
   id: '/approval',
   path: '/approval',
@@ -56,6 +62,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/approval': typeof ApprovalRoute
+  '/data-inputs': typeof DataInputsRoute
   '/fairness': typeof FairnessRoute
   '/goal-setting': typeof GoalSettingRoute
   '/payout-curve': typeof PayoutCurveRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/approval': typeof ApprovalRoute
+  '/data-inputs': typeof DataInputsRoute
   '/fairness': typeof FairnessRoute
   '/goal-setting': typeof GoalSettingRoute
   '/payout-curve': typeof PayoutCurveRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/approval': typeof ApprovalRoute
+  '/data-inputs': typeof DataInputsRoute
   '/fairness': typeof FairnessRoute
   '/goal-setting': typeof GoalSettingRoute
   '/payout-curve': typeof PayoutCurveRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/approval'
+    | '/data-inputs'
     | '/fairness'
     | '/goal-setting'
     | '/payout-curve'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/approval'
+    | '/data-inputs'
     | '/fairness'
     | '/goal-setting'
     | '/payout-curve'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/approval'
+    | '/data-inputs'
     | '/fairness'
     | '/goal-setting'
     | '/payout-curve'
@@ -114,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApprovalRoute: typeof ApprovalRoute
+  DataInputsRoute: typeof DataInputsRoute
   FairnessRoute: typeof FairnessRoute
   GoalSettingRoute: typeof GoalSettingRoute
   PayoutCurveRoute: typeof PayoutCurveRoute
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FairnessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/data-inputs': {
+      id: '/data-inputs'
+      path: '/data-inputs'
+      fullPath: '/data-inputs'
+      preLoaderRoute: typeof DataInputsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/approval': {
       id: '/approval'
       path: '/approval'
@@ -178,6 +198,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApprovalRoute: ApprovalRoute,
+  DataInputsRoute: DataInputsRoute,
   FairnessRoute: FairnessRoute,
   GoalSettingRoute: GoalSettingRoute,
   PayoutCurveRoute: PayoutCurveRoute,
