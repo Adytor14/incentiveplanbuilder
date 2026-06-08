@@ -94,7 +94,7 @@ const NAV = [
   { to: "/payout-curve", label: "Payout Curve", icon: TrendingUp, step: 3 },
   { to: "/simulation", label: "Monte Carlo", icon: Activity, step: 4 },
   { to: "/fairness", label: "Fairness Testing", icon: ShieldCheck, step: 5 },
-  { to: "/approval", label: "Final Approval", icon: CheckCircle2, step: 6 },
+  { to: "/approval", label: "Plan Summary", icon: CheckCircle2, step: 6 },
 ] as const;
 
 function Sidebar() {
