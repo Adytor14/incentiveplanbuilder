@@ -194,7 +194,8 @@ function PlanBuilder() {
     }));
 
   return (
-    <div>
+    <>
+
       <PageHeader
         step={1}
         title="Plan Builder"
@@ -433,6 +434,8 @@ function PlanBuilder() {
       </div>
       </div>
 
+
+
       {showInvalid && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm p-4">
           <Card className="max-w-md w-full p-0">
@@ -469,7 +472,8 @@ function PlanBuilder() {
           </Card>
         </div>
       )}
-    </div>
+    </>
+
   );
 }
 
