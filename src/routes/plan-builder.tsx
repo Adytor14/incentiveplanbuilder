@@ -431,6 +431,8 @@ function PlanBuilder() {
           </Card>
         </div>
       </div>
+      </div>
+
 
 
       {showInvalid && (
