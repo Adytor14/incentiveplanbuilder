@@ -108,7 +108,7 @@ function PayoutCurve() {
         title="Payout Curve Designer"
         description="Define inflexion points directly. Add as many points as you need — values are not clamped."
         prev={{ to: "/goal-setting", label: "Goal Setting" }}
-        next={{ to: "/simulation", label: "Fairness Testing" }}
+        next={{ to: "/simulation", label: "Monte Carlo" }}
         actions={
           <button className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card">
             <Save className="size-3.5" /> Save to Curve Library
