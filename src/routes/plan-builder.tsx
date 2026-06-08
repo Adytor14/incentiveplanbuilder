@@ -195,12 +195,30 @@ function PlanBuilder() {
 
   return (
     <div>
-
-
-
+      <PageHeader
+        step={1}
+        title="Plan Builder"
+        description="Compose IC plans for each role by weighting components, then set thresholds, caps and accelerators."
+        prev={{ to: "/data-inputs", label: "Data Inputs" }}
+        actions={
+          <button
+            type="button"
+            onClick={handleContinue}
+            className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card ${
+              balanced
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            Continue to Goal Setting
+          </button>
+        }
+      />
+      <div className="px-8 py-7 max-w-[1600px] space-y-6">
       <div className="grid grid-cols-1 xl:grid-cols-[260px_1fr] gap-6">
         {/* Role rail */}
         <div className="space-y-4">
+
           <Card className="p-0">
             <div className="px-4 pt-4 pb-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
               Plan Audience
