@@ -1,218 +1,170 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { Database, Users, Map as MapIcon, ArrowRight, RotateCcw, Check } from "lucide-react";
 import {
-  DEFAULT_INPUTS,
-  loadDataInputs,
-  saveDataInputs,
-  type DataInputs,
+  CheckCircle2,
+  AlertTriangle,
+  CircleDashed,
+  Upload,
+  RefreshCw,
+  ArrowRight,
+  Database,
+  FileSpreadsheet,
+} from "lucide-react";
+import {
+  DATASETS as INITIAL_DATASETS,
+  datasetsReady,
+  type Dataset,
+  type DatasetStatus,
 } from "@/lib/data-inputs";
 
 export const Route = createFileRoute("/data-inputs")({
   head: () => ({
     meta: [
-      { title: "Data Inputs · Helix IC" },
+      { title: "Data Inputs · IC Design" },
       {
         name: "description",
         content:
-          "Enter previous year sales, sales rep headcount and territory potential before designing the IC plan.",
+          "Validate the source datasets that drive plan design — HCP sales, alignment, roster, territory potential and MBOs.",
       },
     ],
   }),
   component: DataInputsPage,
 });
 
-type FieldKey = keyof DataInputs;
-
-const FIELDS: Array<{
-  key: FieldKey;
-  label: string;
-  hint: string;
-  prefix?: string;
-  suffix?: string;
-  step: number;
-  min: number;
-  icon: typeof Database;
-}> = [
-  {
-    key: "previousYearSales",
-    label: "Previous Year Sales",
-    hint: "Total FY25 actuals across the business unit",
-    prefix: "$",
-    suffix: "M",
-    step: 1,
-    min: 0,
-    icon: Database,
-  },
-  {
-    key: "salesReps",
-    label: "No. of Sales Reps",
-    hint: "Eligible field-facing reps to be modeled",
-    step: 1,
-    min: 1,
-    icon: Users,
-  },
-  {
-    key: "territoryPotential",
-    label: "Territory Potential",
-    hint: "Modeled total opportunity across all territories",
-    prefix: "$",
-    suffix: "M",
-    step: 1,
-    min: 0,
-    icon: MapIcon,
-  },
-];
+const STATUS_META: Record<
+  DatasetStatus,
+  { label: string; tone: "success" | "warning" | "danger"; Icon: typeof CheckCircle2 }
+> = {
+  validated: { label: "Validated", tone: "success", Icon: CheckCircle2 },
+  warning: { label: "Needs review", tone: "warning", Icon: AlertTriangle },
+  missing: { label: "Missing", tone: "danger", Icon: CircleDashed },
+};
 
 function DataInputsPage() {
-  const navigate = useNavigate();
-  const [values, setValues] = useState<DataInputs>(DEFAULT_INPUTS);
-  const [touched, setTouched] = useState(false);
-  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [datasets, setDatasets] = useState<Dataset[]>(INITIAL_DATASETS);
+  const ready = datasetsReady(datasets);
+  const validated = datasets.filter((d) => d.status === "validated").length;
 
-  useEffect(() => {
-    const existing = loadDataInputs();
-    if (existing) {
-      setValues(existing);
-      setSavedAt(Date.now());
-    }
-  }, []);
-
-  const valid = FIELDS.every((f) => {
-    const v = values[f.key];
-    return Number.isFinite(v) && v >= f.min;
-  });
-
-  const set = (key: FieldKey, raw: string) => {
-    const n = Number(raw);
-    setValues((p) => ({ ...p, [key]: Number.isFinite(n) ? n : 0 }));
-    setTouched(true);
-  };
-
-  const handleSaveAndContinue = () => {
-    if (!valid) return;
-    saveDataInputs(values);
-    setSavedAt(Date.now());
-    navigate({ to: "/plan-builder" });
-  };
-
-  const handleReset = () => {
-    setValues(DEFAULT_INPUTS);
-    setTouched(true);
-  };
+  const revalidate = (id: string) =>
+    setDatasets((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, status: "validated", updatedAt: "Just now" } : d)),
+    );
 
   return (
     <div>
       <PageHeader
         step={0}
         eyebrow="Pre-Flight"
-        title="Plan Data Inputs"
-        description="Enter the source data that will drive component weighting, goal setting and payout simulation. You can revisit and edit these at any time."
+        title="Data Inputs"
+        description="The datasets below seed every downstream screen. Goals, potential and rep counts are read from these files — no manually entered totals."
         prev={{ to: "/", label: "Overview" }}
         next={{ to: "/plan-builder", label: "Plan Builder" }}
       />
-      <div className="px-8 py-7 max-w-[1100px] space-y-6">
+      <div className="px-8 py-7 max-w-[1400px] space-y-6">
         <Card className="p-0">
-          <div className="px-6 pt-6 pb-3 border-b border-border flex items-center justify-between">
+          <div className="px-6 pt-5 pb-4 border-b border-border flex items-center justify-between gap-4">
             <div>
-              <div className="text-[14px] font-semibold tracking-tight">Required Inputs</div>
+              <div className="text-[14px] font-semibold tracking-tight flex items-center gap-2">
+                <Database className="size-3.5 text-primary" /> Required Datasets
+              </div>
               <div className="text-[12px] text-muted-foreground mt-0.5">
-                These three values seed the entire plan-design workflow.
+                {validated} of {datasets.length} validated · all required datasets must be present before the Plan Builder can run.
               </div>
             </div>
-            {savedAt && !touched && (
-              <Badge tone="success">
-                <Check className="size-3" /> Saved
+            <div className="flex items-center gap-2">
+              <Badge tone={ready ? "success" : "warning"}>
+                {ready ? <CheckCircle2 className="size-3" /> : <AlertTriangle className="size-3" />}
+                {ready ? "Ready to build plan" : "Resolve warnings"}
               </Badge>
-            )}
+            </div>
           </div>
-          <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
-            {FIELDS.map((f) => {
-              const Icon = f.icon;
-              const v = values[f.key];
-              const invalid = !(Number.isFinite(v) && v >= f.min);
+
+          <div className="divide-y divide-border">
+            {datasets.map((d) => {
+              const meta = STATUS_META[d.status];
+              const Icon = meta.Icon;
               return (
-                <label key={f.key} className="block">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="size-7 rounded-md bg-primary-muted text-primary grid place-items-center">
-                      <Icon className="size-3.5" />
+                <div key={d.id} className="px-6 py-4 flex items-center gap-4">
+                  <div className="size-10 rounded-lg bg-muted/60 grid place-items-center shrink-0">
+                    <FileSpreadsheet className="size-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <div className="text-[13.5px] font-semibold text-foreground truncate">
+                        {d.name}
+                      </div>
+                      <Badge tone="neutral">{d.source}</Badge>
+                      {d.required && <Badge tone="primary">Required</Badge>}
                     </div>
-                    <div className="text-[12.5px] font-semibold text-foreground">{f.label}</div>
+                    <div className="text-[12px] text-muted-foreground mt-0.5 truncate">
+                      {d.description}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-1 num">
+                      {d.rows !== null ? `${d.rows.toLocaleString()} rows` : "—"} · updated {d.updatedAt ?? "—"}
+                    </div>
                   </div>
-                  <div
-                    className={`relative flex items-center rounded-md border bg-background ${
-                      invalid ? "border-destructive/60" : "border-border focus-within:border-primary focus-within:ring-2 focus-within:ring-ring/30"
-                    }`}
-                  >
-                    {f.prefix && (
-                      <span className="pl-3 pr-1 text-[13px] text-muted-foreground select-none">{f.prefix}</span>
-                    )}
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      min={f.min}
-                      step={f.step}
-                      value={Number.isFinite(v) ? v : ""}
-                      onChange={(e) => set(f.key, e.target.value)}
-                      className={`w-full h-10 ${f.prefix ? "pl-1" : "pl-3"} ${f.suffix ? "pr-9" : "pr-3"} bg-transparent text-[14px] num font-medium focus:outline-none`}
-                    />
-                    {f.suffix && (
-                      <span className="absolute right-3 text-[12px] text-muted-foreground select-none">{f.suffix}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge tone={meta.tone}>
+                      <Icon className="size-3" /> {meta.label}
+                    </Badge>
+                    {d.status === "warning" ? (
+                      <button
+                        type="button"
+                        onClick={() => revalidate(d.id)}
+                        className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
+                      >
+                        <RefreshCw className="size-3.5" /> Re-validate
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
+                      >
+                        <Upload className="size-3.5" /> Replace
+                      </button>
                     )}
                   </div>
-                  <div className="mt-1.5 text-[11.5px] text-muted-foreground">{f.hint}</div>
-                  {invalid && (
-                    <div className="mt-1 text-[11px] text-destructive">Enter a value of {f.min} or greater.</div>
-                  )}
-                </label>
+                </div>
               );
             })}
           </div>
 
-          <div className="px-6 pb-6 pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-border">
-            <button
-              type="button"
-              onClick={handleReset}
-              className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12.5px] font-medium text-muted-foreground hover:bg-muted"
-            >
-              <RotateCcw className="size-3.5" /> Reset to defaults
-            </button>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  if (!valid) return;
-                  saveDataInputs(values);
-                  setSavedAt(Date.now());
-                  setTouched(false);
-                }}
-                disabled={!valid}
-                className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[13px] font-medium hover:bg-muted disabled:opacity-50"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveAndContinue}
-                disabled={!valid}
-                className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90 shadow-card disabled:opacity-50"
-              >
-                Save & Continue to Plan Builder <ArrowRight className="size-3.5" />
-              </button>
+          <div className="px-6 py-4 border-t border-border flex items-center justify-between gap-3">
+            <div className="text-[12px] text-muted-foreground">
+              Aggregates (previous year sales, # of reps, territory potential) are computed from these files — not entered as single numbers.
             </div>
+            <Link
+              to="/plan-builder"
+              className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card ${
+                ready
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "bg-muted text-muted-foreground pointer-events-none"
+              }`}
+            >
+              Continue to Plan Builder <ArrowRight className="size-3.5" />
+            </Link>
           </div>
         </Card>
 
         <Card className="p-5">
           <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium mb-2">
-            How these inputs are used
+            How these datasets are used
           </div>
           <ul className="text-[12.5px] text-muted-foreground space-y-1.5 list-disc pl-5">
-            <li><span className="text-foreground font-medium">Previous Year Sales</span> seeds the historical leg of the blended goal-setting methodology.</li>
-            <li><span className="text-foreground font-medium">No. of Sales Reps</span> drives equal-distribution targets and Monte Carlo headcount.</li>
-            <li><span className="text-foreground font-medium">Territory Potential</span> anchors the potential-based weighting and budget envelope.</li>
+            <li>
+              <span className="text-foreground font-medium">HCP Historical Sales</span> feeds the Historical Component of goal setting at HCP / territory grain (never a single national total).
+            </li>
+            <li>
+              <span className="text-foreground font-medium">Territory Alignment</span> determines the rep / territory roster — # of reps is read from here, not entered manually.
+            </li>
+            <li>
+              <span className="text-foreground font-medium">Territory Potential</span> drives the Potential Component. Competitor units per HCP preferred; territory-level sales used as fallback.
+            </li>
+            <li>
+              <span className="text-foreground font-medium">MBO Definitions</span> mirror the MBO catalog already configured in IC Admin so the Plan Builder stays consistent.
+            </li>
           </ul>
         </Card>
       </div>

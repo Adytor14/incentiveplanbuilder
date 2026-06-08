@@ -1,31 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider, SegmentedTabs } from "@/components/ui-kit";
-import { Plus, Trash2, ChevronRight, Lock, Info, CornerDownRight, AlertTriangle, Wand2, Database, Users, Map as MapIcon, Pencil, AlertCircle } from "lucide-react";
-import { useDataInputs } from "@/lib/data-inputs";
+import { Plus, Trash2, ChevronRight, Lock, Info, CornerDownRight, AlertTriangle, Wand2, X } from "lucide-react";
 
 export const Route = createFileRoute("/plan-builder")({
   head: () => ({
     meta: [
-      { title: "Plan Builder · Helix IC" },
+      { title: "Plan Builder · IC Design" },
       { name: "description", content: "Configure incentive components, weights, thresholds and accelerators per role." },
     ],
   }),
   component: PlanBuilder,
 });
 
-function DataTile({ icon: Icon, label, value, hint }: { icon: any; label: string; value: string; hint: string }) {
-  return (
-    <div className="p-5">
-      <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
-        <Icon className="size-3.5" /> {label}
-      </div>
-      <div className="mt-2 text-[22px] font-semibold tracking-tight num">{value}</div>
-      <div className="text-[11.5px] text-muted-foreground mt-0.5">{hint}</div>
-    </div>
-  );
-}
+
 
 type Role = "rep" | "rbm" | "asm";
 type SubItem = {
@@ -63,10 +52,9 @@ const INITIAL: Record<Role, Component[]> = {
       cap: 150,
       accelerator: 110,
       subItems: [
-        { id: "a1", name: "Volume Goal — TRx", kind: "Goal", weight: 60 },
-        { id: "a2", name: "New Writer Activation", kind: "Goal", weight: 20 },
-        { id: "a3", name: "MBO — Quality Calls", kind: "MBO", weight: 10 },
-        { id: "a4", name: "MBO — Speaker Programs", kind: "MBO", weight: 10 },
+        { id: "a1", name: "Goal Attainment — TRx", kind: "Goal", weight: 70 },
+        { id: "a3", name: "MBO — Quality Calls", kind: "MBO", weight: 15 },
+        { id: "a4", name: "MBO — Speaker Programs", kind: "MBO", weight: 15 },
       ],
     },
     {
@@ -97,12 +85,22 @@ const INITIAL: Record<Role, Component[]> = {
 };
 
 function PlanBuilder() {
-  const { inputs, hydrated } = useDataInputs();
+  const navigate = useNavigate();
   const [role, setRole] = useState<Role>("rep");
   const [components, setComponents] = useState(INITIAL);
+  const [showInvalid, setShowInvalid] = useState(false);
   const list = components[role];
   const totalWeight = list.reduce((s, c) => s + c.weight, 0);
   const balanced = totalWeight === 100;
+
+  const handleContinue = () => {
+    if (!balanced) {
+      setShowInvalid(true);
+      return;
+    }
+    navigate({ to: "/goal-setting" });
+  };
+
 
   const update = (id: string, patch: Partial<Component>) =>
     setComponents((prev) => ({
@@ -202,47 +200,25 @@ function PlanBuilder() {
         title="Plan Builder"
         description="Compose IC plans for each role by weighting components, then set thresholds, caps and accelerators."
         prev={{ to: "/data-inputs", label: "Data Inputs" }}
-        next={{ to: "/goal-setting", label: "Goal Setting" }}
+        actions={
+          <button
+            type="button"
+            onClick={handleContinue}
+            className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card ${
+              balanced
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            Continue to Goal Setting
+          </button>
+        }
       />
       <div className="px-8 py-7 max-w-[1600px] space-y-6">
-        {/* Data Inputs (entered on /data-inputs) */}
-        <Card className="p-0">
-          <div className="px-5 pt-5 pb-3 border-b border-border flex items-center justify-between">
-            <div>
-              <div className="text-[14px] font-semibold tracking-tight flex items-center gap-2">
-                <Database className="size-3.5 text-primary" /> Data Inputs
-              </div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">Manually entered before this step · drives weighting and goal setting</div>
-            </div>
-            <Link
-              to="/data-inputs"
-              className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
-            >
-              <Pencil className="size-3" /> Edit inputs
-            </Link>
-          </div>
-          {hydrated && !inputs ? (
-            <div className="px-5 py-4 flex items-start gap-2.5 bg-warning/10 border-t border-warning/30">
-              <AlertCircle className="size-4 text-warning shrink-0 mt-0.5" />
-              <div className="text-[12.5px]">
-                <div className="font-medium text-foreground">No data inputs entered yet.</div>
-                <div className="text-muted-foreground">
-                  <Link to="/data-inputs" className="text-primary font-medium hover:underline">Enter Previous Year Sales, No. of Sales Reps and Territory Potential</Link> to seed the plan.
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
-              <DataTile icon={Database} label="Previous Year Sales" value={inputs ? `$${inputs.previousYearSales.toLocaleString()}M` : "—"} hint="FY25 actuals" />
-              <DataTile icon={Users} label="No. of Sales Reps" value={inputs ? inputs.salesReps.toLocaleString() : "—"} hint="Eligible field-facing reps" />
-              <DataTile icon={MapIcon} label="Territory Potential" value={inputs ? `$${inputs.territoryPotential.toLocaleString()}M` : "—"} hint="Modeled opportunity" />
-            </div>
-          )}
-        </Card>
-
       <div className="grid grid-cols-1 xl:grid-cols-[260px_1fr] gap-6">
         {/* Role rail */}
         <div className="space-y-4">
+
           <Card className="p-0">
             <div className="px-4 pt-4 pb-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
               Plan Audience
@@ -293,22 +269,6 @@ function PlanBuilder() {
             </div>
           </Card>
 
-          <Card className="p-5">
-            <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium mb-3">Plan Health</div>
-            <div className="space-y-2.5">
-              {[
-                { l: "Component count", v: `${list.length} active`, tone: "success" as const },
-                { l: "Strategic mix", v: "32% strategic", tone: "success" as const },
-                { l: "Cap exposure", v: "Within budget", tone: "success" as const },
-                { l: "Accelerator slope", v: "Moderate", tone: "info" as const },
-              ].map((m) => (
-                <div key={m.l} className="flex items-center justify-between">
-                  <div className="text-[12px] text-muted-foreground">{m.l}</div>
-                  <Badge tone={m.tone}>{m.v}</Badge>
-                </div>
-              ))}
-            </div>
-          </Card>
         </div>
 
         {/* Editor */}
@@ -472,9 +432,47 @@ function PlanBuilder() {
         </div>
       </div>
       </div>
+
+      {showInvalid && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm p-4">
+          <Card className="max-w-md w-full p-0">
+            <div className="px-5 py-4 border-b border-border flex items-center gap-2.5">
+              <div className="size-9 rounded-lg bg-warning/15 text-warning grid place-items-center">
+                <AlertTriangle className="size-4" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[14px] font-semibold">Component weights must total 100%</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">
+                  Components currently sum to {totalWeight}%.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowInvalid(false)}
+                className="size-7 grid place-items-center rounded-md hover:bg-muted"
+              >
+                <X className="size-4 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="px-5 py-4 text-[12.5px] text-muted-foreground">
+              Adjust the component weights so they add up to exactly 100% before moving on to Goal Setting.
+            </div>
+            <div className="px-5 pb-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowInvalid(false)}
+                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90"
+              >
+                Got it
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
+
 
 
 function NumField({ label, suffix, value, onChange }: { label: string; suffix: string; value: number; onChange: (v: number) => void }) {

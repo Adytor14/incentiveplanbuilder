@@ -1,369 +1,285 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
-import { Card, Badge, Slider } from "@/components/ui-kit";
-import { GitCompareArrows, Save } from "lucide-react";
+import { Card, Badge } from "@/components/ui-kit";
+import { Plus, Trash2, Save, Info } from "lucide-react";
 import {
   ResponsiveContainer,
-  Line,
   AreaChart,
   Area,
   XAxis,
   YAxis,
   Tooltip,
   CartesianGrid,
-  ReferenceLine,
+  ReferenceDot,
 } from "recharts";
 
 export const Route = createFileRoute("/payout-curve")({
   head: () => ({
     meta: [
-      { title: "Payout Curve Designer · Helix IC" },
-      { name: "description", content: "Design payout thresholds, accelerators and caps with live curve preview." },
+      { title: "Payout Curve · IC Design" },
+      {
+        name: "description",
+        content: "Define payout inflexion points with direct numeric inputs — no slider clamping.",
+      },
     ],
   }),
   component: PayoutCurve,
 });
 
-function buildCurve(t: number, target: number, acc: number, sup: number, cap: number) {
-  // returns array of { x: attainment, payout: % }
-  const out: { x: number; payout: number; baseline: number }[] = [];
-  for (let x = 0; x <= 200; x += 2) {
-    let p = 0;
-    if (x < t) p = 0;
-    else if (x <= target) p = ((x - t) / (target - t)) * 100;
-    else if (x <= acc) p = 100 + ((x - target) / (acc - target)) * 20; // 100→120
-    else if (x <= sup) p = 120 + ((x - acc) / (sup - acc)) * 50; // 120→170
-    else if (x <= cap) p = 170 + ((x - sup) / (cap - sup)) * 30; // 170→200
-    else p = 200;
-    // baseline = simple linear from threshold to cap
-    let b = 0;
-    if (x >= t && x <= cap) b = ((x - t) / (cap - t)) * 200;
-    else if (x > cap) b = 200;
-    out.push({ x, payout: Math.round(p * 10) / 10, baseline: Math.round(b * 10) / 10 });
+type Point = { id: string; name: string; attainment: number; payout: number };
+
+const DEFAULT_POINTS: Point[] = [
+  { id: "p1", name: "Threshold", attainment: 80, payout: 0 },
+  { id: "p2", name: "Target", attainment: 100, payout: 100 },
+  { id: "p3", name: "Accelerator", attainment: 110, payout: 120 },
+  { id: "p4", name: "Cap", attainment: 150, payout: 200 },
+];
+
+const PALETTE = [
+  "var(--warning)",
+  "var(--primary)",
+  "var(--info)",
+  "var(--chart-4)",
+  "var(--destructive)",
+  "var(--chart-2)",
+  "var(--chart-5)",
+];
+
+function buildCurve(points: Point[]) {
+  // Sort by attainment for interpolation
+  const sorted = [...points].sort((a, b) => a.attainment - b.attainment);
+  if (sorted.length === 0) return [];
+  const min = Math.min(0, sorted[0].attainment);
+  const max = Math.max(200, sorted[sorted.length - 1].attainment);
+  const data: { x: number; payout: number }[] = [];
+  for (let x = min; x <= max; x += 2) {
+    let payout = 0;
+    if (x <= sorted[0].attainment) payout = sorted[0].payout;
+    else if (x >= sorted[sorted.length - 1].attainment)
+      payout = sorted[sorted.length - 1].payout;
+    else {
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const a = sorted[i];
+        const b = sorted[i + 1];
+        if (x >= a.attainment && x <= b.attainment) {
+          const t = (x - a.attainment) / (b.attainment - a.attainment || 1);
+          payout = a.payout + t * (b.payout - a.payout);
+          break;
+        }
+      }
+    }
+    data.push({ x, payout: Math.round(payout * 10) / 10 });
   }
-  return out;
+  return data;
 }
 
-// Chart geometry — must match AreaChart margin below
-const CHART_LEFT = 50;   // left margin (incl. y-axis label & ticks ≈ 10 + 40)
-const CHART_RIGHT = 40;
-const CHART_TOP = 20;
-const CHART_BOTTOM = 30;
-const CHART_HEIGHT = 420;
-const X_MIN = 0;
-const X_MAX = 200;
-const Y_MAX = 200;
-
 function PayoutCurve() {
-  const [t, setT] = useState(80);
-  const [target] = useState(100);
-  const [acc, setAcc] = useState(110);
-  const [sup, setSup] = useState(130);
-  const [cap, setCap] = useState(150);
-  const [showBaseline, setShowBaseline] = useState(true);
-  const [dragging, setDragging] = useState<null | "t" | "acc" | "sup" | "cap">(null);
-  const chartRef = useRef<HTMLDivElement>(null);
+  const [points, setPoints] = useState<Point[]>(DEFAULT_POINTS);
 
-  const data = useMemo(() => buildCurve(t, target, acc, sup, cap), [t, target, acc, sup, cap]);
-
-  // Convert attainment % → pixel x within the plot area
-  const xToPx = (pct: number, plotW: number) =>
-    CHART_LEFT + ((pct - X_MIN) / (X_MAX - X_MIN)) * plotW;
-  // Convert payout % → pixel y within the plot area (inverted)
-  const yToPx = (payout: number, plotH: number) =>
-    CHART_TOP + (1 - payout / Y_MAX) * plotH;
-
-  // Find payout at a given attainment from the curve data
-  const payoutAt = (x: number) => {
-    const row = data.find((d) => d.x >= x);
-    return row?.payout ?? 0;
+  const update = (id: string, patch: Partial<Point>) =>
+    setPoints((p) => p.map((pt) => (pt.id === id ? { ...pt, ...patch } : pt)));
+  const remove = (id: string) => setPoints((p) => p.filter((pt) => pt.id !== id));
+  const add = () => {
+    const last = points[points.length - 1];
+    setPoints((p) => [
+      ...p,
+      {
+        id: `p${Date.now()}`,
+        name: `Point ${p.length + 1}`,
+        attainment: last ? last.attainment + 10 : 100,
+        payout: last ? last.payout + 20 : 100,
+      },
+    ]);
   };
 
-  // Drag clamps per handle so points cannot cross each other
-  const clampFor = (key: "t" | "acc" | "sup" | "cap", v: number) => {
-    if (key === "t") return Math.max(50, Math.min(95, v));
-    if (key === "acc") return Math.max(101, Math.min(sup - 2, v));
-    if (key === "sup") return Math.max(acc + 2, Math.min(cap - 2, v));
-    return Math.max(sup + 2, Math.min(200, v)); // cap
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragging || !chartRef.current) return;
-    const rect = chartRef.current.getBoundingClientRect();
-    const plotW = rect.width - CHART_LEFT - CHART_RIGHT;
-    const px = e.clientX - rect.left - CHART_LEFT;
-    const pct = Math.round((px / plotW) * (X_MAX - X_MIN) + X_MIN);
-    const v = clampFor(dragging, pct);
-    if (dragging === "t") setT(v);
-    else if (dragging === "acc") setAcc(v);
-    else if (dragging === "sup") setSup(v);
-    else setCap(v);
-  };
-
-  const endDrag = () => setDragging(null);
-
-  const previews = [85, 100, 115, 135, 150].map((x) => ({ x, payout: payoutAt(x) }));
+  const data = useMemo(() => buildCurve(points), [points]);
+  const sortedPoints = useMemo(
+    () => [...points].sort((a, b) => a.attainment - b.attainment),
+    [points],
+  );
+  const xMax = Math.max(200, ...points.map((p) => p.attainment) , 0) + 10;
+  const yMax = Math.max(200, ...points.map((p) => p.payout), 0) + 10;
 
   return (
     <div>
       <PageHeader
         step={3}
         title="Payout Curve Designer"
-        description="Sculpt the payout schedule. Drag inflection points to balance motivation, fairness and budget."
+        description="Define inflexion points directly. Add as many points as you need — values are not clamped."
         prev={{ to: "/goal-setting", label: "Goal Setting" }}
-        next={{ to: "/simulation", label: "Monte Carlo" }}
+        next={{ to: "/simulation", label: "Fairness Testing" }}
         actions={
           <button className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card">
-            <Save className="size-3.5" /> Save Curve
+            <Save className="size-3.5" /> Save to Curve Library
           </button>
         }
       />
-      <div className="px-8 py-7 max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
-        <div className="space-y-5">
-          <Card className="p-0">
-            <div className="px-5 pt-5 pb-3 flex items-center justify-between border-b border-border">
-              <div>
-                <div className="text-[14px] font-semibold tracking-tight">Interactive Payout Curve</div>
-                <div className="text-[12px] text-muted-foreground mt-0.5">Sales Rep · Product A — Onclera</div>
-              </div>
-              <label className="flex items-center gap-2 text-[12px] text-muted-foreground cursor-pointer">
-                <input type="checkbox" checked={showBaseline} onChange={(e) => setShowBaseline(e.target.checked)} className="accent-primary" />
-                Compare to FY25 curve
-              </label>
+      <div className="px-8 py-7 max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_460px] gap-6">
+        {/* Chart */}
+        <Card className="p-0">
+          <div className="px-5 pt-5 pb-3 border-b border-border">
+            <div className="text-[14px] font-semibold tracking-tight">Curve Preview</div>
+            <div className="text-[12px] text-muted-foreground mt-0.5">
+              Line is interpolated between the inflexion points defined on the right.
             </div>
-            <div
-              ref={chartRef}
-              className="relative px-2 pt-5 pb-2 select-none"
-              style={{ height: CHART_HEIGHT, touchAction: "none" }}
-              onPointerMove={handlePointerMove}
-              onPointerUp={endDrag}
-              onPointerLeave={endDrag}
-              onPointerCancel={endDrag}
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data} margin={{ top: CHART_TOP, right: CHART_RIGHT, left: 10, bottom: CHART_BOTTOM - 20 }}>
-                  <defs>
-                    <linearGradient id="payout" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-                  <XAxis dataKey="x" type="number" domain={[X_MIN, X_MAX]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} label={{ value: "Attainment", position: "bottom", offset: -5, fontSize: 11, fill: "var(--muted-foreground)" }} />
-                  <YAxis type="number" domain={[0, Y_MAX]} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} label={{ value: "Payout", angle: -90, position: "insideLeft", fontSize: 11, fill: "var(--muted-foreground)" }} />
-                  <Tooltip
-                    contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
-                    formatter={(v: any) => [`${v}% payout`, ""]}
-                    labelFormatter={(l) => `${l}% attainment`}
+          </div>
+          <div className="px-2 pt-4 pb-2" style={{ height: 480 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data} margin={{ top: 20, right: 40, left: 10, bottom: 20 }}>
+                <defs>
+                  <linearGradient id="payout" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="x"
+                  type="number"
+                  domain={[0, xMax]}
+                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `${v}%`}
+                  label={{
+                    value: "Attainment",
+                    position: "bottom",
+                    offset: -5,
+                    fontSize: 11,
+                    fill: "var(--muted-foreground)",
+                  }}
+                />
+                <YAxis
+                  type="number"
+                  domain={[0, yMax]}
+                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `${v}%`}
+                  label={{
+                    value: "Payout",
+                    angle: -90,
+                    position: "insideLeft",
+                    fontSize: 11,
+                    fill: "var(--muted-foreground)",
+                  }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                  formatter={(v: number) => [`${v}% payout`, ""]}
+                  labelFormatter={(l) => `${l}% attainment`}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="payout"
+                  stroke="var(--chart-1)"
+                  strokeWidth={2.5}
+                  fill="url(#payout)"
+                  dot={false}
+                />
+                {sortedPoints.map((p, i) => (
+                  <ReferenceDot
+                    key={p.id}
+                    x={p.attainment}
+                    y={p.payout}
+                    r={6}
+                    fill={PALETTE[i % PALETTE.length]}
+                    stroke="var(--surface)"
+                    strokeWidth={2}
                   />
-                  {showBaseline && <Line type="monotone" dataKey="baseline" stroke="var(--muted-foreground)" strokeDasharray="5 5" strokeWidth={1.5} dot={false} />}
-                  <Area type="monotone" dataKey="payout" stroke="var(--chart-1)" strokeWidth={2.5} fill="url(#payout)" dot={false} />
-                  <ReferenceLine x={target} stroke="var(--primary)" strokeWidth={1.5} />
-                </AreaChart>
-              </ResponsiveContainer>
+                ))}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
 
-              {/* Draggable handle overlay */}
-              <DragOverlay
-                handles={[
-                  { key: "t", x: t, y: 0, color: "var(--warning)", label: "Threshold" },
-                  { key: "acc", x: acc, y: payoutAt(acc), color: "var(--info)", label: "Accelerator" },
-                  { key: "sup", x: sup, y: payoutAt(sup), color: "var(--chart-4)", label: "Super Acc." },
-                  { key: "cap", x: cap, y: Y_MAX, color: "var(--destructive)", label: "Cap" },
-                ]}
-                xToPx={(pct, w) => xToPx(pct, w)}
-                yToPx={(p, h) => yToPx(p, h)}
-                onStart={(k) => setDragging(k)}
-                dragging={dragging}
-              />
-            </div>
-            <div className="px-5 pb-5 pt-2 grid grid-cols-5 gap-2 border-t border-border">
-              <Inflection color="var(--warning)" label="Threshold" value={`${t}%`} payout="0%" />
-              <Inflection color="var(--primary)" label="Target" value={`${target}%`} payout="100%" />
-              <Inflection color="var(--info)" label="Accelerator" value={`${acc}%`} payout="120%" />
-              <Inflection color="var(--chart-4)" label="Super Acc." value={`${sup}%`} payout="170%" />
-              <Inflection color="var(--destructive)" label="Cap" value={`${cap}%`} payout="200%" />
-            </div>
-          </Card>
-
-          <Card className="p-0">
-            <div className="px-5 pt-5 pb-3 border-b border-border">
-              <div className="text-[14px] font-semibold tracking-tight">Live Payout Preview</div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">Sample attainments → resulting payout %</div>
-            </div>
-            <div className="grid grid-cols-5 divide-x divide-border">
-              {previews.map((p) => (
-                <div key={p.x} className="p-5 text-center">
-                  <div className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Attainment</div>
-                  <div className="text-[20px] font-semibold tracking-tight num mt-0.5">{p.x}%</div>
-                  <div className="my-2 mx-auto w-8 h-px bg-border" />
-                  <div className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Payout</div>
-                  <div className={`text-[22px] font-semibold tracking-tight num mt-0.5 ${p.payout >= 100 ? "text-success" : p.payout > 0 ? "text-foreground" : "text-muted-foreground"}`}>
-                    {p.payout.toFixed(0)}%
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        <div className="space-y-5">
-          <Card className="p-0">
-            <div className="px-5 pt-5 pb-3 border-b border-border">
-              <div className="text-[14px] font-semibold tracking-tight">Inflection Editor</div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">Drag sliders or type values</div>
-            </div>
-            <div className="p-5 space-y-5">
-              <PointSlider color="var(--warning)" label="Threshold" value={t} onChange={setT} min={50} max={95} />
-              <PointSlider color="var(--info)" label="Accelerator" value={acc} onChange={setAcc} min={101} max={125} />
-              <PointSlider color="var(--chart-4)" label="Super Accelerator" value={sup} onChange={setSup} min={120} max={145} />
-              <PointSlider color="var(--destructive)" label="Cap" value={cap} onChange={setCap} min={130} max={200} />
-            </div>
-          </Card>
-
-          <Card className="p-0">
-            <div className="px-5 pt-5 pb-3 border-b border-border">
-              <div className="text-[14px] font-semibold tracking-tight flex items-center gap-2">
-                <GitCompareArrows className="size-3.5" /> Curve Library
+        {/* Inflexion points editor */}
+        <Card className="p-0">
+          <div className="px-5 pt-5 pb-3 flex items-center justify-between border-b border-border">
+            <div>
+              <div className="text-[14px] font-semibold tracking-tight">Inflexion Points</div>
+              <div className="text-[12px] text-muted-foreground mt-0.5">
+                Direct input — values above 100% are allowed.
               </div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">Apply preset or save current</div>
             </div>
-            <div className="p-3 space-y-1.5">
-              {[
-                { n: "Launch Curve", t: "75/100/105/120/175", active: false },
-                { n: "Growth Curve", t: "85/100/115/135/140", active: false },
-                { n: "Current Draft", t: `${t}/${target}/${acc}/${sup}/${cap}`, active: true },
-              ].map((c) => (
-                <div key={c.n} className={`p-3 rounded-md border ${c.active ? "border-primary/30 bg-primary-muted/30" : "border-border hover:bg-muted/40"}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="text-[12.5px] font-medium">{c.n}</div>
-                    {c.active && <Badge tone="primary">Active</Badge>}
+            <button
+              type="button"
+              onClick={add}
+              className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12px] font-medium hover:bg-primary/90"
+            >
+              <Plus className="size-3.5" /> Add point
+            </button>
+          </div>
+
+          <div className="px-5 py-2 grid grid-cols-[1fr_88px_88px_28px] gap-2 text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium border-b border-border">
+            <span>Name</span>
+            <span className="text-right">Attainment %</span>
+            <span className="text-right">Payout %</span>
+            <span />
+          </div>
+
+          <div className="divide-y divide-border">
+            {points.map((p, i) => {
+              const color = PALETTE[
+                [...points].sort((a, b) => a.attainment - b.attainment).findIndex((x) => x.id === p.id) %
+                  PALETTE.length
+              ];
+              return (
+                <div
+                  key={p.id}
+                  className="px-5 py-2.5 grid grid-cols-[1fr_88px_88px_28px] gap-2 items-center"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="size-2.5 rounded-sm shrink-0" style={{ background: color }} />
+                    <input
+                      value={p.name}
+                      onChange={(e) => update(p.id, { name: e.target.value })}
+                      className="w-full h-8 px-2 rounded border border-transparent bg-transparent text-[12.5px] font-medium hover:border-border focus:border-primary focus:bg-background focus:outline-none focus:ring-2 focus:ring-ring/30"
+                    />
                   </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5 num">{c.t}</div>
+                  <input
+                    type="number"
+                    value={p.attainment}
+                    onChange={(e) => update(p.id, { attainment: Number(e.target.value) })}
+                    className="h-8 px-2 rounded-md border border-border bg-background text-[12.5px] num font-semibold text-right focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                  />
+                  <input
+                    type="number"
+                    value={p.payout}
+                    onChange={(e) => update(p.id, { payout: Number(e.target.value) })}
+                    className="h-8 px-2 rounded-md border border-border bg-background text-[12.5px] num font-semibold text-right focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => remove(p.id)}
+                    disabled={points.length <= 2}
+                    className="size-7 grid place-items-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-30 disabled:pointer-events-none"
+                    title="Remove point"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
                 </div>
-              ))}
-            </div>
-          </Card>
-        </div>
+              );
+            })}
+          </div>
+
+          <div className="px-5 py-3 border-t border-border flex items-start gap-2 text-[11.5px] text-muted-foreground">
+            <Info className="size-3.5 mt-0.5 shrink-0" />
+            Curve is linearly interpolated between points after sorting by attainment. No upper bound is enforced.
+          </div>
+
+          <div className="px-5 py-3 border-t border-border flex items-center justify-between">
+            <Badge tone="primary">{points.length} points</Badge>
+            <Badge tone="neutral">Max payout: {Math.max(...points.map((p) => p.payout))}%</Badge>
+          </div>
+        </Card>
       </div>
     </div>
-  );
-}
-
-function PointSlider({ color, label, value, onChange, min, max }: any) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-2">
-          <span className="size-2.5 rounded-sm" style={{ background: color }} />
-          <label className="text-[12px] font-medium">{label}</label>
-        </div>
-        <input
-          type="number"
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="w-16 h-7 rounded-md border border-border bg-background px-2 text-[12.5px] num font-medium text-right"
-        />
-      </div>
-      <Slider value={value} onChange={onChange} min={min} max={max} trackClass="" />
-    </div>
-  );
-}
-
-function Inflection({ color, label, value, payout }: any) {
-  return (
-    <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
-      <div className="flex items-center justify-center gap-1.5 mb-1">
-        <span className="size-2 rounded-sm" style={{ background: color }} />
-        <span className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{label}</span>
-      </div>
-      <div className="text-[16px] font-semibold num">{value}</div>
-      <div className="text-[11px] text-muted-foreground num">→ {payout}</div>
-    </div>
-  );
-}
-
-function Diag({ icon: Icon, label, value, tone }: any) {
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-        <Icon className="size-3.5" /> {label}
-      </div>
-      <Badge tone={tone}>{value}</Badge>
-    </div>
-  );
-}
-
-type HandleKey = "t" | "acc" | "sup" | "cap";
-type Handle = { key: HandleKey; x: number; y: number; color: string; label: string };
-
-function DragOverlay({
-  handles,
-  xToPx,
-  yToPx,
-  onStart,
-  dragging,
-}: {
-  handles: Handle[];
-  xToPx: (pct: number, plotW: number) => number;
-  yToPx: (payout: number, plotH: number) => number;
-  onStart: (k: HandleKey) => void;
-  dragging: HandleKey | null;
-}) {
-  const ref = useRef<SVGSVGElement>(null);
-  const [size, setSize] = useState({ w: 0, h: 0 });
-
-  // Observe size of overlay (matches parent chart container)
-  useMemo(() => {
-    if (typeof window === "undefined") return;
-    const el = ref.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => {
-      const r = el.getBoundingClientRect();
-      setSize({ w: r.width, h: r.height });
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  // Inner plot dimensions match constants in PayoutCurve
-  const CHART_LEFT = 50;
-  const CHART_RIGHT = 40;
-  const CHART_TOP = 20;
-  const CHART_BOTTOM = 30;
-  const plotW = Math.max(0, size.w - CHART_LEFT - CHART_RIGHT);
-  const plotH = Math.max(0, size.h - CHART_TOP - CHART_BOTTOM);
-
-  return (
-    <svg
-      ref={ref}
-      className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ overflow: "visible" }}
-    >
-      {handles.map((h) => {
-        const cx = xToPx(h.x, plotW);
-        const cy = yToPx(h.y, plotH);
-        const active = dragging === h.key;
-        return (
-          <g key={h.key} transform={`translate(${cx}, ${cy})`} className="pointer-events-auto" style={{ cursor: "grab" }}>
-            {/* hit target */}
-            <circle
-              r={14}
-              fill="transparent"
-              onPointerDown={(e) => {
-                e.preventDefault();
-                (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
-                onStart(h.key);
-              }}
-            />
-            <circle r={active ? 9 : 7} fill={h.color} stroke="var(--surface)" strokeWidth={2} />
-            <circle r={active ? 13 : 0} fill={h.color} fillOpacity={0.18} />
-            <text y={-14} textAnchor="middle" fontSize={10} fill="var(--muted-foreground)" fontWeight={600}>
-              {h.label} · {h.x}%
-            </text>
-          </g>
-        );
-      })}
-    </svg>
   );
 }
