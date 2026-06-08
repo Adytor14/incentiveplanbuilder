@@ -432,9 +432,47 @@ function PlanBuilder() {
         </div>
       </div>
       </div>
+
+      {showInvalid && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm p-4">
+          <Card className="max-w-md w-full p-0">
+            <div className="px-5 py-4 border-b border-border flex items-center gap-2.5">
+              <div className="size-9 rounded-lg bg-warning/15 text-warning grid place-items-center">
+                <AlertTriangle className="size-4" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[14px] font-semibold">Component weights must total 100%</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">
+                  Components currently sum to {totalWeight}%.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowInvalid(false)}
+                className="size-7 grid place-items-center rounded-md hover:bg-muted"
+              >
+                <X className="size-4 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="px-5 py-4 text-[12.5px] text-muted-foreground">
+              Adjust the component weights so they add up to exactly 100% before moving on to Goal Setting.
+            </div>
+            <div className="px-5 pb-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowInvalid(false)}
+                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90"
+              >
+                Got it
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
+
 
 
 function NumField({ label, suffix, value, onChange }: { label: string; suffix: string; value: number; onChange: (v: number) => void }) {
