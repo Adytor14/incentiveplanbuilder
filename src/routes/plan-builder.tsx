@@ -194,7 +194,8 @@ function PlanBuilder() {
     }));
 
   return (
-    <div>
+    <>
+
       <PageHeader
         step={1}
         title="Plan Builder"
