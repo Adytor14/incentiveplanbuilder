@@ -269,22 +269,6 @@ function PlanBuilder() {
             </div>
           </Card>
 
-          <Card className="p-5">
-            <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium mb-3">Plan Health</div>
-            <div className="space-y-2.5">
-              {[
-                { l: "Component count", v: `${list.length} active`, tone: "success" as const },
-                { l: "Strategic mix", v: "32% strategic", tone: "success" as const },
-                { l: "Cap exposure", v: "Within budget", tone: "success" as const },
-                { l: "Accelerator slope", v: "Moderate", tone: "info" as const },
-              ].map((m) => (
-                <div key={m.l} className="flex items-center justify-between">
-                  <div className="text-[12px] text-muted-foreground">{m.l}</div>
-                  <Badge tone={m.tone}>{m.v}</Badge>
-                </div>
-              ))}
-            </div>
-          </Card>
         </div>
 
         {/* Editor */}
