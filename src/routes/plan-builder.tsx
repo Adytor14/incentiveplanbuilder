@@ -1,31 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider, SegmentedTabs } from "@/components/ui-kit";
-import { Plus, Trash2, ChevronRight, Lock, Info, CornerDownRight, AlertTriangle, Wand2, Database, Users, Map as MapIcon, Pencil, AlertCircle } from "lucide-react";
-import { useDataInputs } from "@/lib/data-inputs";
+import { Plus, Trash2, ChevronRight, Lock, Info, CornerDownRight, AlertTriangle, Wand2, X } from "lucide-react";
 
 export const Route = createFileRoute("/plan-builder")({
   head: () => ({
     meta: [
-      { title: "Plan Builder · Helix IC" },
+      { title: "Plan Builder · IC Design" },
       { name: "description", content: "Configure incentive components, weights, thresholds and accelerators per role." },
     ],
   }),
   component: PlanBuilder,
 });
 
-function DataTile({ icon: Icon, label, value, hint }: { icon: any; label: string; value: string; hint: string }) {
-  return (
-    <div className="p-5">
-      <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
-        <Icon className="size-3.5" /> {label}
-      </div>
-      <div className="mt-2 text-[22px] font-semibold tracking-tight num">{value}</div>
-      <div className="text-[11.5px] text-muted-foreground mt-0.5">{hint}</div>
-    </div>
-  );
-}
+
 
 type Role = "rep" | "rbm" | "asm";
 type SubItem = {
@@ -63,10 +52,9 @@ const INITIAL: Record<Role, Component[]> = {
       cap: 150,
       accelerator: 110,
       subItems: [
-        { id: "a1", name: "Volume Goal — TRx", kind: "Goal", weight: 60 },
-        { id: "a2", name: "New Writer Activation", kind: "Goal", weight: 20 },
-        { id: "a3", name: "MBO — Quality Calls", kind: "MBO", weight: 10 },
-        { id: "a4", name: "MBO — Speaker Programs", kind: "MBO", weight: 10 },
+        { id: "a1", name: "Goal Attainment — TRx", kind: "Goal", weight: 70 },
+        { id: "a3", name: "MBO — Quality Calls", kind: "MBO", weight: 15 },
+        { id: "a4", name: "MBO — Speaker Programs", kind: "MBO", weight: 15 },
       ],
     },
     {
