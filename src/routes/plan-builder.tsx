@@ -85,12 +85,22 @@ const INITIAL: Record<Role, Component[]> = {
 };
 
 function PlanBuilder() {
-  const { inputs, hydrated } = useDataInputs();
+  const navigate = useNavigate();
   const [role, setRole] = useState<Role>("rep");
   const [components, setComponents] = useState(INITIAL);
+  const [showInvalid, setShowInvalid] = useState(false);
   const list = components[role];
   const totalWeight = list.reduce((s, c) => s + c.weight, 0);
   const balanced = totalWeight === 100;
+
+  const handleContinue = () => {
+    if (!balanced) {
+      setShowInvalid(true);
+      return;
+    }
+    navigate({ to: "/goal-setting" });
+  };
+
 
   const update = (id: string, patch: Partial<Component>) =>
     setComponents((prev) => ({
@@ -185,48 +195,8 @@ function PlanBuilder() {
 
   return (
     <div>
-      <PageHeader
-        step={1}
-        title="Plan Builder"
-        description="Compose IC plans for each role by weighting components, then set thresholds, caps and accelerators."
-        prev={{ to: "/data-inputs", label: "Data Inputs" }}
-        next={{ to: "/goal-setting", label: "Goal Setting" }}
-      />
-      <div className="px-8 py-7 max-w-[1600px] space-y-6">
-        {/* Data Inputs (entered on /data-inputs) */}
-        <Card className="p-0">
-          <div className="px-5 pt-5 pb-3 border-b border-border flex items-center justify-between">
-            <div>
-              <div className="text-[14px] font-semibold tracking-tight flex items-center gap-2">
-                <Database className="size-3.5 text-primary" /> Data Inputs
-              </div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">Manually entered before this step · drives weighting and goal setting</div>
-            </div>
-            <Link
-              to="/data-inputs"
-              className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
-            >
-              <Pencil className="size-3" /> Edit inputs
-            </Link>
-          </div>
-          {hydrated && !inputs ? (
-            <div className="px-5 py-4 flex items-start gap-2.5 bg-warning/10 border-t border-warning/30">
-              <AlertCircle className="size-4 text-warning shrink-0 mt-0.5" />
-              <div className="text-[12.5px]">
-                <div className="font-medium text-foreground">No data inputs entered yet.</div>
-                <div className="text-muted-foreground">
-                  <Link to="/data-inputs" className="text-primary font-medium hover:underline">Enter Previous Year Sales, No. of Sales Reps and Territory Potential</Link> to seed the plan.
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
-              <DataTile icon={Database} label="Previous Year Sales" value={inputs ? `$${inputs.previousYearSales.toLocaleString()}M` : "—"} hint="FY25 actuals" />
-              <DataTile icon={Users} label="No. of Sales Reps" value={inputs ? inputs.salesReps.toLocaleString() : "—"} hint="Eligible field-facing reps" />
-              <DataTile icon={MapIcon} label="Territory Potential" value={inputs ? `$${inputs.territoryPotential.toLocaleString()}M` : "—"} hint="Modeled opportunity" />
-            </div>
-          )}
-        </Card>
+
+
 
       <div className="grid grid-cols-1 xl:grid-cols-[260px_1fr] gap-6">
         {/* Role rail */}
