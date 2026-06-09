@@ -1,101 +1,95 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
-import { Card, Badge, Slider, SegmentedTabs } from "@/components/ui-kit";
-import { Plus, Trash2, ChevronRight, Lock, Info, CornerDownRight, AlertTriangle, Wand2, X } from "lucide-react";
+import { Card, Badge } from "@/components/ui-kit";
+import { Plus, Trash2, AlertTriangle, X, Info } from "lucide-react";
 
 export const Route = createFileRoute("/plan-builder")({
   head: () => ({
     meta: [
       { title: "Plan Builder · IC Design" },
-      { name: "description", content: "Configure incentive components, weights, thresholds and accelerators per role." },
+      { name: "description", content: "Configure IC components per role and product with numeric weight allocation." },
     ],
   }),
   component: PlanBuilder,
 });
 
-
-
 type Role = "rep" | "rbm" | "asm";
-type SubItem = {
-  id: string;
-  name: string;
-  kind: "Goal" | "MBO";
-  weight: number; // weight within parent product (sums to 100)
-};
-type Component = {
-  id: string;
-  name: string;
-  category: string;
-  weight: number;
-  threshold: number;
-  cap: number;
-  accelerator: number;
-  locked?: boolean;
-  subItems?: SubItem[];
+type Product = { id: string; name: string; components: Component[] };
+type Component = { id: string; name: string; category: string; weight: number };
+
+const ROLE_LABEL: Record<Role, { name: string; sub: string }> = {
+  rep: { name: "Sales Representative", sub: "Field-facing · 1,247 reps" },
+  rbm: { name: "Regional Business Manager", sub: "First-line leader · 84 RBMs" },
+  asm: { name: "Area Sales Manager", sub: "Senior leader · 12 ASMs" },
 };
 
-const ROLE_LABEL: Record<Role, { name: string; sub: string; count: number }> = {
-  rep: { name: "Sales Representative", sub: "Field-facing · 1,247 reps", count: 1247 },
-  rbm: { name: "Regional Business Manager", sub: "First-line leader · 84 RBMs", count: 84 },
-  asm: { name: "Area Sales Manager", sub: "Senior leader · 12 ASMs", count: 12 },
-};
+const COMPONENT_CATEGORIES = [
+  "Individual Goal Attainment",
+  "National Goal Attainment",
+  "MBO",
+  "Custom",
+] as const;
 
-const INITIAL: Record<Role, Component[]> = {
-  rep: [
-    {
-      id: "a",
-      name: "Product A — Onclera",
-      category: "Core Brand",
-      weight: 60,
-      threshold: 80,
-      cap: 150,
-      accelerator: 110,
-      subItems: [
-        { id: "a1", name: "Goal Attainment — TRx", kind: "Goal", weight: 70 },
-        { id: "a3", name: "MBO — Quality Calls", kind: "MBO", weight: 15 },
-        { id: "a4", name: "MBO — Speaker Programs", kind: "MBO", weight: 15 },
-      ],
-    },
-    {
-      id: "b",
-      name: "Product B — Velorin",
-      category: "Growth Brand",
-      weight: 40,
-      threshold: 80,
-      cap: 150,
-      accelerator: 110,
-      subItems: [
-        { id: "b1", name: "Volume Goal — NRx", kind: "Goal", weight: 55 },
-        { id: "b2", name: "Market Share Growth", kind: "Goal", weight: 25 },
-        { id: "b3", name: "MBO — Targeted Reach", kind: "MBO", weight: 20 },
-      ],
-    },
+const makeProduct = (id: string, name: string): Product => ({
+  id,
+  name,
+  components: [
+    { id: `${id}-c1`, name: "Individual Goal Attainment", category: "Individual Goal Attainment", weight: 40 },
+    { id: `${id}-c2`, name: "National Goal Attainment", category: "National Goal Attainment", weight: 30 },
+    { id: `${id}-c3`, name: "MBO 1 — Quality Calls", category: "MBO", weight: 20 },
+    { id: `${id}-c4`, name: "MBO 2 — Speaker Programs", category: "MBO", weight: 10 },
   ],
-  rbm: [
-    { id: "a", name: "Team Attainment", category: "Roll-up", weight: 55, threshold: 80, cap: 150, accelerator: 110 },
-    { id: "b", name: "Regional Growth %", category: "Strategic", weight: 25, threshold: 75, cap: 175, accelerator: 105 },
-    { id: "c", name: "Manager MBO", category: "Behavioral", weight: 20, threshold: 0, cap: 100, accelerator: 100 },
-  ],
-  asm: [
-    { id: "a", name: "Area Achievement", category: "Roll-up", weight: 50, threshold: 80, cap: 150, accelerator: 110 },
-    { id: "b", name: "Productivity per Rep", category: "Efficiency", weight: 25, threshold: 85, cap: 140, accelerator: 110 },
-    { id: "c", name: "Strategic Initiatives", category: "Strategic", weight: 25, threshold: 0, cap: 125, accelerator: 100 },
-  ],
+});
+
+const INITIAL: Record<Role, Product[]> = {
+  rep: [makeProduct("rep-a", "Product A — Onclera"), makeProduct("rep-b", "Product B — Velorin"), makeProduct("rep-c", "Product C — Aurelix")],
+  rbm: [makeProduct("rbm-a", "Product A — Onclera"), makeProduct("rbm-b", "Product B — Velorin")],
+  asm: [makeProduct("asm-a", "Product A — Onclera"), makeProduct("asm-b", "Product B — Velorin")],
 };
 
 function PlanBuilder() {
   const navigate = useNavigate();
   const [role, setRole] = useState<Role>("rep");
-  const [components, setComponents] = useState(INITIAL);
+  const [data, setData] = useState(INITIAL);
+  const [activeProductId, setActiveProductId] = useState<Record<Role, string>>({
+    rep: INITIAL.rep[0].id,
+    rbm: INITIAL.rbm[0].id,
+    asm: INITIAL.asm[0].id,
+  });
+
   const [showInvalid, setShowInvalid] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [showAddProduct, setShowAddProduct] = useState(false);
   const [newName, setNewName] = useState("");
-  const [newCategory, setNewCategory] = useState("Custom");
+  const [newCategory, setNewCategory] = useState<string>("Custom");
   const [newWeight, setNewWeight] = useState<number | "">(0);
+  const [newProductName, setNewProductName] = useState("");
   const [addErrors, setAddErrors] = useState<{ name?: string; category?: string; weight?: string }>({});
-  const list = components[role];
-  const remainingWeight = Math.max(0, 100 - list.reduce((s, c) => s + c.weight, 0));
+  const [productError, setProductError] = useState<string | null>(null);
+
+  const products = data[role];
+  const activeProduct = products.find((p) => p.id === activeProductId[role]) ?? products[0];
+  const components = activeProduct?.components ?? [];
+  const totalWeight = components.reduce((s, c) => s + c.weight, 0);
+  const balanced = totalWeight === 100;
+  const remainingWeight = Math.max(0, 100 - totalWeight);
+
+  const updateComponent = (id: string, patch: Partial<Component>) =>
+    setData((prev) => ({
+      ...prev,
+      [role]: prev[role].map((p) =>
+        p.id !== activeProduct.id ? p : { ...p, components: p.components.map((c) => (c.id === id ? { ...c, ...patch } : c)) },
+      ),
+    }));
+
+  const removeComponent = (id: string) =>
+    setData((prev) => ({
+      ...prev,
+      [role]: prev[role].map((p) =>
+        p.id !== activeProduct.id ? p : { ...p, components: p.components.filter((c) => c.id !== id) },
+      ),
+    }));
 
   const openAdd = () => {
     setNewName("");
@@ -105,24 +99,17 @@ function PlanBuilder() {
     setShowAdd(true);
   };
 
-  const closeAdd = () => {
-    setShowAdd(false);
-    setAddErrors({});
-  };
-
   const validateAdd = () => {
-    const errs: { name?: string; category?: string; weight?: string } = {};
+    const errs: typeof addErrors = {};
     const name = newName.trim();
-    const category = newCategory.trim();
     if (!name) errs.name = "Name is required.";
     else if (name.length > 60) errs.name = "Keep name under 60 characters.";
-    else if (list.some((c) => c.name.toLowerCase() === name.toLowerCase()))
+    else if (components.some((c) => c.name.toLowerCase() === name.toLowerCase()))
       errs.name = "A component with this name already exists.";
-    if (!category) errs.category = "Category is required.";
-    else if (category.length > 40) errs.category = "Keep category under 40 characters.";
+    if (!newCategory.trim()) errs.category = "Category is required.";
     const w = typeof newWeight === "number" ? newWeight : Number(newWeight);
     if (newWeight === "" || Number.isNaN(w)) errs.weight = "Enter a number between 0 and 100.";
-    else if (!Number.isFinite(w) || w < 0 || w > 100) errs.weight = "Weight must be between 0 and 100.";
+    else if (w < 0 || w > 100) errs.weight = "Weight must be between 0 and 100.";
     else if (!Number.isInteger(w)) errs.weight = "Weight must be a whole number.";
     return errs;
   };
@@ -131,131 +118,56 @@ function PlanBuilder() {
     const errs = validateAdd();
     setAddErrors(errs);
     if (Object.keys(errs).length > 0) return;
-    const name = newName.trim();
-    const category = newCategory.trim();
     const w = typeof newWeight === "number" ? newWeight : Number(newWeight);
     const newComp: Component = {
       id: `c${Date.now()}`,
-      name,
-      category,
+      name: newName.trim(),
+      category: newCategory,
       weight: w,
-      threshold: 80,
-      cap: 150,
-      accelerator: 110,
     };
-    setComponents((prev) => ({ ...prev, [role]: [...prev[role], newComp] }));
-    closeAdd();
+    setData((prev) => ({
+      ...prev,
+      [role]: prev[role].map((p) =>
+        p.id !== activeProduct.id ? p : { ...p, components: [...p.components, newComp] },
+      ),
+    }));
+    setShowAdd(false);
   };
-  const totalWeight = list.reduce((s, c) => s + c.weight, 0);
-  const balanced = totalWeight === 100;
+
+  const submitAddProduct = () => {
+    const name = newProductName.trim();
+    if (!name) { setProductError("Product name is required."); return; }
+    if (products.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
+      setProductError("A product with this name already exists."); return;
+    }
+    const id = `${role}-p${Date.now()}`;
+    setData((prev) => ({
+      ...prev,
+      [role]: [...prev[role], { id, name, components: [] }],
+    }));
+    setActiveProductId((p) => ({ ...p, [role]: id }));
+    setNewProductName("");
+    setProductError(null);
+    setShowAddProduct(false);
+  };
 
   const handleContinue = () => {
-    if (!balanced) {
+    const anyInvalid = products.some(
+      (p) => p.components.length > 0 && p.components.reduce((s, c) => s + c.weight, 0) !== 100,
+    );
+    if (anyInvalid) {
       setShowInvalid(true);
       return;
     }
     navigate({ to: "/goal-setting" });
   };
 
-
-  const update = (id: string, patch: Partial<Component>) =>
-    setComponents((prev) => ({
-      ...prev,
-      [role]: prev[role].map((c) => (c.id === id ? { ...c, ...patch } : c)),
-    }));
-
-  // Auto-rebalance: when one sub-item changes, distribute the delta proportionally
-  // across the remaining sub-items so the product total stays at 100%.
-  const setSubWeight = (componentId: string, subId: string, rawNext: number) =>
-    setComponents((prev) => ({
-      ...prev,
-      [role]: prev[role].map((c) => {
-        if (c.id !== componentId || !c.subItems) return c;
-        const items = c.subItems;
-        const target = items.find((s) => s.id === subId);
-        if (!target) return c;
-
-        // Clamp the changed weight between 0 and 100
-        const nextWeight = Math.max(0, Math.min(100, Math.round(rawNext)));
-        const others = items.filter((s) => s.id !== subId);
-        const remainingBudget = 100 - nextWeight;
-        const othersTotal = others.reduce((s, x) => s + x.weight, 0);
-
-        let adjusted: SubItem[];
-        if (others.length === 0) {
-          adjusted = [{ ...target, weight: 100 }];
-        } else if (othersTotal === 0) {
-          // Distribute remaining budget evenly
-          const each = Math.floor(remainingBudget / others.length);
-          const remainder = remainingBudget - each * others.length;
-          adjusted = items.map((s) => {
-            if (s.id === subId) return { ...s, weight: nextWeight };
-            const idx = others.findIndex((o) => o.id === s.id);
-            return { ...s, weight: each + (idx < remainder ? 1 : 0) };
-          });
-        } else {
-          // Proportional scaling, then integer-rounded with remainder reconciliation
-          const scaled = others.map((s) => (s.weight / othersTotal) * remainingBudget);
-          const floored = scaled.map((v) => Math.floor(v));
-          let leftover = remainingBudget - floored.reduce((a, b) => a + b, 0);
-          // Distribute leftover to items with the largest fractional parts
-          const order = scaled
-            .map((v, i) => ({ i, frac: v - Math.floor(v) }))
-            .sort((a, b) => b.frac - a.frac);
-          const finalOthers = floored.slice();
-          for (let k = 0; k < order.length && leftover > 0; k++) {
-            finalOthers[order[k].i] += 1;
-            leftover -= 1;
-          }
-          adjusted = items.map((s) => {
-            if (s.id === subId) return { ...s, weight: nextWeight };
-            const oi = others.findIndex((o) => o.id === s.id);
-            return { ...s, weight: Math.max(0, finalOthers[oi]) };
-          });
-        }
-
-        return { ...c, subItems: adjusted };
-      }),
-    }));
-
-  // Proportional normalization back to exactly 100% across ALL sub-items.
-  const fixSubTo100 = (componentId: string) =>
-    setComponents((prev) => ({
-      ...prev,
-      [role]: prev[role].map((c) => {
-        if (c.id !== componentId || !c.subItems || c.subItems.length === 0) return c;
-        const items = c.subItems;
-        const total = items.reduce((s, x) => s + x.weight, 0);
-        let adjusted: SubItem[];
-        if (total === 0) {
-          const each = Math.floor(100 / items.length);
-          const remainder = 100 - each * items.length;
-          adjusted = items.map((s, i) => ({ ...s, weight: each + (i < remainder ? 1 : 0) }));
-        } else {
-          const scaled = items.map((s) => (s.weight / total) * 100);
-          const floored = scaled.map((v) => Math.floor(v));
-          let leftover = 100 - floored.reduce((a, b) => a + b, 0);
-          const order = scaled
-            .map((v, i) => ({ i, frac: v - Math.floor(v) }))
-            .sort((a, b) => b.frac - a.frac);
-          const finalW = floored.slice();
-          for (let k = 0; k < order.length && leftover > 0; k++) {
-            finalW[order[k].i] += 1;
-            leftover -= 1;
-          }
-          adjusted = items.map((s, i) => ({ ...s, weight: Math.max(0, finalW[i]) }));
-        }
-        return { ...c, subItems: adjusted };
-      }),
-    }));
-
   return (
     <>
-
       <PageHeader
-        step={1}
+        step={2}
         title="Plan Builder"
-        description="Compose IC plans for each role by weighting components, then set thresholds, caps and accelerators."
+        description="Configure incentive components for each role and product. Weights must total 100% per product."
         prev={{ to: "/data-inputs", label: "Data Inputs" }}
         actions={
           <button
@@ -271,402 +183,308 @@ function PlanBuilder() {
           </button>
         }
       />
-      <div className="px-8 py-7 max-w-[1600px] space-y-6">
-      <div className="grid grid-cols-1 xl:grid-cols-[260px_1fr] gap-6">
-        {/* Role rail */}
-        <div className="space-y-4">
+      <div className="px-8 py-7 max-w-[1400px] space-y-5">
+        {/* Role tabs */}
+        <Card className="p-2">
+          <div className="flex gap-1">
+            {(Object.keys(ROLE_LABEL) as Role[]).map((r) => {
+              const active = r === role;
+              return (
+                <button
+                  key={r}
+                  onClick={() => setRole(r)}
+                  className={`flex-1 text-left rounded-md px-4 py-3 transition-all ${
+                    active ? "bg-primary text-primary-foreground shadow-card" : "hover:bg-muted text-foreground"
+                  }`}
+                >
+                  <div className="text-[13.5px] font-semibold">{ROLE_LABEL[r].name}</div>
+                  <div className={`text-[11.5px] mt-0.5 ${active ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                    {ROLE_LABEL[r].sub}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </Card>
 
-          <Card className="p-0">
-            <div className="px-4 pt-4 pb-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
-              Plan Audience
+        {/* Product tabs */}
+        <Card className="p-0">
+          <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-3">
+            <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-semibold">
+              Products · {ROLE_LABEL[role].name}
             </div>
-            <div className="p-2 space-y-1">
-              {(Object.keys(ROLE_LABEL) as Role[]).map((r) => {
-                const active = r === role;
-                return (
-                  <button
-                    key={r}
-                    onClick={() => setRole(r)}
-                    className={`w-full text-left rounded-md p-3 transition-all ${
-                      active ? "bg-primary text-primary-foreground shadow-card" : "hover:bg-muted"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="text-[13px] font-medium">{ROLE_LABEL[r].name}</div>
-                      <ChevronRight className={`size-3.5 ${active ? "opacity-100" : "opacity-40"}`} />
-                    </div>
-                    <div className={`text-[11.5px] mt-0.5 ${active ? "text-primary-foreground/75" : "text-muted-foreground"}`}>
-                      {ROLE_LABEL[r].sub}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </Card>
+            <button
+              type="button"
+              onClick={() => { setShowAddProduct(true); setNewProductName(""); setProductError(null); }}
+              className="h-7 px-2.5 inline-flex items-center gap-1 rounded-md border border-border bg-background text-[11.5px] font-medium hover:bg-muted"
+            >
+              <Plus className="size-3" /> Add Product
+            </button>
+          </div>
+          <div className="px-4 pb-4 flex flex-wrap gap-2">
+            {products.map((p) => {
+              const active = p.id === activeProduct?.id;
+              const t = p.components.reduce((s, c) => s + c.weight, 0);
+              const ok = p.components.length === 0 || t === 100;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => setActiveProductId((s) => ({ ...s, [role]: p.id }))}
+                  className={`px-3.5 h-9 rounded-md text-[13px] font-medium inline-flex items-center gap-2 border transition-all ${
+                    active
+                      ? "border-primary bg-primary-muted text-primary"
+                      : "border-border bg-background text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {p.name}
+                  <span className={`size-1.5 rounded-full ${ok ? "bg-success" : "bg-warning"}`} />
+                </button>
+              );
+            })}
+          </div>
+        </Card>
 
-          <Card className="p-5">
-            <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium mb-3">Weight Allocation</div>
-            <div className="flex items-baseline justify-between">
-              <div className="text-[28px] font-semibold tracking-tight num">
-                {totalWeight}<span className="text-muted-foreground text-[16px]">%</span>
-              </div>
-              <Badge tone={balanced ? "success" : "warning"}>{balanced ? "Balanced" : `${100 - totalWeight}% off`}</Badge>
-            </div>
-            <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden flex">
-              {list.map((c, i) => (
-                <div
-                  key={c.id}
-                  style={{ width: `${c.weight}%`, background: `var(--chart-${(i % 5) + 1})` }}
-                />
-              ))}
-            </div>
-            <div className="mt-3 text-[11.5px] text-muted-foreground flex items-start gap-1.5">
-              <Info className="size-3 mt-0.5 shrink-0" />
-              Components must sum to 100%. Use sliders to rebalance.
-            </div>
-          </Card>
-
-        </div>
-
-        {/* Editor */}
-        <div className="space-y-5">
+        {/* Components for active product */}
+        {activeProduct && (
           <Card className="p-0">
             <div className="px-5 pt-5 pb-3 flex items-center justify-between border-b border-border">
               <div>
-                <div className="text-[15px] font-semibold tracking-tight">{ROLE_LABEL[role].name} · Components</div>
-                <div className="text-[12px] text-muted-foreground mt-0.5">{ROLE_LABEL[role].sub}</div>
+                <div className="text-[14.5px] font-semibold tracking-tight">
+                  IC Components · {activeProduct.name}
+                </div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">
+                  Numeric weight per component. Total must equal 100%.
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <SegmentedTabs value="grid" onChange={() => {}} options={[{ value: "grid", label: "Detailed" }, { value: "table", label: "Compact" }]} />
+              <div className="flex items-center gap-3">
+                <div className={`text-[12.5px] px-2.5 py-1 rounded-md border ${
+                  balanced
+                    ? "border-success/30 bg-success/10 text-success"
+                    : "border-warning/30 bg-warning/10 text-warning"
+                }`}>
+                  Total: <span className="font-semibold num">{totalWeight}%</span>
+                </div>
                 <button
                   type="button"
                   onClick={openAdd}
-                  className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12px] font-medium hover:bg-primary/90"
+                  className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12.5px] font-medium hover:bg-primary/90"
                 >
                   <Plus className="size-3.5" /> Add Component
                 </button>
               </div>
             </div>
 
-            <div className="divide-y divide-border">
-              {list.map((c, idx) => {
-                const subTotal = c.subItems?.reduce((s, x) => s + x.weight, 0) ?? 0;
-                const subBalanced = !c.subItems || subTotal === 100;
-                return (
-                  <div key={c.id} className="px-5 py-5">
-                    <div>
-                      <div>
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="size-2.5 rounded-sm"
-                                style={{ background: `var(--chart-${(idx % 5) + 1})` }}
-                              />
-                              <div className="text-[14px] font-semibold text-foreground truncate">{c.name}</div>
-                              {c.locked && <Lock className="size-3 text-muted-foreground" />}
-                            </div>
-                            <div className="text-[11.5px] text-muted-foreground mt-1 ml-4.5">{c.category}</div>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <div className="text-[22px] font-semibold tracking-tight num">{c.weight}%</div>
-                            <div className="text-[10.5px] text-muted-foreground -mt-0.5">component weight</div>
-                          </div>
-                        </div>
-                        <div className="mt-3">
-                          <Slider
-                            value={c.weight}
-                            onChange={(v) => update(c.id, { weight: v })}
+            {components.length === 0 ? (
+              <div className="px-5 py-10 text-center text-[13px] text-muted-foreground">
+                No components yet. Use "Add Component" to start building this product's plan.
+              </div>
+            ) : (
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground bg-muted/40">
+                    <th className="text-left font-medium px-5 py-2.5">Component</th>
+                    <th className="text-left font-medium px-5 py-2.5">Category</th>
+                    <th className="text-right font-medium px-5 py-2.5 w-[140px]">Weight</th>
+                    <th className="px-5 py-2.5 w-[60px]" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {components.map((c, i) => (
+                    <tr key={c.id} className="hover:bg-muted/30">
+                      <td className="px-5 py-3 font-medium">
+                        <span
+                          className="inline-block size-2 rounded-sm mr-2 align-middle"
+                          style={{ background: `var(--chart-${(i % 5) + 1})` }}
+                        />
+                        <input
+                          value={c.name}
+                          onChange={(e) => updateComponent(c.id, { name: e.target.value })}
+                          className="bg-transparent border border-transparent hover:border-border focus:border-primary focus:bg-background rounded px-1.5 py-1 text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 w-[260px]"
+                        />
+                      </td>
+                      <td className="px-5 py-3">
+                        <select
+                          value={c.category}
+                          onChange={(e) => updateComponent(c.id, { category: e.target.value })}
+                          className="h-8 px-2 rounded-md border border-border bg-background text-[12.5px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                        >
+                          {COMPONENT_CATEGORIES.map((cat) => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                          {!COMPONENT_CATEGORIES.includes(c.category as typeof COMPONENT_CATEGORIES[number]) && (
+                            <option value={c.category}>{c.category}</option>
+                          )}
+                        </select>
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <div className="inline-flex items-center">
+                          <input
+                            type="number"
+                            min={0}
                             max={100}
-                            trackClass={`bg-[var(--chart-${(idx % 5) + 1})]`}
-                          />
-                        </div>
-                        <div className="mt-3 flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setComponents((prev) => ({
-                                ...prev,
-                                [role]: prev[role].filter((x) => x.id !== c.id),
-                              }))
+                            value={c.weight}
+                            onChange={(e) =>
+                              updateComponent(c.id, { weight: Math.max(0, Math.min(100, Number(e.target.value) || 0)) })
                             }
-                            className="text-[11.5px] text-muted-foreground hover:text-destructive inline-flex items-center gap-1"
-                          >
-                            <Trash2 className="size-3" /> Remove
-                          </button>
+                            className="w-20 h-8 px-2 rounded-md border border-border bg-background text-[13px] num font-semibold text-right focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                          />
+                          <span className="ml-1 text-[12px] text-muted-foreground">%</span>
                         </div>
-                      </div>
-                    </div>
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => removeComponent(c.id)}
+                          className="text-muted-foreground hover:text-destructive"
+                          title="Remove"
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
 
-                    {c.subItems && (
-                      <div className="mt-5 ml-4 pl-5 border-l-2 border-dashed border-border">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <CornerDownRight className="size-3.5 text-muted-foreground" />
-                            <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
-                              Goals & MBOs within {c.name.split("—")[1]?.trim() ?? c.name}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge tone={subBalanced ? "success" : "warning"}>
-                              {subBalanced ? "Balanced 100%" : `${subTotal}% (${subTotal > 100 ? "+" : ""}${subTotal - 100})`}
-                            </Badge>
-                            <button className="h-7 px-2.5 inline-flex items-center gap-1 rounded-md border border-border bg-background text-[11.5px] font-medium hover:bg-muted">
-                              <Plus className="size-3" /> Add sub-item
-                            </button>
-                          </div>
-                        </div>
-                        <div className="rounded-md border border-border overflow-hidden">
-                          <table className="w-full text-[12.5px]">
-                            <thead>
-                              <tr className="bg-muted/40 text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground">
-                                <th className="text-left font-medium px-3 py-2">Sub-component</th>
-                                <th className="text-left font-medium px-3 py-2 w-[70px]">Type</th>
-                                <th className="text-left font-medium px-3 py-2">Weight allocation</th>
-                                <th className="text-right font-medium px-3 py-2 w-[80px]">Weight</th>
-                                <th className="px-3 py-2 w-[40px]" />
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                              {c.subItems.map((s, si) => (
-                                <tr key={s.id} className="hover:bg-muted/20">
-                                  <td className="px-3 py-2.5 font-medium">
-                                    <span
-                                      className="inline-block size-1.5 rounded-full mr-2 align-middle opacity-70"
-                                      style={{ background: `var(--chart-${(idx % 5) + 1})` }}
-                                    />
-                                    {s.name}
-                                  </td>
-                                  <td className="px-3 py-2.5">
-                                    <Badge tone={s.kind === "Goal" ? "info" : "neutral"}>{s.kind}</Badge>
-                                  </td>
-                                  <td className="px-3 py-2.5 pr-5">
-                                    <Slider
-                                      value={s.weight}
-                                      onChange={(v) => setSubWeight(c.id, s.id, v)}
-                                      max={100}
-                                      trackClass={`bg-[var(--chart-${(idx % 5) + 1})] opacity-80`}
-                                    />
-                                  </td>
-                                  <td className="px-3 py-2.5 text-right num font-semibold">
-                                    <input
-                                      type="number"
-                                      value={s.weight}
-                                      onChange={(e) => setSubWeight(c.id, s.id, Number(e.target.value))}
-                                      className="w-14 h-7 text-right pr-1 rounded border border-border bg-background text-[12.5px] num font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
-                                    />
-                                    <span className="text-muted-foreground ml-0.5">%</span>
-                                  </td>
-                                  <td className="px-3 py-2.5 text-right">
-                                    <button className="text-muted-foreground hover:text-destructive">
-                                      <Trash2 className="size-3.5" />
-                                    </button>
-                                  </td>
-                                  {si === -1 && <td />}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                        {subBalanced ? (
-                          <div className="mt-2 text-[11px] text-muted-foreground flex items-start gap-1.5">
-                            <Info className="size-3 mt-0.5 shrink-0" />
-                            Sub-component weights sum to 100%. Adjusting one slider auto-rebalances the others.
-                          </div>
-                        ) : (
-                          <div className="mt-2 flex items-center justify-between gap-3 rounded-md border border-warning/40 bg-warning/10 px-3 py-2">
-                            <div className="flex items-start gap-2 text-[12px] text-foreground">
-                              <AlertTriangle className="size-3.5 mt-0.5 shrink-0 text-warning" />
-                              <span>
-                                Sub-component weights total <span className="num font-semibold">{subTotal}%</span> —{" "}
-                                {subTotal > 100 ? "over" : "under"} by{" "}
-                                <span className="num font-semibold">{Math.abs(100 - subTotal)}%</span>. They must sum to 100% within this product.
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => fixSubTo100(c.id)}
-                              className="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-md bg-warning text-warning-foreground text-[11.5px] font-semibold hover:opacity-90 shrink-0"
-                            >
-                              <Wand2 className="size-3" /> Fix to 100%
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {!balanced && components.length > 0 && (
+              <div className="px-5 py-3 border-t border-border bg-warning/10 text-warning text-[12.5px] flex items-center gap-2">
+                <AlertTriangle className="size-3.5" />
+                Component weights must total 100%. Currently {totalWeight}%.
+              </div>
+            )}
           </Card>
-        </div>
+        )}
       </div>
-      </div>
-
-
 
       {showInvalid && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm p-4">
-          <Card className="max-w-md w-full p-0">
-            <div className="px-5 py-4 border-b border-border flex items-center gap-2.5">
-              <div className="size-9 rounded-lg bg-warning/15 text-warning grid place-items-center">
-                <AlertTriangle className="size-4" />
-              </div>
-              <div className="flex-1">
-                <div className="text-[14px] font-semibold">Component weights must total 100%</div>
-                <div className="text-[12px] text-muted-foreground mt-0.5">
-                  Components currently sum to {totalWeight}%.
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowInvalid(false)}
-                className="size-7 grid place-items-center rounded-md hover:bg-muted"
-              >
-                <X className="size-4 text-muted-foreground" />
-              </button>
-            </div>
-            <div className="px-5 py-4 text-[12.5px] text-muted-foreground">
-              Adjust the component weights so they add up to exactly 100% before moving on to Goal Setting.
-            </div>
-            <div className="px-5 pb-4 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowInvalid(false)}
-                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90"
-              >
-                Got it
-              </button>
-            </div>
-          </Card>
-        </div>
+        <Modal onClose={() => setShowInvalid(false)} title="Component weights must total 100%" tone="warning">
+          <p className="text-[12.5px] text-muted-foreground">
+            One or more products in this role have components that don't sum to 100%. Fix them before continuing.
+          </p>
+        </Modal>
+      )}
+
+      {showAddProduct && (
+        <Modal onClose={() => setShowAddProduct(false)} title="Add Product" tone="primary">
+          <label className="block">
+            <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Product Name</div>
+            <input
+              type="text"
+              value={newProductName}
+              onChange={(e) => { setNewProductName(e.target.value); setProductError(null); }}
+              placeholder="e.g. Product D — Nexalin"
+              className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${
+                productError ? "border-destructive" : "border-border focus:border-primary"
+              }`}
+            />
+            {productError && <div className="mt-1 text-[11.5px] text-destructive">{productError}</div>}
+          </label>
+          <div className="mt-4 flex justify-end gap-2">
+            <button onClick={() => setShowAddProduct(false)} className="h-9 px-3.5 rounded-md border border-border bg-background text-[13px] font-medium hover:bg-muted">Cancel</button>
+            <button onClick={submitAddProduct} className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90">Add Product</button>
+          </div>
+        </Modal>
       )}
 
       {showAdd && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm p-4">
-          <Card className="max-w-md w-full p-0">
-            <div className="px-5 py-4 border-b border-border flex items-center gap-2.5">
-              <div className="size-9 rounded-lg bg-primary/15 text-primary grid place-items-center">
-                <Plus className="size-4" />
-              </div>
-              <div className="flex-1">
-                <div className="text-[14px] font-semibold">Add Component</div>
-                <div className="text-[12px] text-muted-foreground mt-0.5">
-                  For {ROLE_LABEL[role].name}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={closeAdd}
-                className="size-7 grid place-items-center rounded-md hover:bg-muted"
+        <Modal onClose={() => setShowAdd(false)} title="Add Component" tone="primary" subtitle={`For ${activeProduct?.name}`}>
+          <div className="space-y-3">
+            <label className="block">
+              <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Name</div>
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => { setNewName(e.target.value); if (addErrors.name) setAddErrors((p) => ({ ...p, name: undefined })); }}
+                maxLength={80}
+                placeholder="e.g. MBO 3 — Coverage"
+                className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.name ? "border-destructive" : "border-border focus:border-primary"}`}
+              />
+              {addErrors.name && <div className="mt-1 text-[11.5px] text-destructive">{addErrors.name}</div>}
+            </label>
+            <label className="block">
+              <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Category</div>
+              <select
+                value={newCategory}
+                onChange={(e) => { setNewCategory(e.target.value); if (addErrors.category) setAddErrors((p) => ({ ...p, category: undefined })); }}
+                className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.category ? "border-destructive" : "border-border focus:border-primary"}`}
               >
-                <X className="size-4 text-muted-foreground" />
-              </button>
-            </div>
-            <div className="px-5 py-4 space-y-3">
-              <label className="block">
-                <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Name</div>
+                {COMPONENT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              {addErrors.category && <div className="mt-1 text-[11.5px] text-destructive">{addErrors.category}</div>}
+            </label>
+            <label className="block">
+              <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Initial Weight</div>
+              <div className="relative">
                 <input
-                  type="text"
-                  value={newName}
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={newWeight}
                   onChange={(e) => {
-                    setNewName(e.target.value);
-                    if (addErrors.name) setAddErrors((p) => ({ ...p, name: undefined }));
+                    const v = e.target.value;
+                    setNewWeight(v === "" ? "" : Number(v));
+                    if (addErrors.weight) setAddErrors((p) => ({ ...p, weight: undefined }));
                   }}
-                  maxLength={80}
-                  placeholder="e.g. Product C — Aurelix"
-                  className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.name ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"}`}
+                  className={`w-full h-9 pl-2.5 pr-7 rounded-md border bg-background text-[13px] num font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.weight ? "border-destructive" : "border-border focus:border-primary"}`}
                 />
-                {addErrors.name && (
-                  <div className="mt-1 text-[11.5px] text-destructive">{addErrors.name}</div>
-                )}
-              </label>
-              <label className="block">
-                <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Category</div>
-                <input
-                  type="text"
-                  value={newCategory}
-                  onChange={(e) => {
-                    setNewCategory(e.target.value);
-                    if (addErrors.category) setAddErrors((p) => ({ ...p, category: undefined }));
-                  }}
-                  maxLength={50}
-                  className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.category ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"}`}
-                />
-                {addErrors.category && (
-                  <div className="mt-1 text-[11.5px] text-destructive">{addErrors.category}</div>
-                )}
-              </label>
-              <label className="block">
-                <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Initial Weight</div>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={newWeight}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setNewWeight(v === "" ? "" : Number(v));
-                      if (addErrors.weight) setAddErrors((p) => ({ ...p, weight: undefined }));
-                    }}
-                    className={`w-full h-9 pl-2.5 pr-7 rounded-md border bg-background text-[13px] num font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.weight ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"}`}
-                  />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">%</span>
-                </div>
-                {addErrors.weight ? (
-                  <div className="mt-1 text-[11.5px] text-destructive">{addErrors.weight}</div>
-                ) : (
-                  <div className="mt-1 text-[11px] text-muted-foreground">
-                    {remainingWeight}% available before exceeding 100%.
-                  </div>
-                )}
-              </label>
-              <div className="text-[11.5px] text-muted-foreground flex items-start gap-1.5">
-                <Info className="size-3 mt-0.5 shrink-0" />
-                Remember to rebalance so all components sum to 100%.
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">%</span>
               </div>
+              {addErrors.weight ? (
+                <div className="mt-1 text-[11.5px] text-destructive">{addErrors.weight}</div>
+              ) : (
+                <div className="mt-1 text-[11px] text-muted-foreground">{remainingWeight}% available before exceeding 100%.</div>
+              )}
+            </label>
+            <div className="text-[11.5px] text-muted-foreground flex items-start gap-1.5">
+              <Info className="size-3 mt-0.5 shrink-0" />
+              Remember to rebalance so all components sum to 100%.
             </div>
-            <div className="px-5 pb-4 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={closeAdd}
-                className="h-9 px-3.5 rounded-md border border-border bg-background text-[13px] font-medium hover:bg-muted"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={submitAdd}
-                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90"
-              >
-                Add Component
-              </button>
-            </div>
-          </Card>
-        </div>
+          </div>
+          <div className="mt-4 flex justify-end gap-2">
+            <button onClick={() => setShowAdd(false)} className="h-9 px-3.5 rounded-md border border-border bg-background text-[13px] font-medium hover:bg-muted">Cancel</button>
+            <button onClick={submitAdd} className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90">Add Component</button>
+          </div>
+        </Modal>
       )}
     </>
-
   );
 }
 
-
-
-function NumField({ label, suffix, value, onChange }: { label: string; suffix: string; value: number; onChange: (v: number) => void }) {
+function Modal({
+  onClose,
+  title,
+  subtitle,
+  tone = "primary",
+  children,
+}: {
+  onClose: () => void;
+  title: string;
+  subtitle?: string;
+  tone?: "primary" | "warning";
+  children: React.ReactNode;
+}) {
   return (
-    <label className="block">
-      <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">{label}</div>
-      <div className="relative">
-        <input
-          type="number"
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full h-9 pl-2.5 pr-7 rounded-md border border-border bg-background text-[13px] num font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
-        />
-        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">{suffix}</span>
-      </div>
-    </label>
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm p-4">
+      <Card className="max-w-md w-full p-0">
+        <div className="px-5 py-4 border-b border-border flex items-center gap-2.5">
+          <div className={`size-9 rounded-lg grid place-items-center ${tone === "warning" ? "bg-warning/15 text-warning" : "bg-primary/15 text-primary"}`}>
+            {tone === "warning" ? <AlertTriangle className="size-4" /> : <Plus className="size-4" />}
+          </div>
+          <div className="flex-1">
+            <div className="text-[14px] font-semibold">{title}</div>
+            {subtitle && <div className="text-[12px] text-muted-foreground mt-0.5">{subtitle}</div>}
+          </div>
+          <button onClick={onClose} className="size-7 grid place-items-center rounded-md hover:bg-muted">
+            <X className="size-4 text-muted-foreground" />
+          </button>
+        </div>
+        <div className="px-5 py-4">{children}</div>
+      </Card>
+    </div>
   );
 }
+
+// Surface unused Badge import for tree-shake-friendly explicit re-use
+void Badge;
