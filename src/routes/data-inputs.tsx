@@ -11,7 +11,9 @@ import {
   ArrowRight,
   Database,
   FileSpreadsheet,
+  Calendar,
 } from "lucide-react";
+import { usePlanPeriod, PLAN_PERIODS } from "@/lib/plan-period";
 import {
   DATASETS as INITIAL_DATASETS,
   datasetsReady,
@@ -44,6 +46,7 @@ const STATUS_META: Record<
 
 function DataInputsPage() {
   const [datasets, setDatasets] = useState<Dataset[]>(INITIAL_DATASETS);
+  const { period, setPeriod } = usePlanPeriod();
   const ready = datasetsReady(datasets);
   const validated = datasets.filter((d) => d.status === "validated").length;
 
@@ -55,14 +58,36 @@ function DataInputsPage() {
   return (
     <div>
       <PageHeader
-        step={0}
-        eyebrow="Pre-Flight"
+        step={1}
         title="Data Inputs"
-        description="The datasets below seed every downstream screen. Goals, potential and rep counts are read from these files — no manually entered totals."
-        prev={{ to: "/", label: "Overview" }}
+        description="Select the planning cycle and validate the source datasets that feed every downstream screen."
+        prev={{ to: "/", label: "Home" }}
         next={{ to: "/plan-builder", label: "Plan Builder" }}
       />
       <div className="px-8 py-7 max-w-[1400px] space-y-6">
+        <Card className="p-5 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="size-9 rounded-lg bg-primary-muted text-primary grid place-items-center">
+              <Calendar className="size-4" />
+            </div>
+            <div>
+              <div className="text-[13px] font-semibold tracking-tight">Plan Period</div>
+              <div className="text-[12px] text-muted-foreground">
+                This selection drives all downstream calculations.
+              </div>
+            </div>
+          </div>
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value as typeof period)}
+            className="h-9 px-3 rounded-md border border-border bg-background text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+          >
+            {PLAN_PERIODS.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
+        </Card>
+
         <Card className="p-0">
           <div className="px-6 pt-5 pb-4 border-b border-border flex items-center justify-between gap-4">
             <div>

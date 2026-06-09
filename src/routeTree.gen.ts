@@ -9,18 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SimulationRouteImport } from './routes/simulation'
+import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as PlanBuilderRouteImport } from './routes/plan-builder'
 import { Route as PayoutCurveRouteImport } from './routes/payout-curve'
 import { Route as GoalSettingRouteImport } from './routes/goal-setting'
 import { Route as FairnessRouteImport } from './routes/fairness'
 import { Route as DataInputsRouteImport } from './routes/data-inputs'
-import { Route as ApprovalRouteImport } from './routes/approval'
 import { Route as IndexRouteImport } from './routes/index'
 
-const SimulationRoute = SimulationRouteImport.update({
-  id: '/simulation',
-  path: '/simulation',
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanBuilderRoute = PlanBuilderRouteImport.update({
@@ -48,11 +47,6 @@ const DataInputsRoute = DataInputsRouteImport.update({
   path: '/data-inputs',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApprovalRoute = ApprovalRouteImport.update({
-  id: '/approval',
-  path: '/approval',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -61,86 +55,79 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/approval': typeof ApprovalRoute
   '/data-inputs': typeof DataInputsRoute
   '/fairness': typeof FairnessRoute
   '/goal-setting': typeof GoalSettingRoute
   '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
-  '/simulation': typeof SimulationRoute
+  '/reports': typeof ReportsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/approval': typeof ApprovalRoute
   '/data-inputs': typeof DataInputsRoute
   '/fairness': typeof FairnessRoute
   '/goal-setting': typeof GoalSettingRoute
   '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
-  '/simulation': typeof SimulationRoute
+  '/reports': typeof ReportsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/approval': typeof ApprovalRoute
   '/data-inputs': typeof DataInputsRoute
   '/fairness': typeof FairnessRoute
   '/goal-setting': typeof GoalSettingRoute
   '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
-  '/simulation': typeof SimulationRoute
+  '/reports': typeof ReportsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/approval'
     | '/data-inputs'
     | '/fairness'
     | '/goal-setting'
     | '/payout-curve'
     | '/plan-builder'
-    | '/simulation'
+    | '/reports'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/approval'
     | '/data-inputs'
     | '/fairness'
     | '/goal-setting'
     | '/payout-curve'
     | '/plan-builder'
-    | '/simulation'
+    | '/reports'
   id:
     | '__root__'
     | '/'
-    | '/approval'
     | '/data-inputs'
     | '/fairness'
     | '/goal-setting'
     | '/payout-curve'
     | '/plan-builder'
-    | '/simulation'
+    | '/reports'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ApprovalRoute: typeof ApprovalRoute
   DataInputsRoute: typeof DataInputsRoute
   FairnessRoute: typeof FairnessRoute
   GoalSettingRoute: typeof GoalSettingRoute
   PayoutCurveRoute: typeof PayoutCurveRoute
   PlanBuilderRoute: typeof PlanBuilderRoute
-  SimulationRoute: typeof SimulationRoute
+  ReportsRoute: typeof ReportsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/simulation': {
-      id: '/simulation'
-      path: '/simulation'
-      fullPath: '/simulation'
-      preLoaderRoute: typeof SimulationRouteImport
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/plan-builder': {
@@ -178,13 +165,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DataInputsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/approval': {
-      id: '/approval'
-      path: '/approval'
-      fullPath: '/approval'
-      preLoaderRoute: typeof ApprovalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -197,23 +177,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ApprovalRoute: ApprovalRoute,
   DataInputsRoute: DataInputsRoute,
   FairnessRoute: FairnessRoute,
   GoalSettingRoute: GoalSettingRoute,
   PayoutCurveRoute: PayoutCurveRoute,
   PlanBuilderRoute: PlanBuilderRoute,
-  SimulationRoute: SimulationRoute,
+  ReportsRoute: ReportsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

@@ -30,11 +30,12 @@ export const Route = createFileRoute("/payout-curve")({
 type Point = { id: string; name: string; attainment: number; payout: number };
 
 const DEFAULT_POINTS: Point[] = [
-  { id: "p1", name: "Threshold", attainment: 80, payout: 0 },
+  { id: "p1", name: "Threshold", attainment: 80, payout: 50 },
   { id: "p2", name: "Target", attainment: 100, payout: 100 },
-  { id: "p3", name: "Accelerator", attainment: 110, payout: 120 },
-  { id: "p4", name: "Cap", attainment: 150, payout: 200 },
+  { id: "p3", name: "Excellence", attainment: 120, payout: 150 },
+  { id: "p4", name: "Stretch", attainment: 150, payout: 200 },
 ];
+
 
 const PALETTE = [
   "var(--warning)",
@@ -104,17 +105,18 @@ function PayoutCurve() {
   return (
     <div>
       <PageHeader
-        step={3}
+        step={5}
         title="Payout Curve Designer"
-        description="Define inflexion points directly. Add as many points as you need — values are not clamped."
-        prev={{ to: "/goal-setting", label: "Goal Setting" }}
-        next={{ to: "/simulation", label: "Monte Carlo" }}
+        description="Define inflexion points for Threshold, Target and Excellence achievement. Add as many points as needed."
+        prev={{ to: "/fairness", label: "Fairness Testing" }}
+        next={{ to: "/reports", label: "Reports & Outputs" }}
         actions={
           <button className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card">
             <Save className="size-3.5" /> Save to Curve Library
           </button>
         }
       />
+
       <div className="px-8 py-7 max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_460px] gap-6">
         {/* Chart */}
         <Card className="p-0">

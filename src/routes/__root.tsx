@@ -1,18 +1,19 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
 import appCss from "../styles.css?url";
 import {
-  LayoutGrid,
+  Home,
   Layers,
   Target,
-  Activity,
-  TrendingUp,
   ShieldCheck,
-  CheckCircle2,
+  TrendingUp,
+  FileText,
   Sparkles,
-  Search,
-  Bell,
   Database,
+  Calendar,
+  Download,
+  Save,
 } from "lucide-react";
+import { PlanPeriodProvider, usePlanPeriod, PLAN_PERIODS } from "@/lib/plan-period";
 
 function NotFoundComponent() {
   return (
@@ -41,19 +42,16 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Helix IC — Incentive Compensation Design Platform" },
+      { title: "Helix IC — Incentive Compensation Design Workbench" },
       {
         name: "description",
         content:
-          "Design, simulate, and approve pharma incentive compensation plans with confidence.",
+          "Design incentive plans that drive motivation, fairness, and business results for pharma commercial teams.",
       },
-      { property: "og:title", content: "Helix IC — Incentive Compensation Design Platform" },
-      { name: "twitter:title", content: "Helix IC — Incentive Compensation Design Platform" },
-      { name: "description", content: "Design and simulate strategic incentive compensation plans for pharma sales teams." },
-      { property: "og:description", content: "Design and simulate strategic incentive compensation plans for pharma sales teams." },
-      { name: "twitter:description", content: "Design and simulate strategic incentive compensation plans for pharma sales teams." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7fd75d9d-3392-47d8-b386-0cc6f21e9756/id-preview-8b7eb6b2--a2dff3e4-6590-4886-9142-7a572dee1061.lovable.app-1777459163059.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7fd75d9d-3392-47d8-b386-0cc6f21e9756/id-preview-8b7eb6b2--a2dff3e4-6590-4886-9142-7a572dee1061.lovable.app-1777459163059.png" },
+      { property: "og:title", content: "Helix IC — Incentive Compensation Design Workbench" },
+      { name: "twitter:title", content: "Helix IC — Incentive Compensation Design Workbench" },
+      { property: "og:description", content: "Create, evaluate, and optimize incentive compensation plans using historical performance, territory potential, goals, payouts, and fairness analytics." },
+      { name: "twitter:description", content: "Create, evaluate, and optimize incentive compensation plans using historical performance, territory potential, goals, payouts, and fairness analytics." },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
@@ -87,14 +85,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 const NAV = [
-  { to: "/", label: "Overview", icon: LayoutGrid, step: null },
-  { to: "/data-inputs", label: "Data Inputs", icon: Database, step: 0 },
-  { to: "/plan-builder", label: "Plan Builder", icon: Layers, step: 1 },
-  { to: "/goal-setting", label: "Goal Setting", icon: Target, step: 2 },
-  { to: "/payout-curve", label: "Payout Curve", icon: TrendingUp, step: 3 },
-  { to: "/simulation", label: "Monte Carlo", icon: Activity, step: 4 },
-  { to: "/fairness", label: "Fairness Testing", icon: ShieldCheck, step: 5 },
-  { to: "/approval", label: "Plan Summary", icon: CheckCircle2, step: 6 },
+  { to: "/", label: "Home", icon: Home, step: null },
+  { to: "/data-inputs", label: "Data Inputs", icon: Database, step: 1 },
+  { to: "/plan-builder", label: "Plan Builder", icon: Layers, step: 2 },
+  { to: "/goal-setting", label: "Goal Setting", icon: Target, step: 3 },
+  { to: "/fairness", label: "Fairness Testing", icon: ShieldCheck, step: 4 },
+  { to: "/payout-curve", label: "Payout Curve", icon: TrendingUp, step: 5 },
+  { to: "/reports", label: "Reports & Outputs", icon: FileText, step: 6 },
 ] as const;
 
 function Sidebar() {
@@ -104,18 +101,18 @@ function Sidebar() {
       <div className="px-5 pt-6 pb-5 border-b border-sidebar-border">
         <Link to="/" className="flex items-center gap-2.5">
           <div className="size-9 rounded-lg bg-sidebar-primary flex items-center justify-center shadow-elevated">
-            <Sparkles className="size-4.5 text-sidebar-primary-foreground" strokeWidth={2.5} />
+            <Sparkles className="size-4 text-sidebar-primary-foreground" strokeWidth={2.5} />
           </div>
           <div>
-            <div className="text-[15px] font-semibold tracking-tight text-sidebar-foreground">IC Design</div>
-            <div className="text-[11px] text-sidebar-foreground/60 -mt-0.5">Plan Design Studio</div>
+            <div className="text-[15px] font-semibold tracking-tight text-sidebar-foreground">Helix IC</div>
+            <div className="text-[11px] text-sidebar-foreground/60 -mt-0.5">Plan Design Workbench</div>
           </div>
         </Link>
       </div>
 
       <div className="px-3 pt-5 pb-2">
         <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/50 px-2 mb-2">
-          Plan Workflow · FY26
+          Plan Design Workflow
         </div>
       </div>
 
@@ -155,23 +152,13 @@ function Sidebar() {
         })}
       </nav>
 
-      <div className="m-3 p-3.5 rounded-lg bg-sidebar-accent/50 border border-sidebar-border">
-        <div className="flex items-center gap-2 mb-1.5">
-          <div className="size-1.5 rounded-full bg-success animate-pulse" />
-          <div className="text-[11px] font-medium text-sidebar-foreground">Plan v2.4 · Draft</div>
-        </div>
-        <div className="text-[11px] text-sidebar-foreground/60 leading-relaxed">
-          Last edited 12 min ago by S. Mehta
-        </div>
-      </div>
-
       <div className="border-t border-sidebar-border p-3 flex items-center gap-3">
         <div className="size-8 rounded-full bg-gradient-to-br from-sidebar-primary to-info flex items-center justify-center text-[12px] font-semibold text-sidebar-primary-foreground">
           SM
         </div>
         <div className="min-w-0">
           <div className="text-[12px] font-medium truncate">Shreya Mehta</div>
-          <div className="text-[11px] text-sidebar-foreground/60 truncate">HQ · IC Admin</div>
+          <div className="text-[11px] text-sidebar-foreground/60 truncate">HQ · Commercial Ops</div>
         </div>
       </div>
     </aside>
@@ -181,40 +168,60 @@ function Sidebar() {
 function Topbar() {
   const { pathname } = useLocation();
   const current = NAV.find((n) => n.to === pathname);
+  const { period, setPeriod } = usePlanPeriod();
+
   return (
     <header className="h-14 border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-30 flex items-center px-6 gap-4">
-      <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
-        <span>OncoPharma · US Specialty BU</span>
-        <span className="text-border-strong">/</span>
-        <span className="text-foreground font-medium">{current?.label ?? "Plan Studio"}</span>
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="text-[13.5px] font-semibold text-foreground truncate">
+          IC Plan Design for {period}
+        </div>
+        {current && current.step !== null && (
+          <span className="hidden md:inline-flex items-center gap-1.5 px-2 h-5 rounded-full bg-primary-muted text-primary text-[10.5px] font-semibold border border-primary/20">
+            Step {current.step} · {current.label}
+          </span>
+        )}
       </div>
       <div className="flex-1" />
-      <div className="hidden md:flex items-center gap-2 px-3 h-9 w-72 rounded-md border border-border bg-background text-[13px] text-muted-foreground">
-        <Search className="size-3.5" />
-        <span>Search reps, products, scenarios…</span>
-        <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded border border-border bg-muted">⌘K</span>
-      </div>
-      <button className="size-9 grid place-items-center rounded-md border border-border bg-background hover:bg-muted">
-        <Bell className="size-4 text-muted-foreground" />
+      <label className="hidden md:flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
+        <Calendar className="size-3.5 text-muted-foreground" />
+        <span className="text-muted-foreground">Plan Period</span>
+        <select
+          value={period}
+          onChange={(e) => setPeriod(e.target.value as typeof period)}
+          className="bg-transparent text-foreground font-medium focus:outline-none"
+        >
+          {PLAN_PERIODS.map((p) => (
+            <option key={p} value={p}>{p}</option>
+          ))}
+        </select>
+      </label>
+      <button className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12.5px] font-medium hover:bg-muted">
+        <Save className="size-3.5" /> Save Draft
+      </button>
+      <button className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12.5px] font-medium hover:bg-muted">
+        <Download className="size-3.5" /> Export
       </button>
       <div className="h-6 w-px bg-border" />
-      <button className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card">
-        Save Draft
-      </button>
+      <div className="size-8 rounded-full bg-gradient-to-br from-primary to-info text-primary-foreground text-[12px] font-semibold grid place-items-center">
+        SM
+      </div>
     </header>
   );
 }
 
 function RootComponent() {
   return (
-    <div className="min-h-screen flex bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <Topbar />
-        <main className="flex-1 min-w-0">
-          <Outlet />
-        </main>
+    <PlanPeriodProvider>
+      <div className="min-h-screen flex bg-background">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <Topbar />
+          <main className="flex-1 min-w-0">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </PlanPeriodProvider>
   );
 }
