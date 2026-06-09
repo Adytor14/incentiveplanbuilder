@@ -341,7 +341,16 @@ function PlanBuilder() {
                           />
                         </div>
                         <div className="mt-3 flex items-center gap-2">
-                          <button className="text-[11.5px] text-muted-foreground hover:text-destructive inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setComponents((prev) => ({
+                                ...prev,
+                                [role]: prev[role].filter((x) => x.id !== c.id),
+                              }))
+                            }
+                            className="text-[11.5px] text-muted-foreground hover:text-destructive inline-flex items-center gap-1"
+                          >
                             <Trash2 className="size-3" /> Remove
                           </button>
                         </div>
