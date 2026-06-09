@@ -1,7 +1,4 @@
 // Dataset registry for the IC Design "Data Inputs" step.
-// Replaces the old singular-number form per feedback: territory potential,
-// previous-year sales and rep counts must come from territory/HCP-level
-// files (or the IC Admin alignment file), never a manually entered number.
 
 export type DatasetStatus = "validated" | "warning" | "missing";
 
@@ -18,9 +15,29 @@ export type Dataset = {
 
 export const DATASETS: Dataset[] = [
   {
-    id: "hcp_sales",
-    name: "HCP Historical Sales",
-    description: "HCP-level TRx / NRx, last 8 quarters",
+    id: "roster",
+    name: "Employee Roster",
+    description: "Sales Reps, Regional Managers, Area Managers · roles & reporting hierarchy",
+    required: true,
+    status: "validated",
+    rows: 1_343,
+    updatedAt: "Jun 4, 2026",
+    source: "IC Admin",
+  },
+  {
+    id: "geography",
+    name: "Geography Alignment",
+    description: "Territory mapping and role definitions",
+    required: true,
+    status: "validated",
+    rows: 1_247,
+    updatedAt: "Jun 4, 2026",
+    source: "IC Admin",
+  },
+  {
+    id: "historical_sales",
+    name: "Historical Sales",
+    description: "Prior-year monthly sales · rollup at Rep / Territory / Region level",
     required: true,
     status: "validated",
     rows: 184_320,
@@ -28,64 +45,71 @@ export const DATASETS: Dataset[] = [
     source: "Upload",
   },
   {
-    id: "alignment",
-    name: "Territory Alignment",
-    description: "Rep ↔ Territory ↔ HCP mapping · drives # of reps",
+    id: "growth_rate",
+    name: "Growth Rate",
+    description: "Numeric growth factor applied to historical sales for goal calculation",
     required: true,
     status: "validated",
-    rows: 1_247,
-    updatedAt: "Jun 4, 2026",
-    source: "IC Admin",
-  },
-  {
-    id: "managers",
-    name: "Sales Managers",
-    description: "RBM / ASM roster and reporting hierarchy",
-    required: true,
-    status: "validated",
-    rows: 96,
-    updatedAt: "Jun 4, 2026",
-    source: "IC Admin",
-  },
-  {
-    id: "reps",
-    name: "Sales Representatives",
-    description: "Active rep roster with employee info",
-    required: true,
-    status: "validated",
-    rows: 1_247,
-    updatedAt: "Jun 4, 2026",
-    source: "IC Admin",
+    rows: null,
+    updatedAt: "Jun 6, 2026",
+    source: "Upload",
   },
   {
     id: "potential",
     name: "Territory Potential",
-    description: "Competitor units per HCP · falls back to territory-level sales",
+    description: "Quarterly territory potential values",
     required: true,
     status: "warning",
-    rows: 184_320,
+    rows: 4_988,
     updatedAt: "Jun 3, 2026",
     source: "External",
   },
   {
-    id: "mbos",
-    name: "MBO Definitions",
-    description: "MBO catalog synced from IC Admin",
+    id: "historical_goals",
+    name: "Historical Goals",
+    description: "Goals, attainment and payouts from prior cycles",
+    required: true,
+    status: "validated",
+    rows: 6_240,
+    updatedAt: "Jun 4, 2026",
+    source: "IC Admin",
+  },
+  {
+    id: "comp_inputs",
+    name: "Compensation Inputs",
+    description: "Role-level target pay (Rep / RM / AM)",
+    required: true,
+    status: "validated",
+    rows: 3,
+    updatedAt: "Jun 4, 2026",
+    source: "Upload",
+  },
+  {
+    id: "mbo_library",
+    name: "MBO Library",
+    description: "MBO type, description and definition catalog",
     required: true,
     status: "validated",
     rows: 12,
     updatedAt: "Jun 4, 2026",
     source: "IC Admin",
   },
+  {
+    id: "market_share",
+    name: "Market Share (Prior Year)",
+    description: "Optional · prior-year market share by territory",
+    required: false,
+    status: "warning",
+    rows: 1_247,
+    updatedAt: "Jun 2, 2026",
+    source: "External",
+  },
 ];
 
-// Aggregate values derived from the datasets. Kept here so downstream
-// screens (Plan Builder, Dashboard) can show summary KPIs without each
-// having to re-aggregate the raw files.
 export type DataInputs = {
-  previousYearSales: number; // $M
+  previousYearSales: number;
   salesReps: number;
-  territoryPotential: number; // $M
+  territoryPotential: number;
 };
 
 export const AGGREGATES: DataInputs = {
@@ -94,17 +118,12 @@ export const AGGREGATES: DataInputs = {
   territoryPotential: 1_620,
 };
 
-// Back-compat exports — old API surface, now driven by AGGREGATES.
 export const DEFAULT_INPUTS = AGGREGATES;
 export function loadDataInputs(): DataInputs {
   return AGGREGATES;
 }
-export function saveDataInputs(_v: DataInputs) {
-  /* no-op: inputs now derive from datasets */
-}
-export function clearDataInputs() {
-  /* no-op */
-}
+export function saveDataInputs(_v: DataInputs) {}
+export function clearDataInputs() {}
 export function useDataInputs() {
   return { inputs: AGGREGATES, hydrated: true, setInputs: (_: DataInputs) => {} };
 }
