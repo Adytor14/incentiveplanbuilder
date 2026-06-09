@@ -1,290 +1,264 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { Card, Badge, StatusDot } from "@/components/ui-kit";
-import { ShieldCheck, AlertTriangle, TrendingDown, Users, MapPin, Filter } from "lucide-react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Cell,
-  ScatterChart,
-  Scatter,
-  ZAxis,
-  ReferenceLine,
-} from "recharts";
+import { Card, Badge } from "@/components/ui-kit";
+import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, ArrowRight, TrendingUp, Users, MapPin, GitCompare, Sigma } from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from "recharts";
 
 export const Route = createFileRoute("/fairness")({
   head: () => ({
     meta: [
       { title: "Fairness Testing · Helix IC" },
-      { name: "description", content: "Validate target fairness across reps, regions and roles before launch." },
+      { name: "description", content: "Validate whether goals are equitable and achievable across reps and territories." },
     ],
   }),
   component: Fairness,
 });
 
-const histogram = [
-  { bucket: "<60%", count: 22, tone: "destructive" },
-  { bucket: "60–70%", count: 58, tone: "warning" },
-  { bucket: "70–80%", count: 124, tone: "warning" },
-  { bucket: "80–90%", count: 198, tone: "info" },
-  { bucket: "90–100%", count: 312, tone: "success" },
-  { bucket: "100–110%", count: 286, tone: "success" },
-  { bucket: "110–125%", count: 168, tone: "success" },
-  { bucket: "125–150%", count: 64, tone: "info" },
-  { bucket: ">150%", count: 15, tone: "warning" },
+type Severity = "healthy" | "caution" | "warning";
+
+const SEV_META: Record<Severity, { label: string; tone: "success" | "warning" | "danger"; Icon: typeof CheckCircle2 }> = {
+  healthy: { label: "Healthy", tone: "success", Icon: CheckCircle2 },
+  caution: { label: "Caution", tone: "warning", Icon: AlertCircle },
+  warning: { label: "Action needed", tone: "danger", Icon: AlertTriangle },
+};
+
+// Test 1 — Goal Attainment Distribution
+const attainmentDist = [
+  { bucket: "<60%", count: 18 },
+  { bucket: "60–80%", count: 142 },
+  { bucket: "80–100%", count: 386 },
+  { bucket: "100–120%", count: 412 },
+  { bucket: "120–150%", count: 218 },
+  { bucket: ">150%", count: 71 },
 ];
 
-const regions = [
-  { name: "Northeast", reps: 218, healthy: 88, attain: 104, spread: 14, status: "success" as const },
-  { name: "Southeast", reps: 196, healthy: 82, attain: 101, spread: 16, status: "success" as const },
-  { name: "Midwest", reps: 248, healthy: 79, attain: 99, spread: 17, status: "info" as const },
-  { name: "Southwest", reps: 182, healthy: 71, attain: 96, spread: 21, status: "warning" as const },
-  { name: "West", reps: 264, healthy: 68, attain: 94, spread: 24, status: "warning" as const },
-  { name: "Pacific NW", reps: 139, healthy: 84, attain: 103, spread: 13, status: "success" as const },
+// Test 3 — Top vs Bottom Performer Analysis
+const topBottom = [
+  { group: "Top 20%", lyAttain: 128, newAttain: 102 },
+  { group: "Bottom 20%", lyAttain: 71, newAttain: 99 },
 ];
 
-const scatter = Array.from({ length: 90 }, (_, i) => ({
-  potential: 60 + Math.random() * 80,
-  attainment: 70 + Math.random() * 60 + (Math.random() - 0.5) * 20,
-  size: 100 + Math.random() * 200,
-}));
-
-const outliers = [
-  { rep: "K. Brennan", region: "West", target: "$1.86M", attain: 52, issue: "Target +38% vs peers", sev: "danger" as const },
-  { rep: "M. García", region: "Southwest", target: "$1.92M", attain: 58, issue: "New territory, no LY actuals", sev: "warning" as const },
-  { rep: "A. Tanaka", region: "West", target: "$0.74M", attain: 188, issue: "Target appears underset", sev: "warning" as const },
-  { rep: "R. Okafor", region: "Southeast", target: "$1.42M", attain: 64, issue: "Product A access restricted", sev: "warning" as const },
+// Test 4 — High vs Low Potential Territories
+const potentialBuckets = [
+  { group: "High Potential", goalDifficulty: 92, expectedAttain: 96 },
+  { group: "Low Potential", goalDifficulty: 118, expectedAttain: 82 },
 ];
 
 function Fairness() {
   return (
     <div>
       <PageHeader
-        step={5}
-        eyebrow="Leadership Decision Screen"
-        title="Fairness Testing Dashboard"
-        description="Validate that targets are achievable and equitable across reps, regions and roles before approval."
-        prev={{ to: "/payout-curve", label: "Payout Curve" }}
-        next={{ to: "/approval", label: "Final Approval" }}
-        actions={
-          <button className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[13px] font-medium hover:bg-muted">
-            <Filter className="size-3.5" /> Filter
-          </button>
-        }
+        step={4}
+        title="Fairness Testing"
+        description="Validate whether goals are equitable and achievable before designing the payout curve."
+        prev={{ to: "/goal-setting", label: "Goal Setting" }}
+        next={{ to: "/payout-curve", label: "Payout Curve" }}
       />
-      <div className="px-8 py-7 max-w-[1600px] space-y-6">
-        {/* Health hero */}
-        <Card className="p-0 overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr]">
-            <div className="p-7 bg-gradient-to-br from-success/15 via-success/5 to-transparent border-b lg:border-b-0 lg:border-r border-border">
-              <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-semibold">Plan Health Score</div>
-              <div className="mt-3 flex items-end gap-3">
-                <div className="text-[64px] leading-none font-semibold tracking-tight num text-success">87</div>
-                <div className="pb-2">
-                  <Badge tone="success">A−</Badge>
-                  <div className="text-[12px] text-muted-foreground mt-1">/ 100 · Healthy</div>
-                </div>
-              </div>
-              <div className="mt-4 h-2 rounded-full bg-muted overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-success via-success to-info" style={{ width: "87%" }} />
-              </div>
-              <div className="mt-2 flex justify-between text-[10.5px] text-muted-foreground"><span>Poor</span><span>Excellent</span></div>
-              <div className="mt-5 flex items-start gap-2 text-[12px] text-foreground">
-                <ShieldCheck className="size-4 text-success shrink-0 mt-0.5" />
-                <span>Above the 80-point launch threshold. Two regions flagged for attention.</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-border">
-              <Metric label="% Reps >100%" value="61.4%" tone="success" target="55–65% target" />
-              <Metric label="% Reps <80%" value="16.4%" tone="info" target="<20% target" />
-              <Metric label="Std Deviation" value="18.2" tone="success" target="<22 target" />
-              <Metric label="Difficulty Spread" value="0.31" tone="warning" target="<0.25 target" />
-            </div>
-          </div>
-        </Card>
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-          {/* Distribution */}
-          <Card className="p-0">
-            <div className="px-5 pt-5 pb-3 border-b border-border">
-              <div className="text-[14px] font-semibold tracking-tight">Attainment Distribution</div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">1,247 reps across forecasted attainment buckets</div>
-            </div>
-            <div className="px-2 pt-4 pb-2 h-[290px]">
+      <div className="px-8 py-7 max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
+        <div className="space-y-5">
+          {/* Test 1 */}
+          <TestCard
+            icon={TrendingUp}
+            number={1}
+            title="Goal Attainment Distribution"
+            subtitle="Previous Sales vs New Goals"
+            severity="healthy"
+            insight="Distribution is roughly bell-shaped with the bulk between 80% and 120%. Goals appear reasonably calibrated overall."
+          >
+            <div className="h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={histogram} margin={{ top: 10, right: 16, left: 0, bottom: 5 }}>
+                <BarChart data={attainmentDist} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="bucket" tick={{ fontSize: 10.5, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} angle={-12} textAnchor="end" height={50} />
-                  <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="bucket" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                    {histogram.map((h, i) => (
-                      <Cell key={i} fill={`var(--${h.tone})`} />
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                    {attainmentDist.map((d, i) => (
+                      <Cell key={i} fill={d.bucket.includes(">") || d.bucket.includes("<") ? "var(--warning)" : "var(--chart-1)"} />
                     ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </Card>
+          </TestCard>
 
-          {/* Scatter — target difficulty vs attainment */}
-          <Card className="p-0">
-            <div className="px-5 pt-5 pb-3 border-b border-border">
-              <div className="text-[14px] font-semibold tracking-tight">Target Difficulty vs. Projected Attainment</div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">Outliers indicate unfair target-setting</div>
+          {/* Test 2 */}
+          <TestCard
+            icon={Sigma}
+            number={2}
+            title="Goal Growth %"
+            subtitle="How much goals grew vs prior year"
+            severity="caution"
+            insight="Median growth (12%) is below the average (15.2%), indicating a long tail of reps with very high goal growth (>30%). Review outliers."
+          >
+            <div className="grid grid-cols-3 gap-3">
+              <Stat label="Average Growth" value="15.2%" tone="primary" />
+              <Stat label="Median Growth" value="12.0%" tone="info" />
+              <Stat label="P90 Growth" value="34.5%" tone="warning" />
             </div>
-            <div className="px-2 pt-4 pb-2 h-[290px]">
+          </TestCard>
+
+          {/* Test 3 */}
+          <TestCard
+            icon={Users}
+            number={3}
+            title="Top vs Bottom Performer Analysis"
+            subtitle="Compare expected attainment by historical performance"
+            severity="warning"
+            insight="High performers (Top 20%) and low performers (Bottom 20%) are projected to land at nearly identical attainment (~100%). High performers may be receiving easier goals while low performers are receiving harder ones."
+            recommendation={["Decrease Historical Sales Weight", "Increase Territory Potential Weight"]}
+          >
+            <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 10, right: 24, bottom: 25, left: 10 }}>
-                  <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-                  <XAxis type="number" dataKey="potential" name="potential" domain={[40, 160]} tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} label={{ value: "Territory potential index", position: "bottom", offset: 5, fontSize: 11, fill: "var(--muted-foreground)" }} />
-                  <YAxis type="number" dataKey="attainment" name="attainment" domain={[50, 160]} tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
-                  <ZAxis type="number" dataKey="size" range={[40, 200]} />
-                  <ReferenceLine y={100} stroke="var(--primary)" strokeDasharray="4 4" />
-                  <ReferenceLine y={80} stroke="var(--warning)" strokeDasharray="4 4" />
-                  <Tooltip cursor={{ strokeDasharray: "3 3" }} contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
-                  <Scatter data={scatter} fill="var(--chart-1)" fillOpacity={0.55} />
-                </ScatterChart>
+                <BarChart data={topBottom} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+                  <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="group" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
+                  <Bar dataKey="lyAttain" name="LY Attainment" fill="var(--muted-foreground)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="newAttain" name="Expected New Attainment" fill="var(--warning)" radius={[3, 3, 0, 0]} />
+                </BarChart>
               </ResponsiveContainer>
             </div>
-          </Card>
+          </TestCard>
+
+          {/* Test 4 */}
+          <TestCard
+            icon={MapPin}
+            number={4}
+            title="High vs Low Potential Territories"
+            subtitle="Goal difficulty and expected attainment by territory potential"
+            severity="warning"
+            insight="Low-potential territories are receiving disproportionately difficult goals (118% difficulty index vs 92% in high-potential). Expected attainment gap is 14 points."
+            recommendation={["Increase Territory Potential Weight", "Review goal allocation in low-potential geographies"]}
+          >
+            <div className="h-[200px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={potentialBuckets} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+                  <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="group" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
+                  <Bar dataKey="goalDifficulty" name="Goal Difficulty Index" fill="var(--chart-2)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="expectedAttain" name="Expected Attainment" fill="var(--chart-1)" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </TestCard>
+
+          {/* Test 5 */}
+          <TestCard
+            icon={GitCompare}
+            number={5}
+            title="Goal Similarity Test"
+            subtitle="Variance across rep-level goals"
+            severity="caution"
+            insight="Goal coefficient of variation is 0.09 — goals are quite similar across reps. This may reflect over-reliance on equal distribution at the expense of differentiated territory plans."
+            recommendation={["Reduce Equal Distribution Weight", "Increase performance-based allocation"]}
+          >
+            <div className="grid grid-cols-3 gap-3">
+              <Stat label="Variance" value="$48K²" tone="info" />
+              <Stat label="Std Deviation" value="±$22K" tone="info" />
+              <Stat label="CoV" value="0.09" tone="warning" />
+            </div>
+          </TestCard>
         </div>
 
-        {/* Regional fairness */}
-        <Card className="p-0">
-          <div className="px-5 pt-5 pb-3 flex items-center justify-between border-b border-border">
-            <div>
-              <div className="text-[14px] font-semibold tracking-tight flex items-center gap-2">
-                <MapPin className="size-3.5" /> Regional Fairness
-              </div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">Equity across 6 regions · click a region to drill down</div>
-            </div>
-            <Badge tone="warning"><AlertTriangle className="size-3" /> 2 regions need attention</Badge>
-          </div>
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground bg-muted/40">
-                <th className="text-left font-medium px-5 py-2.5">Region</th>
-                <th className="text-right font-medium px-5 py-2.5">Reps</th>
-                <th className="text-right font-medium px-5 py-2.5">Healthy %</th>
-                <th className="text-left font-medium px-5 py-2.5 w-[300px]">Distribution</th>
-                <th className="text-right font-medium px-5 py-2.5">Avg Attainment</th>
-                <th className="text-right font-medium px-5 py-2.5">Spread (σ)</th>
-                <th className="text-right font-medium px-5 py-2.5 pr-6">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {regions.map((r) => (
-                <tr key={r.name} className="hover:bg-muted/30 cursor-pointer">
-                  <td className="px-5 py-3.5 font-medium">{r.name}</td>
-                  <td className="px-5 py-3.5 text-right num text-muted-foreground">{r.reps}</td>
-                  <td className="px-5 py-3.5 text-right num font-medium">{r.healthy}%</td>
-                  <td className="px-5 py-3.5">
-                    <div className="h-2.5 rounded-full bg-muted overflow-hidden flex">
-                      <div className="bg-destructive" style={{ width: `${(100 - r.healthy) * 0.6}%` }} />
-                      <div className="bg-warning" style={{ width: `${(100 - r.healthy) * 0.4}%` }} />
-                      <div className="bg-success" style={{ width: `${r.healthy}%` }} />
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5 text-right num font-medium">{r.attain}%</td>
-                  <td className="px-5 py-3.5 text-right num text-muted-foreground">±{r.spread}</td>
-                  <td className="px-5 py-3.5 text-right pr-6">
-                    <Badge tone={r.status}>
-                      <StatusDot tone={r.status} />
-                      {r.status === "success" ? "Healthy" : r.status === "warning" ? "Review" : "Monitor"}
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
-
-        {/* Outliers */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5">
-          <Card className="p-0">
-            <div className="px-5 pt-5 pb-3 flex items-center justify-between border-b border-border">
+        {/* Recommendations panel */}
+        <aside className="space-y-4">
+          <Card className="p-0 sticky top-20">
+            <div className="px-5 pt-5 pb-3 border-b border-border flex items-center gap-2">
+              <ShieldCheck className="size-4 text-primary" />
               <div>
-                <div className="text-[14px] font-semibold tracking-tight flex items-center gap-2">
-                  <TrendingDown className="size-3.5 text-destructive" /> Outlier Detection
-                </div>
-                <div className="text-[12px] text-muted-foreground mt-0.5">Reps whose targets fall outside fairness tolerances</div>
+                <div className="text-[14px] font-semibold tracking-tight">Fairness Recommendations</div>
+                <div className="text-[11.5px] text-muted-foreground mt-0.5">Auto-generated from test results</div>
               </div>
-              <button className="text-[12px] font-medium text-primary">Resolve all</button>
             </div>
-            <table className="w-full text-[13px]">
-              <thead>
-                <tr className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground bg-muted/40">
-                  <th className="text-left font-medium px-5 py-2.5">Rep</th>
-                  <th className="text-left font-medium px-5 py-2.5">Region</th>
-                  <th className="text-right font-medium px-5 py-2.5">Target</th>
-                  <th className="text-right font-medium px-5 py-2.5">Proj. Attain.</th>
-                  <th className="text-left font-medium px-5 py-2.5">Issue</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {outliers.map((o) => (
-                  <tr key={o.rep} className="hover:bg-muted/30">
-                    <td className="px-5 py-3 font-medium">{o.rep}</td>
-                    <td className="px-5 py-3 text-muted-foreground">{o.region}</td>
-                    <td className="px-5 py-3 text-right num">{o.target}</td>
-                    <td className={`px-5 py-3 text-right num font-semibold ${o.attain < 80 ? "text-destructive" : "text-warning"}`}>{o.attain}%</td>
-                    <td className="px-5 py-3"><Badge tone={o.sev === "danger" ? "danger" : "warning"}>{o.issue}</Badge></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <ul className="px-5 py-4 space-y-2.5 text-[12.5px]">
+              <RecItem tone="danger" text="Decrease Historical Sales Weight (currently overweighted)" />
+              <RecItem tone="danger" text="Increase Territory Potential Weight" />
+              <RecItem tone="warning" text="Reduce Equal Distribution Weight" />
+              <RecItem tone="warning" text="Rebalance Goals Across Territories" />
+              <RecItem tone="info" text="Review High-Potential Territories outliers" />
+            </ul>
+            <div className="px-5 py-3 border-t border-border">
+              <a
+                href="/goal-setting"
+                className="h-9 w-full inline-flex items-center justify-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12.5px] font-semibold hover:bg-primary/90"
+              >
+                Back to Goal Setting <ArrowRight className="size-3.5" />
+              </a>
+            </div>
           </Card>
 
-          <Card className="p-0">
-            <div className="px-5 pt-5 pb-3 border-b border-border">
-              <div className="text-[14px] font-semibold tracking-tight flex items-center gap-2">
-                <Users className="size-3.5" /> Role-Based Fairness
-              </div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">Equity across role tiers</div>
-            </div>
-            <div className="p-5 space-y-4">
-              {[
-                { role: "Sales Rep (1,247)", score: 87, tone: "success" as const },
-                { role: "RBM (84)", score: 91, tone: "success" as const },
-                { role: "Area Sales Manager (12)", score: 79, tone: "warning" as const },
-              ].map((r) => (
-                <div key={r.role}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="text-[12.5px] font-medium">{r.role}</div>
-                    <Badge tone={r.tone}>{r.score} / 100</Badge>
-                  </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div className={`h-full ${r.tone === "success" ? "bg-success" : "bg-warning"}`} style={{ width: `${r.score}%` }} />
-                  </div>
-                </div>
-              ))}
-              <div className="rounded-lg border border-warning/30 bg-warning/10 p-3 mt-4 flex gap-2.5">
-                <AlertTriangle className="size-4 text-warning-foreground shrink-0 mt-0.5" />
-                <div className="text-[11.5px]">
-                  <span className="font-medium">ASM tier needs review.</span> Two managers project below 80% attainment under base-case assumptions.
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
+          <div className="rounded-lg border border-border bg-surface p-4 text-[12px] text-muted-foreground">
+            Fairness Testing runs <span className="text-foreground font-medium">before</span> Payout Curve Design — validate the goals first so payouts are built on equitable targets.
+          </div>
+        </aside>
       </div>
     </div>
   );
 }
 
-function Metric({ label, value, tone, target }: any) {
-  const c = { success: "text-success", warning: "text-warning-foreground", info: "text-info", danger: "text-destructive" }[tone as string];
+function TestCard({
+  icon: Icon, number, title, subtitle, severity, insight, recommendation, children,
+}: {
+  icon: typeof CheckCircle2; number: number; title: string; subtitle: string;
+  severity: Severity; insight: string; recommendation?: string[]; children: React.ReactNode;
+}) {
+  const meta = SEV_META[severity];
+  const SevIcon = meta.Icon;
   return (
-    <div className="p-5">
-      <div className="text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground font-semibold">{label}</div>
-      <div className={`mt-1.5 text-[26px] font-semibold tracking-tight num ${c}`}>{value}</div>
-      <div className="text-[11px] text-muted-foreground mt-0.5">{target}</div>
+    <Card className="p-0">
+      <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3 border-b border-border">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="size-9 rounded-lg bg-primary-muted text-primary grid place-items-center shrink-0">
+            <Icon className="size-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground font-semibold">Test {number}</span>
+            </div>
+            <div className="text-[14.5px] font-semibold tracking-tight">{title}</div>
+            <div className="text-[12px] text-muted-foreground mt-0.5">{subtitle}</div>
+          </div>
+        </div>
+        <Badge tone={meta.tone}><SevIcon className="size-3" /> {meta.label}</Badge>
+      </div>
+      <div className="px-5 py-4">{children}</div>
+      <div className="px-5 py-3 border-t border-border bg-muted/30 text-[12.5px] text-foreground">
+        <span className="font-semibold">Insight: </span>{insight}
+      </div>
+      {recommendation && (
+        <div className="px-5 py-3 border-t border-border bg-warning/5">
+          <div className="text-[10.5px] uppercase tracking-[0.06em] text-warning font-semibold mb-1.5">
+            Recommended Actions
+          </div>
+          <ul className="text-[12.5px] text-foreground space-y-1 list-disc pl-5">
+            {recommendation.map((r) => <li key={r}>{r}</li>)}
+          </ul>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function Stat({ label, value, tone }: { label: string; value: string; tone: "primary" | "info" | "warning" }) {
+  const toneCls = { primary: "text-primary", info: "text-info", warning: "text-warning" }[tone];
+  return (
+    <div className="rounded-md border border-border bg-background px-3 py-2.5">
+      <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{label}</div>
+      <div className={`text-[18px] font-semibold tracking-tight num ${toneCls}`}>{value}</div>
     </div>
+  );
+}
+
+function RecItem({ tone, text }: { tone: "danger" | "warning" | "info"; text: string }) {
+  const dotCls = { danger: "bg-destructive", warning: "bg-warning", info: "bg-info" }[tone];
+  return (
+    <li className="flex items-start gap-2.5">
+      <span className={`mt-1.5 size-1.5 rounded-full shrink-0 ${dotCls}`} />
+      <span>{text}</span>
+    </li>
   );
 }

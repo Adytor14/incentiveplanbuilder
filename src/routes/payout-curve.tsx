@@ -104,17 +104,18 @@ function PayoutCurve() {
   return (
     <div>
       <PageHeader
-        step={3}
+        step={5}
         title="Payout Curve Designer"
-        description="Define inflexion points directly. Add as many points as you need — values are not clamped."
-        prev={{ to: "/goal-setting", label: "Goal Setting" }}
-        next={{ to: "/simulation", label: "Monte Carlo" }}
+        description="Define inflexion points for Threshold, Target and Excellence achievement. Add as many points as needed."
+        prev={{ to: "/fairness", label: "Fairness Testing" }}
+        next={{ to: "/reports", label: "Reports & Outputs" }}
         actions={
           <button className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card">
             <Save className="size-3.5" /> Save to Curve Library
           </button>
         }
       />
+
       <div className="px-8 py-7 max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_460px] gap-6">
         {/* Chart */}
         <Card className="p-0">
