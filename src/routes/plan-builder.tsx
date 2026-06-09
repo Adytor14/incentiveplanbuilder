@@ -92,8 +92,60 @@ function PlanBuilder() {
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState("Custom");
-  const [newWeight, setNewWeight] = useState(0);
+  const [newWeight, setNewWeight] = useState<number | "">(0);
+  const [addErrors, setAddErrors] = useState<{ name?: string; category?: string; weight?: string }>({});
   const list = components[role];
+  const remainingWeight = Math.max(0, 100 - list.reduce((s, c) => s + c.weight, 0));
+
+  const openAdd = () => {
+    setNewName("");
+    setNewCategory("Custom");
+    setNewWeight(remainingWeight);
+    setAddErrors({});
+    setShowAdd(true);
+  };
+
+  const closeAdd = () => {
+    setShowAdd(false);
+    setAddErrors({});
+  };
+
+  const validateAdd = () => {
+    const errs: { name?: string; category?: string; weight?: string } = {};
+    const name = newName.trim();
+    const category = newCategory.trim();
+    if (!name) errs.name = "Name is required.";
+    else if (name.length > 60) errs.name = "Keep name under 60 characters.";
+    else if (list.some((c) => c.name.toLowerCase() === name.toLowerCase()))
+      errs.name = "A component with this name already exists.";
+    if (!category) errs.category = "Category is required.";
+    else if (category.length > 40) errs.category = "Keep category under 40 characters.";
+    const w = typeof newWeight === "number" ? newWeight : Number(newWeight);
+    if (newWeight === "" || Number.isNaN(w)) errs.weight = "Enter a number between 0 and 100.";
+    else if (!Number.isFinite(w) || w < 0 || w > 100) errs.weight = "Weight must be between 0 and 100.";
+    else if (!Number.isInteger(w)) errs.weight = "Weight must be a whole number.";
+    return errs;
+  };
+
+  const submitAdd = () => {
+    const errs = validateAdd();
+    setAddErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+    const name = newName.trim();
+    const category = newCategory.trim();
+    const w = typeof newWeight === "number" ? newWeight : Number(newWeight);
+    const newComp: Component = {
+      id: `c${Date.now()}`,
+      name,
+      category,
+      weight: w,
+      threshold: 80,
+      cap: 150,
+      accelerator: 110,
+    };
+    setComponents((prev) => ({ ...prev, [role]: [...prev[role], newComp] }));
+    closeAdd();
+  };
   const totalWeight = list.reduce((s, c) => s + c.weight, 0);
   const balanced = totalWeight === 100;
 
