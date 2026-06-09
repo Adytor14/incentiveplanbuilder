@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
-import { Card, Badge } from "@/components/ui-kit";
+import { Card } from "@/components/ui-kit";
 import { Plus, Trash2, AlertTriangle, X, Info } from "lucide-react";
 
 export const Route = createFileRoute("/plan-builder")({
