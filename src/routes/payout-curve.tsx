@@ -30,11 +30,12 @@ export const Route = createFileRoute("/payout-curve")({
 type Point = { id: string; name: string; attainment: number; payout: number };
 
 const DEFAULT_POINTS: Point[] = [
-  { id: "p1", name: "Threshold", attainment: 80, payout: 0 },
+  { id: "p1", name: "Threshold", attainment: 80, payout: 50 },
   { id: "p2", name: "Target", attainment: 100, payout: 100 },
-  { id: "p3", name: "Accelerator", attainment: 110, payout: 120 },
-  { id: "p4", name: "Cap", attainment: 150, payout: 200 },
+  { id: "p3", name: "Excellence", attainment: 120, payout: 150 },
+  { id: "p4", name: "Stretch", attainment: 150, payout: 200 },
 ];
+
 
 const PALETTE = [
   "var(--warning)",
