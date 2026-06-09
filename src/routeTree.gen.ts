@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as PlanBuilderRouteImport } from './routes/plan-builder'
 import { Route as PayoutCurveRouteImport } from './routes/payout-curve'
 import { Route as GoalSettingRouteImport } from './routes/goal-setting'
@@ -16,6 +17,11 @@ import { Route as FairnessRouteImport } from './routes/fairness'
 import { Route as DataInputsRouteImport } from './routes/data-inputs'
 import { Route as IndexRouteImport } from './routes/index'
 
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlanBuilderRoute = PlanBuilderRouteImport.update({
   id: '/plan-builder',
   path: '/plan-builder',
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/goal-setting': typeof GoalSettingRoute
   '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
+  '/reports': typeof ReportsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/goal-setting': typeof GoalSettingRoute
   '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
+  '/reports': typeof ReportsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/goal-setting': typeof GoalSettingRoute
   '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
+  '/reports': typeof ReportsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/goal-setting'
     | '/payout-curve'
     | '/plan-builder'
+    | '/reports'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/goal-setting'
     | '/payout-curve'
     | '/plan-builder'
+    | '/reports'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/goal-setting'
     | '/payout-curve'
     | '/plan-builder'
+    | '/reports'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,10 +118,18 @@ export interface RootRouteChildren {
   GoalSettingRoute: typeof GoalSettingRoute
   PayoutCurveRoute: typeof PayoutCurveRoute
   PlanBuilderRoute: typeof PlanBuilderRoute
+  ReportsRoute: typeof ReportsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/plan-builder': {
       id: '/plan-builder'
       path: '/plan-builder'
@@ -162,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   GoalSettingRoute: GoalSettingRoute,
   PayoutCurveRoute: PayoutCurveRoute,
   PlanBuilderRoute: PlanBuilderRoute,
+  ReportsRoute: ReportsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
