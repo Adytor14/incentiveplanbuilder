@@ -92,8 +92,60 @@ function PlanBuilder() {
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState("Custom");
-  const [newWeight, setNewWeight] = useState(0);
+  const [newWeight, setNewWeight] = useState<number | "">(0);
+  const [addErrors, setAddErrors] = useState<{ name?: string; category?: string; weight?: string }>({});
   const list = components[role];
+  const remainingWeight = Math.max(0, 100 - list.reduce((s, c) => s + c.weight, 0));
+
+  const openAdd = () => {
+    setNewName("");
+    setNewCategory("Custom");
+    setNewWeight(remainingWeight);
+    setAddErrors({});
+    setShowAdd(true);
+  };
+
+  const closeAdd = () => {
+    setShowAdd(false);
+    setAddErrors({});
+  };
+
+  const validateAdd = () => {
+    const errs: { name?: string; category?: string; weight?: string } = {};
+    const name = newName.trim();
+    const category = newCategory.trim();
+    if (!name) errs.name = "Name is required.";
+    else if (name.length > 60) errs.name = "Keep name under 60 characters.";
+    else if (list.some((c) => c.name.toLowerCase() === name.toLowerCase()))
+      errs.name = "A component with this name already exists.";
+    if (!category) errs.category = "Category is required.";
+    else if (category.length > 40) errs.category = "Keep category under 40 characters.";
+    const w = typeof newWeight === "number" ? newWeight : Number(newWeight);
+    if (newWeight === "" || Number.isNaN(w)) errs.weight = "Enter a number between 0 and 100.";
+    else if (!Number.isFinite(w) || w < 0 || w > 100) errs.weight = "Weight must be between 0 and 100.";
+    else if (!Number.isInteger(w)) errs.weight = "Weight must be a whole number.";
+    return errs;
+  };
+
+  const submitAdd = () => {
+    const errs = validateAdd();
+    setAddErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+    const name = newName.trim();
+    const category = newCategory.trim();
+    const w = typeof newWeight === "number" ? newWeight : Number(newWeight);
+    const newComp: Component = {
+      id: `c${Date.now()}`,
+      name,
+      category,
+      weight: w,
+      threshold: 80,
+      cap: 150,
+      accelerator: 110,
+    };
+    setComponents((prev) => ({ ...prev, [role]: [...prev[role], newComp] }));
+    closeAdd();
+  };
   const totalWeight = list.reduce((s, c) => s + c.weight, 0);
   const balanced = totalWeight === 100;
 
@@ -288,12 +340,7 @@ function PlanBuilder() {
                 <SegmentedTabs value="grid" onChange={() => {}} options={[{ value: "grid", label: "Detailed" }, { value: "table", label: "Compact" }]} />
                 <button
                   type="button"
-                  onClick={() => {
-                    setNewName("");
-                    setNewCategory("Custom");
-                    setNewWeight(0);
-                    setShowAdd(true);
-                  }}
+                  onClick={openAdd}
                   className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12px] font-medium hover:bg-primary/90"
                 >
                   <Plus className="size-3.5" /> Add Component
@@ -510,7 +557,7 @@ function PlanBuilder() {
               </div>
               <button
                 type="button"
-                onClick={() => setShowAdd(false)}
+                onClick={closeAdd}
                 className="size-7 grid place-items-center rounded-md hover:bg-muted"
               >
                 <X className="size-4 text-muted-foreground" />
@@ -522,21 +569,60 @@ function PlanBuilder() {
                 <input
                   type="text"
                   value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
+                  onChange={(e) => {
+                    setNewName(e.target.value);
+                    if (addErrors.name) setAddErrors((p) => ({ ...p, name: undefined }));
+                  }}
+                  maxLength={80}
                   placeholder="e.g. Product C — Aurelix"
-                  className="w-full h-9 px-2.5 rounded-md border border-border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                  className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.name ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"}`}
                 />
+                {addErrors.name && (
+                  <div className="mt-1 text-[11.5px] text-destructive">{addErrors.name}</div>
+                )}
               </label>
               <label className="block">
                 <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Category</div>
                 <input
                   type="text"
                   value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full h-9 px-2.5 rounded-md border border-border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                  onChange={(e) => {
+                    setNewCategory(e.target.value);
+                    if (addErrors.category) setAddErrors((p) => ({ ...p, category: undefined }));
+                  }}
+                  maxLength={50}
+                  className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.category ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"}`}
                 />
+                {addErrors.category && (
+                  <div className="mt-1 text-[11.5px] text-destructive">{addErrors.category}</div>
+                )}
               </label>
-              <NumField label="Initial Weight" suffix="%" value={newWeight} onChange={setNewWeight} />
+              <label className="block">
+                <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Initial Weight</div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={newWeight}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setNewWeight(v === "" ? "" : Number(v));
+                      if (addErrors.weight) setAddErrors((p) => ({ ...p, weight: undefined }));
+                    }}
+                    className={`w-full h-9 pl-2.5 pr-7 rounded-md border bg-background text-[13px] num font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.weight ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"}`}
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">%</span>
+                </div>
+                {addErrors.weight ? (
+                  <div className="mt-1 text-[11.5px] text-destructive">{addErrors.weight}</div>
+                ) : (
+                  <div className="mt-1 text-[11px] text-muted-foreground">
+                    {remainingWeight}% available before exceeding 100%.
+                  </div>
+                )}
+              </label>
               <div className="text-[11.5px] text-muted-foreground flex items-start gap-1.5">
                 <Info className="size-3 mt-0.5 shrink-0" />
                 Remember to rebalance so all components sum to 100%.
@@ -545,31 +631,15 @@ function PlanBuilder() {
             <div className="px-5 pb-4 flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setShowAdd(false)}
+                onClick={closeAdd}
                 className="h-9 px-3.5 rounded-md border border-border bg-background text-[13px] font-medium hover:bg-muted"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                disabled={!newName.trim()}
-                onClick={() => {
-                  setComponents((prev) => {
-                    const current = prev[role];
-                    const newComp: Component = {
-                      id: `c${Date.now()}`,
-                      name: newName.trim(),
-                      category: newCategory.trim() || "Custom",
-                      weight: Math.max(0, Math.min(100, Math.round(newWeight))),
-                      threshold: 80,
-                      cap: 150,
-                      accelerator: 110,
-                    };
-                    return { ...prev, [role]: [...current, newComp] };
-                  });
-                  setShowAdd(false);
-                }}
-                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={submitAdd}
+                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90"
               >
                 Add Component
               </button>
