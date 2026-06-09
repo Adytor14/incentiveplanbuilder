@@ -89,6 +89,10 @@ function PlanBuilder() {
   const [role, setRole] = useState<Role>("rep");
   const [components, setComponents] = useState(INITIAL);
   const [showInvalid, setShowInvalid] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newCategory, setNewCategory] = useState("Custom");
+  const [newWeight, setNewWeight] = useState(0);
   const list = components[role];
   const totalWeight = list.reduce((s, c) => s + c.weight, 0);
   const balanced = totalWeight === 100;
@@ -285,20 +289,10 @@ function PlanBuilder() {
                 <button
                   type="button"
                   onClick={() => {
-                    setComponents((prev) => {
-                      const current = prev[role];
-                      const newId = `c${Date.now()}`;
-                      const newComp: Component = {
-                        id: newId,
-                        name: `New Component ${current.length + 1}`,
-                        category: "Custom",
-                        weight: 0,
-                        threshold: 80,
-                        cap: 150,
-                        accelerator: 110,
-                      };
-                      return { ...prev, [role]: [...current, newComp] };
-                    });
+                    setNewName("");
+                    setNewCategory("Custom");
+                    setNewWeight(0);
+                    setShowAdd(true);
                   }}
                   className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12px] font-medium hover:bg-primary/90"
                 >
@@ -495,6 +489,89 @@ function PlanBuilder() {
                 className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90"
               >
                 Got it
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {showAdd && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm p-4">
+          <Card className="max-w-md w-full p-0">
+            <div className="px-5 py-4 border-b border-border flex items-center gap-2.5">
+              <div className="size-9 rounded-lg bg-primary/15 text-primary grid place-items-center">
+                <Plus className="size-4" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[14px] font-semibold">Add Component</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">
+                  For {ROLE_LABEL[role].name}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAdd(false)}
+                className="size-7 grid place-items-center rounded-md hover:bg-muted"
+              >
+                <X className="size-4 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <label className="block">
+                <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Name</div>
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="e.g. Product C — Aurelix"
+                  className="w-full h-9 px-2.5 rounded-md border border-border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                />
+              </label>
+              <label className="block">
+                <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Category</div>
+                <input
+                  type="text"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  className="w-full h-9 px-2.5 rounded-md border border-border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                />
+              </label>
+              <NumField label="Initial Weight" suffix="%" value={newWeight} onChange={setNewWeight} />
+              <div className="text-[11.5px] text-muted-foreground flex items-start gap-1.5">
+                <Info className="size-3 mt-0.5 shrink-0" />
+                Remember to rebalance so all components sum to 100%.
+              </div>
+            </div>
+            <div className="px-5 pb-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowAdd(false)}
+                className="h-9 px-3.5 rounded-md border border-border bg-background text-[13px] font-medium hover:bg-muted"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!newName.trim()}
+                onClick={() => {
+                  setComponents((prev) => {
+                    const current = prev[role];
+                    const newComp: Component = {
+                      id: `c${Date.now()}`,
+                      name: newName.trim(),
+                      category: newCategory.trim() || "Custom",
+                      weight: Math.max(0, Math.min(100, Math.round(newWeight))),
+                      threshold: 80,
+                      cap: 150,
+                      accelerator: 110,
+                    };
+                    return { ...prev, [role]: [...current, newComp] };
+                  });
+                  setShowAdd(false);
+                }}
+                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add Component
               </button>
             </div>
           </Card>
