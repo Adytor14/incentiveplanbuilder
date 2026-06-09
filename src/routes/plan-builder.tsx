@@ -340,12 +340,7 @@ function PlanBuilder() {
                 <SegmentedTabs value="grid" onChange={() => {}} options={[{ value: "grid", label: "Detailed" }, { value: "table", label: "Compact" }]} />
                 <button
                   type="button"
-                  onClick={() => {
-                    setNewName("");
-                    setNewCategory("Custom");
-                    setNewWeight(0);
-                    setShowAdd(true);
-                  }}
+                  onClick={openAdd}
                   className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12px] font-medium hover:bg-primary/90"
                 >
                   <Plus className="size-3.5" /> Add Component
