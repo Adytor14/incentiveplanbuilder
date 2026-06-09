@@ -11,7 +11,9 @@ import {
   ArrowRight,
   Database,
   FileSpreadsheet,
+  Calendar,
 } from "lucide-react";
+import { usePlanPeriod, PLAN_PERIODS } from "@/lib/plan-period";
 import {
   DATASETS as INITIAL_DATASETS,
   datasetsReady,
