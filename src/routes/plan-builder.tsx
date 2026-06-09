@@ -282,7 +282,26 @@ function PlanBuilder() {
               </div>
               <div className="flex items-center gap-2">
                 <SegmentedTabs value="grid" onChange={() => {}} options={[{ value: "grid", label: "Detailed" }, { value: "table", label: "Compact" }]} />
-                <button className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12px] font-medium hover:bg-primary/90">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComponents((prev) => {
+                      const current = prev[role];
+                      const newId = `c${Date.now()}`;
+                      const newComp: Component = {
+                        id: newId,
+                        name: `New Component ${current.length + 1}`,
+                        category: "Custom",
+                        weight: 0,
+                        threshold: 80,
+                        cap: 150,
+                        accelerator: 110,
+                      };
+                      return { ...prev, [role]: [...current, newComp] };
+                    });
+                  }}
+                  className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12px] font-medium hover:bg-primary/90"
+                >
                   <Plus className="size-3.5" /> Add Component
                 </button>
               </div>
