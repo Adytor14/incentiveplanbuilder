@@ -557,7 +557,7 @@ function PlanBuilder() {
               </div>
               <button
                 type="button"
-                onClick={() => setShowAdd(false)}
+                onClick={closeAdd}
                 className="size-7 grid place-items-center rounded-md hover:bg-muted"
               >
                 <X className="size-4 text-muted-foreground" />
@@ -569,21 +569,60 @@ function PlanBuilder() {
                 <input
                   type="text"
                   value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
+                  onChange={(e) => {
+                    setNewName(e.target.value);
+                    if (addErrors.name) setAddErrors((p) => ({ ...p, name: undefined }));
+                  }}
+                  maxLength={80}
                   placeholder="e.g. Product C — Aurelix"
-                  className="w-full h-9 px-2.5 rounded-md border border-border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                  className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.name ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"}`}
                 />
+                {addErrors.name && (
+                  <div className="mt-1 text-[11.5px] text-destructive">{addErrors.name}</div>
+                )}
               </label>
               <label className="block">
                 <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Category</div>
                 <input
                   type="text"
                   value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full h-9 px-2.5 rounded-md border border-border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                  onChange={(e) => {
+                    setNewCategory(e.target.value);
+                    if (addErrors.category) setAddErrors((p) => ({ ...p, category: undefined }));
+                  }}
+                  maxLength={50}
+                  className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.category ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"}`}
                 />
+                {addErrors.category && (
+                  <div className="mt-1 text-[11.5px] text-destructive">{addErrors.category}</div>
+                )}
               </label>
-              <NumField label="Initial Weight" suffix="%" value={newWeight} onChange={setNewWeight} />
+              <label className="block">
+                <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Initial Weight</div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={newWeight}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setNewWeight(v === "" ? "" : Number(v));
+                      if (addErrors.weight) setAddErrors((p) => ({ ...p, weight: undefined }));
+                    }}
+                    className={`w-full h-9 pl-2.5 pr-7 rounded-md border bg-background text-[13px] num font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.weight ? "border-destructive focus:border-destructive" : "border-border focus:border-primary"}`}
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">%</span>
+                </div>
+                {addErrors.weight ? (
+                  <div className="mt-1 text-[11.5px] text-destructive">{addErrors.weight}</div>
+                ) : (
+                  <div className="mt-1 text-[11px] text-muted-foreground">
+                    {remainingWeight}% available before exceeding 100%.
+                  </div>
+                )}
+              </label>
               <div className="text-[11.5px] text-muted-foreground flex items-start gap-1.5">
                 <Info className="size-3 mt-0.5 shrink-0" />
                 Remember to rebalance so all components sum to 100%.
@@ -592,31 +631,15 @@ function PlanBuilder() {
             <div className="px-5 pb-4 flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setShowAdd(false)}
+                onClick={closeAdd}
                 className="h-9 px-3.5 rounded-md border border-border bg-background text-[13px] font-medium hover:bg-muted"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                disabled={!newName.trim()}
-                onClick={() => {
-                  setComponents((prev) => {
-                    const current = prev[role];
-                    const newComp: Component = {
-                      id: `c${Date.now()}`,
-                      name: newName.trim(),
-                      category: newCategory.trim() || "Custom",
-                      weight: Math.max(0, Math.min(100, Math.round(newWeight))),
-                      threshold: 80,
-                      cap: 150,
-                      accelerator: 110,
-                    };
-                    return { ...prev, [role]: [...current, newComp] };
-                  });
-                  setShowAdd(false);
-                }}
-                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={submitAdd}
+                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90"
               >
                 Add Component
               </button>
