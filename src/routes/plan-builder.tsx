@@ -485,6 +485,3 @@ function Modal({
     </div>
   );
 }
-
-// Surface unused Badge import for tree-shake-friendly explicit re-use
-void Badge;
