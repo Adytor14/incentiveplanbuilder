@@ -89,6 +89,10 @@ function PlanBuilder() {
   const [role, setRole] = useState<Role>("rep");
   const [components, setComponents] = useState(INITIAL);
   const [showInvalid, setShowInvalid] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newCategory, setNewCategory] = useState("Custom");
+  const [newWeight, setNewWeight] = useState(0);
   const list = components[role];
   const totalWeight = list.reduce((s, c) => s + c.weight, 0);
   const balanced = totalWeight === 100;
