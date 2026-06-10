@@ -44,7 +44,6 @@ export function PageHeader({ step, eyebrow, title, description, prev, next, acti
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {actions}
             {prev && (
               <Link
                 to={prev.to}
@@ -54,6 +53,7 @@ export function PageHeader({ step, eyebrow, title, description, prev, next, acti
                 {prev.label}
               </Link>
             )}
+            {actions}
             {next && (
               <Link
                 to={next.to}
