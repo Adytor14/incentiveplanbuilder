@@ -5,7 +5,7 @@ interface Props {
   step?: number;
   eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   prev?: { to: string; label: string };
   next?: { to: string; label: string };
   actions?: React.ReactNode;
@@ -37,9 +37,11 @@ export function PageHeader({ step, eyebrow, title, description, prev, next, acti
             <h1 className="text-[26px] font-semibold tracking-tight text-foreground text-balance">
               {title}
             </h1>
-            <p className="mt-1.5 text-[14px] text-muted-foreground max-w-2xl text-balance">
-              {description}
-            </p>
+            {description && (
+              <p className="mt-1.5 text-[14px] text-muted-foreground max-w-2xl text-balance">
+                {description}
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {actions}
