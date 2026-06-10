@@ -66,7 +66,6 @@ function GoalSetting() {
       <PageHeader
         step={3}
         title="Goal Setting"
-        description="Choose goal-setting components and assign numeric weights. Weights must total 100%."
         prev={{ to: "/plan-builder", label: "Plan Builder" }}
         actions={
           <button
