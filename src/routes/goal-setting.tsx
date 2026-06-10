@@ -238,10 +238,10 @@ function GoalSetting() {
             <thead>
               <tr className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground bg-muted/40">
                 <th className="text-left font-medium px-5 py-2.5">Rep</th>
-                <th className="text-left font-medium px-5 py-2.5">Region</th>
-                <th className="text-right font-medium px-5 py-2.5">Historical</th>
-                <th className="text-right font-medium px-5 py-2.5">Potential</th>
-                <th className="text-right font-medium px-5 py-2.5">Equal</th>
+                <th className="text-left font-medium px-5 py-2.5">Geo ID</th>
+                <th className="text-right font-medium px-5 py-2.5">Historical Sales</th>
+                <th className="text-right font-medium px-5 py-2.5">Territory Potential</th>
+                <th className="text-right font-medium px-5 py-2.5">Equal Distribution</th>
                 <th className="text-right font-medium px-5 py-2.5 pr-6">Final Goal</th>
               </tr>
             </thead>
@@ -249,7 +249,7 @@ function GoalSetting() {
               {preview.map((r) => (
                 <tr key={r.rep} className="hover:bg-muted/30">
                   <td className="px-5 py-3 font-medium">{r.rep}</td>
-                  <td className="px-5 py-3"><Badge tone="neutral">{r.region}</Badge></td>
+                  <td className="px-5 py-3"><Badge tone="neutral">GEO-{r.region}</Badge></td>
                   <td className="px-5 py-3 text-right num text-muted-foreground">${r.histContrib}K</td>
                   <td className="px-5 py-3 text-right num text-muted-foreground">${r.potContrib}K</td>
                   <td className="px-5 py-3 text-right num text-muted-foreground">${r.eqContrib}K</td>
