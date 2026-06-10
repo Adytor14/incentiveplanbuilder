@@ -5,7 +5,7 @@ interface Props {
   step?: number;
   eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   prev?: { to: string; label: string };
   next?: { to: string; label: string };
   actions?: React.ReactNode;

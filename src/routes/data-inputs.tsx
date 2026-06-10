@@ -5,7 +5,7 @@ import { Card, Badge } from "@/components/ui-kit";
 import {
   CheckCircle2,
   AlertTriangle,
-  CircleDashed,
+  
   Upload,
   RefreshCw,
   ArrowRight,
@@ -18,7 +18,6 @@ import {
   DATASETS as INITIAL_DATASETS,
   datasetsReady,
   type Dataset,
-  type DatasetStatus,
 } from "@/lib/data-inputs";
 
 export const Route = createFileRoute("/data-inputs")({
@@ -35,14 +34,6 @@ export const Route = createFileRoute("/data-inputs")({
   component: DataInputsPage,
 });
 
-const STATUS_META: Record<
-  DatasetStatus,
-  { label: string; tone: "success" | "warning" | "danger"; Icon: typeof CheckCircle2 }
-> = {
-  validated: { label: "Validated", tone: "success", Icon: CheckCircle2 },
-  warning: { label: "Needs review", tone: "warning", Icon: AlertTriangle },
-  missing: { label: "Missing", tone: "danger", Icon: CircleDashed },
-};
 
 function DataInputsPage() {
   const [datasets, setDatasets] = useState<Dataset[]>(INITIAL_DATASETS);
@@ -60,7 +51,6 @@ function DataInputsPage() {
       <PageHeader
         step={1}
         title="Data Inputs"
-        description="Select the planning cycle and validate the source datasets that feed every downstream screen."
         prev={{ to: "/", label: "Home" }}
         next={{ to: "/plan-builder", label: "Plan Builder" }}
       />
@@ -107,53 +97,46 @@ function DataInputsPage() {
           </div>
 
           <div className="divide-y divide-border">
-            {datasets.map((d) => {
-              const meta = STATUS_META[d.status];
-              const Icon = meta.Icon;
-              return (
-                <div key={d.id} className="px-6 py-4 flex items-center gap-4">
-                  <div className="size-10 rounded-lg bg-muted/60 grid place-items-center shrink-0">
-                    <FileSpreadsheet className="size-4 text-muted-foreground" />
+            {datasets.map((d) => (
+              <div key={d.id} className="px-6 py-4 flex items-center gap-4">
+                <div className="size-10 rounded-lg bg-muted/60 grid place-items-center shrink-0">
+                  <FileSpreadsheet className="size-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="text-[13.5px] font-semibold text-foreground truncate">
+                      {d.name}
+                    </div>
+                    <Badge tone="neutral">{d.source}</Badge>
+                    {d.required && <Badge tone="primary">Required</Badge>}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <div className="text-[13.5px] font-semibold text-foreground truncate">
-                        {d.name}
-                      </div>
-                      <Badge tone="neutral">{d.source}</Badge>
-                      {d.required && <Badge tone="primary">Required</Badge>}
-                    </div>
-                    <div className="text-[12px] text-muted-foreground mt-0.5 truncate">
-                      {d.description}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground mt-1 num">
-                      {d.rows !== null ? `${d.rows.toLocaleString()} rows` : "—"} · updated {d.updatedAt ?? "—"}
-                    </div>
+                  <div className="text-[12px] text-muted-foreground mt-0.5 truncate">
+                    {d.description}
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Badge tone={meta.tone}>
-                      <Icon className="size-3" /> {meta.label}
-                    </Badge>
-                    {d.status === "warning" ? (
-                      <button
-                        type="button"
-                        onClick={() => revalidate(d.id)}
-                        className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
-                      >
-                        <RefreshCw className="size-3.5" /> Re-validate
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
-                      >
-                        <Upload className="size-3.5" /> Replace
-                      </button>
-                    )}
+                  <div className="text-[11px] text-muted-foreground mt-1 num">
+                    {d.rows !== null ? `${d.rows.toLocaleString()} rows` : "—"} · updated {d.updatedAt ?? "—"}
                   </div>
                 </div>
-              );
-            })}
+                <div className="flex items-center gap-2 shrink-0">
+                  {d.status === "warning" ? (
+                    <button
+                      type="button"
+                      onClick={() => revalidate(d.id)}
+                      className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
+                    >
+                      <RefreshCw className="size-3.5" /> Re-validate
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="h-8 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
+                    >
+                      <Upload className="size-3.5" /> Upload
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="px-6 py-4 border-t border-border flex items-center justify-between gap-3">
