@@ -167,7 +167,6 @@ function PlanBuilder() {
       <PageHeader
         step={2}
         title="Plan Builder"
-        description="Configure incentive components for each role and product. Weights must total 100% per product."
         prev={{ to: "/data-inputs", label: "Data Inputs" }}
         actions={
           <button
