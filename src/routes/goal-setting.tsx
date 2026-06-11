@@ -33,7 +33,7 @@ const REPS = [
   { rep: "L. García", region: "W", historical: 890, potential: 1340 },
 ];
 const NATIONAL_TARGET_K = 1_420_000;
-const REP_COUNT = 1247;
+const REP_COUNT = 15;
 
 function GoalSetting() {
   const navigate = useNavigate();

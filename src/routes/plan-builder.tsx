@@ -53,7 +53,7 @@ type Product = { id: string; name: string; components: Component[] };
 type Component = { id: string; name: string; category: string; weight: number };
 
 const ROLE_LABEL: Record<Role, { name: string; sub: string }> = {
-  rep: { name: "Sales Representative", sub: "Field-facing · 1,247 reps" },
+  rep: { name: "Sales Representative", sub: "Field-facing · 15 reps" },
   rbm: { name: "Regional Business Manager", sub: "First-line leader · 84 RBMs" },
   asm: { name: "Area Sales Manager", sub: "Senior leader · 12 ASMs" },
 };
