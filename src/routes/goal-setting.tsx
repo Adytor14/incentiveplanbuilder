@@ -203,42 +203,53 @@ function GoalSetting() {
           </span>
         </div>
 
-        {/* Preview table */}
-        <Card className="p-0">
-          <div className="px-5 pt-5 pb-3 border-b border-border flex items-center justify-between">
-            <div>
-              <div className="text-[14px] font-semibold tracking-tight">Rep-Level Goal Preview</div>
-              <div className="text-[12px] text-muted-foreground mt-0.5">
-                First {REPS.length} of {REP_COUNT.toLocaleString()} reps · live recompute
+        {/* Preview modal */}
+        {showPreview && (
+          <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm p-4">
+            <Card className="max-w-5xl w-full p-0 max-h-[85vh] flex flex-col">
+              <div className="px-5 pt-5 pb-3 border-b border-border flex items-center justify-between">
+                <div>
+                  <div className="text-[14px] font-semibold tracking-tight">Rep-Level Goal Preview</div>
+                  <div className="text-[12px] text-muted-foreground mt-0.5">
+                    First {REPS.length} of {REP_COUNT.toLocaleString()} reps · live recompute
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge tone="primary">Live</Badge>
+                  <button onClick={() => setShowPreview(false)} className="size-7 grid place-items-center rounded-md hover:bg-muted">
+                    <X className="size-4 text-muted-foreground" />
+                  </button>
+                </div>
               </div>
-            </div>
-            <Badge tone="primary">Live</Badge>
+              <div className="overflow-auto">
+                <table className="w-full text-[13px]">
+                  <thead>
+                    <tr className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground bg-muted/40">
+                      <th className="text-left font-medium px-5 py-2.5">Rep</th>
+                      <th className="text-left font-medium px-5 py-2.5">Geo ID</th>
+                      <th className="text-right font-medium px-5 py-2.5">Historical Sales</th>
+                      <th className="text-right font-medium px-5 py-2.5">Territory Potential</th>
+                      <th className="text-right font-medium px-5 py-2.5">Equal Distribution</th>
+                      <th className="text-right font-medium px-5 py-2.5 pr-6">Final Goal</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {preview.map((r) => (
+                      <tr key={r.rep} className="hover:bg-muted/30">
+                        <td className="px-5 py-3 font-medium">{r.rep}</td>
+                        <td className="px-5 py-3"><Badge tone="neutral">GEO-{r.region}</Badge></td>
+                        <td className="px-5 py-3 text-right num text-muted-foreground">${r.histContrib}K</td>
+                        <td className="px-5 py-3 text-right num text-muted-foreground">${r.potContrib}K</td>
+                        <td className="px-5 py-3 text-right num text-muted-foreground">${r.eqContrib.toLocaleString()}</td>
+                        <td className="px-5 py-3 text-right num font-semibold pr-6">${r.goal}K</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
           </div>
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground bg-muted/40">
-                <th className="text-left font-medium px-5 py-2.5">Rep</th>
-                <th className="text-left font-medium px-5 py-2.5">Geo ID</th>
-                <th className="text-right font-medium px-5 py-2.5">Historical Sales</th>
-                <th className="text-right font-medium px-5 py-2.5">Territory Potential</th>
-                <th className="text-right font-medium px-5 py-2.5">Equal Distribution</th>
-                <th className="text-right font-medium px-5 py-2.5 pr-6">Final Goal</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {preview.map((r) => (
-                <tr key={r.rep} className="hover:bg-muted/30">
-                  <td className="px-5 py-3 font-medium">{r.rep}</td>
-                  <td className="px-5 py-3"><Badge tone="neutral">GEO-{r.region}</Badge></td>
-                  <td className="px-5 py-3 text-right num text-muted-foreground">${r.histContrib}K</td>
-                  <td className="px-5 py-3 text-right num text-muted-foreground">${r.potContrib}K</td>
-                  <td className="px-5 py-3 text-right num text-muted-foreground">${r.eqContrib.toLocaleString()}</td>
-                  <td className="px-5 py-3 text-right num font-semibold pr-6">${r.goal}K</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
+        )}
       </div>
 
       {showInvalid && (
