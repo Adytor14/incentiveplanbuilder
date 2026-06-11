@@ -25,14 +25,14 @@ export const Route = createFileRoute("/goal-setting")({
 });
 
 const REPS = [
-  { rep: "A. Kapoor", region: "NE", historical: 1240, potential: 1620 },
-  { rep: "M. Chen", region: "W", historical: 980, potential: 1480 },
-  { rep: "R. Patel", region: "SW", historical: 1480, potential: 1720 },
-  { rep: "J. Williams", region: "SE", historical: 1120, potential: 1380 },
-  { rep: "T. Nakamura", region: "MW", historical: 1360, potential: 1540 },
-  { rep: "L. García", region: "W", historical: 890, potential: 1340 },
+  { rep: "A. Kapoor", region: "NE", historical: 12, potential: 16 },
+  { rep: "M. Chen", region: "W", historical: 10, potential: 15 },
+  { rep: "R. Patel", region: "SW", historical: 15, potential: 17 },
+  { rep: "J. Williams", region: "SE", historical: 11, potential: 14 },
+  { rep: "T. Nakamura", region: "MW", historical: 14, potential: 15 },
+  { rep: "L. García", region: "W", historical: 9, potential: 13 },
 ];
-const NATIONAL_TARGET_K = 21_300_000;
+const NATIONAL_TARGET_K = 100_000;
 const REP_COUNT = 15;
 
 function GoalSetting() {
