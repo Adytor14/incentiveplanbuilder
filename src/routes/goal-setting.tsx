@@ -269,13 +269,10 @@ function ComponentCard({
 }) {
   return (
     <Card className="p-0">
-      <div className="px-5 pt-5 pb-3 border-b border-border flex items-start justify-between gap-3">
-        <div className="flex items-start gap-2.5 min-w-0">
-          <span className="mt-1 size-3 rounded-sm shrink-0" style={{ background: accent }} />
-          <div>
-            <div className="text-[14px] font-semibold tracking-tight">{title}</div>
-            <div className="text-[12px] text-muted-foreground mt-0.5">{description}</div>
-          </div>
+        <div className="px-5 pt-5 pb-3 border-b border-border flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[14px] font-semibold tracking-tight">{title}</div>
+          <div className="text-[12px] text-muted-foreground mt-0.5">{description}</div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Weight</span>
