@@ -46,6 +46,64 @@ function DataInputsPage() {
   const ready = datasetsReady(datasets);
   const validated = datasets.filter((d) => d.status === "validated").length;
 
+  const [versions, setVersions] = useState<PlanVersion[]>([]);
+  const [activeVersionId, setActiveVersionId] = useState<string>("");
+  const [loadingVersions, setLoadingVersions] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("ic_plan_versions")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (cancelled) return;
+      if (!error && data) {
+        setVersions(data as PlanVersion[]);
+        const stored = typeof window !== "undefined" ? localStorage.getItem("ic_active_version") : null;
+        const pick = data.find((v) => v.id === stored)?.id ?? data[0]?.id ?? "";
+        setActiveVersionId(pick);
+      }
+      setLoadingVersions(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (activeVersionId && typeof window !== "undefined") {
+      localStorage.setItem("ic_active_version", activeVersionId);
+    }
+  }, [activeVersionId]);
+
+  const createVersion = async () => {
+    const name = window.prompt("Name this IC plan version", `Version ${versions.length + 1}`);
+    if (!name?.trim()) return;
+    const { data, error } = await supabase
+      .from("ic_plan_versions")
+      .insert({ name: name.trim() })
+      .select()
+      .single();
+    if (!error && data) {
+      setVersions((prev) => [...prev, data as PlanVersion]);
+      setActiveVersionId((data as PlanVersion).id);
+    }
+  };
+
+  const deleteActiveVersion = async () => {
+    if (!activeVersionId || versions.length <= 1) return;
+    const v = versions.find((x) => x.id === activeVersionId);
+    if (!v) return;
+    if (!window.confirm(`Delete "${v.name}"? This cannot be undone.`)) return;
+    const { error } = await supabase.from("ic_plan_versions").delete().eq("id", activeVersionId);
+    if (!error) {
+      const next = versions.filter((x) => x.id !== activeVersionId);
+      setVersions(next);
+      setActiveVersionId(next[0]?.id ?? "");
+    }
+  };
+
   const revalidate = (id: string) =>
     setDatasets((prev) =>
       prev.map((d) => (d.id === id ? { ...d, status: "validated", updatedAt: "Just now" } : d)),
