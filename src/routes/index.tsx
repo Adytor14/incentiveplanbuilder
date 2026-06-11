@@ -80,10 +80,7 @@ function Home() {
         <div className="absolute inset-0 bg-grid opacity-[0.07]" />
         <div className="absolute -right-20 -top-20 size-80 rounded-full bg-info/20 blur-3xl" />
         <div className="relative px-10 py-14">
-          <div className="inline-flex items-center gap-2 px-2.5 h-6 rounded-full bg-white/10 border border-white/15 text-[11px] font-medium backdrop-blur">
-            <Sparkles className="size-3" /> Planning Cycle · {period}
-          </div>
-          <h1 className="mt-5 text-[40px] font-semibold tracking-tight leading-[1.1] text-balance max-w-3xl">
+          <h1 className="text-[40px] font-semibold tracking-tight leading-[1.1] text-balance max-w-3xl">
             Design incentive plans that drive motivation, fairness, and business results.
           </h1>
         </div>
