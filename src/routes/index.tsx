@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles, Layers, Target, ShieldCheck, TrendingUp, FileText, Database, History } from "lucide-react";
+import { ArrowRight, Sparkles, History } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePlanPeriod } from "@/lib/plan-period";
 import { supabase } from "@/integrations/supabase/client";
