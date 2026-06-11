@@ -45,6 +45,7 @@ function GoalSetting() {
   const [wPot, setWPot] = useState(30);
   const [wEqual, setWEqual] = useState(20);
   const [showInvalid, setShowInvalid] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const total = wHist + wPot + wEqual;
   const balanced = total === 100;
