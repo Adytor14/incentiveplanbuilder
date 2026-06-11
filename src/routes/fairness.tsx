@@ -24,12 +24,12 @@ const SEV_META: Record<Severity, { label: string; tone: "success" | "warning" | 
 
 // Test 1 — Goal Attainment Distribution
 const attainmentDist = [
-  { bucket: "<60%", count: 18 },
-  { bucket: "60–80%", count: 142 },
-  { bucket: "80–100%", count: 386 },
-  { bucket: "100–120%", count: 412 },
-  { bucket: "120–150%", count: 218 },
-  { bucket: ">150%", count: 71 },
+  { bucket: "<60%", count: 0 },
+  { bucket: "60–80%", count: 2 },
+  { bucket: "80–100%", count: 5 },
+  { bucket: "100–120%", count: 5 },
+  { bucket: "120–150%", count: 3 },
+  { bucket: ">150%", count: 0 },
 ];
 
 // Test 3 — Top vs Bottom Performer Analysis
