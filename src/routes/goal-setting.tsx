@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { usePlanPeriod, PLAN_PERIODS, type PlanPeriod, previousQuarter } from "@/lib/plan-period";
+import { usePlanPeriod, previousQuarter, previousQuartersBefore } from "@/lib/plan-period";
 
 export const Route = createFileRoute("/goal-setting")({
   head: () => ({
@@ -38,7 +38,8 @@ const REP_COUNT = 15;
 function GoalSetting() {
   const navigate = useNavigate();
   const { period } = usePlanPeriod();
-  const [historicalPeriod, setHistoricalPeriod] = useState<PlanPeriod>(previousQuarter(period));
+  const historicalOptions = useMemo(() => previousQuartersBefore(period, 4), [period]);
+  const [historicalPeriod, setHistoricalPeriod] = useState<string>(previousQuarter(period));
   const [growth, setGrowth] = useState<number>(1.10);
   const [wHist, setWHist] = useState(50);
   const [wPot, setWPot] = useState(30);
@@ -117,10 +118,10 @@ function GoalSetting() {
               >
                 <select
                   value={historicalPeriod}
-                  onChange={(e) => setHistoricalPeriod(e.target.value as PlanPeriod)}
+                  onChange={(e) => setHistoricalPeriod(e.target.value)}
                   className="w-full h-9 px-2.5 rounded-md border border-border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
                 >
-                  {PLAN_PERIODS.filter((p) => p < period).map((p) => <option key={p} value={p}>{p}</option>)}
+                  {historicalOptions.map((p) => <option key={p} value={p}>{p}</option>)}
                 </select>
               </NumberField>
               <NumberField label="Growth Factor" hint="e.g. 1.10 = 10% growth">

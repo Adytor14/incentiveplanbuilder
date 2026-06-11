@@ -27,6 +27,21 @@ export function previousQuarter(p: PlanPeriod): PlanPeriod {
   return PLAN_PERIODS[prevIdx];
 }
 
+/** Returns the last `count` quarters strictly before `p`, most recent first. */
+export function previousQuartersBefore(p: string, count = 4): string[] {
+  const m = /^Q([1-4])\s(\d{4})$/.exec(p);
+  if (!m) return [];
+  let q = Number(m[1]);
+  let y = Number(m[2]);
+  const out: string[] = [];
+  for (let i = 0; i < count; i++) {
+    q -= 1;
+    if (q === 0) { q = 4; y -= 1; }
+    out.push(`Q${q} ${y}`);
+  }
+  return out;
+}
+
 export function PlanPeriodProvider({ children }: { children: ReactNode }) {
   const [period, setPeriodState] = useState<PlanPeriod>("Q2 2026");
 
