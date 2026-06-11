@@ -45,16 +45,6 @@ export const DATASETS: Dataset[] = [
     source: "Upload",
   },
   {
-    id: "growth_rate",
-    name: "Growth Rate",
-    description: "Numeric growth factor applied to historical sales for goal calculation",
-    required: true,
-    status: "validated",
-    rows: null,
-    updatedAt: "Jun 6, 2026",
-    source: "Upload",
-  },
-  {
     id: "potential",
     name: "Territory Potential",
     description: "Quarterly territory potential values",
@@ -66,7 +56,7 @@ export const DATASETS: Dataset[] = [
   },
   {
     id: "historical_goals",
-    name: "Historical Goals",
+    name: "Historical Goals and Payout",
     description: "Goals, attainment and payouts from prior cycles",
     required: true,
     status: "validated",
@@ -93,16 +83,6 @@ export const DATASETS: Dataset[] = [
     rows: 12,
     updatedAt: "Jun 4, 2026",
     source: "IC Admin",
-  },
-  {
-    id: "market_share",
-    name: "Market Share (Prior Year)",
-    description: "Optional · prior-year market share by territory",
-    required: false,
-    status: "warning",
-    rows: 1_247,
-    updatedAt: "Jun 2, 2026",
-    source: "External",
   },
 ];
 

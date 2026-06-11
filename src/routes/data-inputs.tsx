@@ -139,10 +139,7 @@ function DataInputsPage() {
             ))}
           </div>
 
-          <div className="px-6 py-4 border-t border-border flex items-center justify-between gap-3">
-            <div className="text-[12px] text-muted-foreground">
-              Aggregates (previous year sales, # of reps, territory potential) are computed from these files — not entered as single numbers.
-            </div>
+          <div className="px-6 py-4 border-t border-border flex items-center justify-end gap-3">
             <Link
               to="/plan-builder"
               className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card ${
@@ -156,25 +153,6 @@ function DataInputsPage() {
           </div>
         </Card>
 
-        <Card className="p-5">
-          <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium mb-2">
-            How these datasets are used
-          </div>
-          <ul className="text-[12.5px] text-muted-foreground space-y-1.5 list-disc pl-5">
-            <li>
-              <span className="text-foreground font-medium">HCP Historical Sales</span> feeds the Historical Component of goal setting at HCP / territory grain (never a single national total).
-            </li>
-            <li>
-              <span className="text-foreground font-medium">Territory Alignment</span> determines the rep / territory roster — # of reps is read from here, not entered manually.
-            </li>
-            <li>
-              <span className="text-foreground font-medium">Territory Potential</span> drives the Potential Component. Competitor units per HCP preferred; territory-level sales used as fallback.
-            </li>
-            <li>
-              <span className="text-foreground font-medium">MBO Definitions</span> mirror the MBO catalog already configured in IC Admin so the Plan Builder stays consistent.
-            </li>
-          </ul>
-        </Card>
       </div>
     </div>
   );

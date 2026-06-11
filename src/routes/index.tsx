@@ -39,10 +39,6 @@ function Home() {
           <h1 className="mt-5 text-[40px] font-semibold tracking-tight leading-[1.1] text-balance max-w-3xl">
             Design incentive plans that drive motivation, fairness, and business results.
           </h1>
-          <p className="mt-4 text-[15px] text-primary-foreground/80 max-w-2xl leading-relaxed">
-            Create, evaluate, and optimize incentive compensation plans using historical performance,
-            territory potential, goals, payouts, and fairness analytics.
-          </p>
           <div className="mt-8">
             <Link
               to="/data-inputs"
@@ -54,26 +50,26 @@ function Home() {
         </div>
       </div>
 
-      <div className="mt-10">
-        <div className="text-[11px] uppercase tracking-[0.1em] text-muted-foreground font-semibold mb-3">
+      <div className="mt-12">
+        <div className="text-[12px] uppercase tracking-[0.1em] text-muted-foreground font-semibold mb-4">
           Plan Design Workflow
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {STEPS.map((s, i) => {
             const Icon = s.icon;
             return (
               <Link
                 key={s.to}
                 to={s.to}
-                className="group rounded-xl border border-border bg-surface p-4 hover:border-primary/40 hover:shadow-card transition-all"
+                className="group rounded-xl border border-border bg-surface p-5 hover:border-primary/40 hover:shadow-card transition-all"
               >
                 <div className="flex items-center justify-between">
-                  <span className="size-7 rounded-full bg-primary-muted text-primary text-[11px] font-semibold grid place-items-center">
+                  <span className="size-8 rounded-full bg-primary-muted text-primary text-[12px] font-semibold grid place-items-center">
                     {i + 1}
                   </span>
-                  <Icon className="size-4 text-muted-foreground group-hover:text-primary" />
+                  <Icon className="size-5 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
-                <div className="mt-3 text-[13px] font-semibold text-foreground">{s.label}</div>
+                <div className="mt-4 text-[14px] font-semibold text-foreground">{s.label}</div>
               </Link>
             );
           })}
