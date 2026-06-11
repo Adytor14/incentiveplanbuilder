@@ -91,15 +91,25 @@ function GoalSetting() {
         }
         prev={{ to: "/plan-builder", label: "Plan Builder" }}
         actions={
-          <button
-            type="button"
-            onClick={handleContinue}
-            className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card ${
-              balanced ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-muted-foreground"
-            }`}
-          >
-            Continue to Fairness Testing
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowPreview(true)}
+              className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold border border-border bg-background hover:bg-muted"
+            >
+              <Eye className="size-3.5" />
+              Goal Preview
+            </button>
+            <button
+              type="button"
+              onClick={handleContinue}
+              className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card ${
+                balanced ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-muted-foreground"
+              }`}
+            >
+              Continue to Fairness Testing
+            </button>
+          </div>
         }
       />
       <div className="px-8 py-7 max-w-[1600px] space-y-6">
