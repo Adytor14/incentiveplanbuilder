@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { Info, AlertCircle, AlertTriangle, X, Calculator } from "lucide-react";
+import { Info, AlertTriangle, X, Calculator, Eye } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
