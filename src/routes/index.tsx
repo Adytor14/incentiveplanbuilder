@@ -75,31 +75,6 @@ function Home() {
         </div>
       </div>
 
-      <div className="mt-12">
-        <div className="text-[12px] uppercase tracking-[0.1em] text-muted-foreground font-semibold mb-4">
-          Plan Design Workflow
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {STEPS.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <Link
-                key={s.to}
-                to={s.to}
-                className="group rounded-xl border border-border bg-surface p-5 hover:border-primary/40 hover:shadow-card transition-all"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="size-8 rounded-full bg-primary-muted text-primary text-[12px] font-semibold grid place-items-center">
-                    {i + 1}
-                  </span>
-                  <Icon className="size-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                </div>
-                <div className="mt-4 text-[14px] font-semibold text-foreground">{s.label}</div>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
 
       <div className="mt-12">
         <div className="flex items-center justify-between mb-4">
