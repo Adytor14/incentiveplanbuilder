@@ -223,6 +223,8 @@ function PlanBuilder() {
         title="Plan Builder"
         prev={{ to: "/data-inputs", label: "Data Inputs" }}
         actions={
+          <div className="flex items-center gap-3">
+            <AutosaveBadge state={autosaveState} savedAt={lastSavedAt} />
           <button
             type="button"
             onClick={handleContinue}
