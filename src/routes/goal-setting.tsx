@@ -135,7 +135,7 @@ function GoalSetting() {
             </div>
             <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
               <Calculator className="size-3.5 text-primary" />
-              <span className="font-medium">Goal Contribution = Historical Sales × Growth Factor</span>
+              <span className="font-medium">Goal Contribution = Historical Sales × Growth Factor × Weight</span>
             </div>
           </ComponentCard>
 
@@ -153,7 +153,7 @@ function GoalSetting() {
             </div>
             <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
               <Calculator className="size-3.5 text-primary" />
-              <span className="font-medium">Goal Contribution = Territory Potential × Achievable Share</span>
+              <span className="font-medium">Goal Contribution = Territory Potential × Weight</span>
             </div>
           </ComponentCard>
 
@@ -166,9 +166,9 @@ function GoalSetting() {
             onWeightChange={setWEqual}
           >
             <div className="grid grid-cols-3 gap-3 text-[12.5px]">
-              <Stat label="National Target" value={`$${(NATIONAL_TARGET_K / 1000).toLocaleString()}K`} />
+              <Stat label="National Target" value={`$${NATIONAL_TARGET_K.toLocaleString()}`} />
               <Stat label="# of Reps" value={REP_COUNT.toLocaleString()} />
-              <Stat label="Equal Share" value={`$${Math.round(equalShare).toLocaleString()}K`} />
+              <Stat label="Equal Share" value={`$${Math.round(equalShare).toLocaleString()}`} />
             </div>
             <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
               <Calculator className="size-3.5 text-primary" />
