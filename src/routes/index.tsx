@@ -113,12 +113,28 @@ function Home() {
             Build a new plan <ArrowRight className="size-3" />
           </Link>
         </div>
+        <div className="flex items-center gap-2 mb-4">
+          {(["All", "Draft", "In Review", "Approved"] as StatusFilter[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`h-7 px-3 rounded-full text-[12px] font-medium transition-colors ${
+                statusFilter === s
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
           <table className="w-full text-[13px]">
             <thead className="bg-muted/40 text-[11.5px] uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="text-left font-semibold px-5 py-3">Version</th>
                 <th className="text-left font-semibold px-5 py-3">Quarter</th>
+                <th className="text-left font-semibold px-5 py-3">Status</th>
                 <th className="text-left font-semibold px-5 py-3">Created by</th>
                 <th className="text-left font-semibold px-5 py-3">Created</th>
                 <th className="text-left font-semibold px-5 py-3">Last used</th>
@@ -127,15 +143,20 @@ function Home() {
             </thead>
             <tbody className="divide-y divide-border">
               {loadingVersions && (
-                <tr><td colSpan={6} className="px-5 py-6 text-center text-muted-foreground">Loading…</td></tr>
+                <tr><td colSpan={7} className="px-5 py-6 text-center text-muted-foreground">Loading…</td></tr>
               )}
-              {!loadingVersions && versions.length === 0 && (
-                <tr><td colSpan={6} className="px-5 py-6 text-center text-muted-foreground">No saved versions yet.</td></tr>
+              {!loadingVersions && filteredVersions.length === 0 && (
+                <tr><td colSpan={7} className="px-5 py-6 text-center text-muted-foreground">No saved versions yet.</td></tr>
               )}
-              {versions.map((v) => (
+              {filteredVersions.map((v) => (
                 <tr key={v.id} className="hover:bg-muted/30">
                   <td className="px-5 py-3 font-medium text-foreground">{v.name}</td>
                   <td className="px-5 py-3 text-muted-foreground">{v.quarter ?? "—"}</td>
+                  <td className="px-5 py-3">
+                    <span className={`inline-flex items-center h-6 px-2 rounded-full text-[11px] font-semibold ${STATUS_STYLES[v.status] ?? "bg-muted text-muted-foreground"}`}>
+                      {v.status}
+                    </span>
+                  </td>
                   <td className="px-5 py-3 text-muted-foreground">{v.created_by ?? "—"}</td>
                   <td className="px-5 py-3 text-muted-foreground">{fmt(v.created_at)}</td>
                   <td className="px-5 py-3 text-muted-foreground">{fmt(v.last_used_at)}</td>
