@@ -86,14 +86,6 @@ function Home() {
           <h1 className="mt-5 text-[40px] font-semibold tracking-tight leading-[1.1] text-balance max-w-3xl">
             Design incentive plans that drive motivation, fairness, and business results.
           </h1>
-          <div className="mt-8">
-            <Link
-              to="/data-inputs"
-              className="h-11 px-5 inline-flex items-center gap-2 rounded-md bg-white text-primary text-[14px] font-semibold hover:bg-white/90 shadow-elevated"
-            >
-              Begin Plan Design <ArrowRight className="size-4" />
-            </Link>
-          </div>
         </div>
       </div>
 
@@ -108,9 +100,9 @@ function Home() {
             onClick={() => {
               if (typeof window !== "undefined") localStorage.removeItem("ic_active_version");
             }}
-            className="text-[12px] font-medium text-primary hover:underline inline-flex items-center gap-1"
+            className="h-9 px-4 inline-flex items-center gap-2 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90 shadow-sm"
           >
-            Build a new plan <ArrowRight className="size-3" />
+            Build New IC Plan <ArrowRight className="size-3.5" />
           </Link>
         </div>
         <div className="flex items-center gap-2 mb-4">
