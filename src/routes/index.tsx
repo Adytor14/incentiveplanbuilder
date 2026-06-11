@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles, History } from "lucide-react";
+import { ArrowRight, History } from "lucide-react";
 import { useEffect, useState } from "react";
-import { usePlanPeriod } from "@/lib/plan-period";
 import { supabase } from "@/integrations/supabase/client";
 
 type PlanVersion = {
@@ -38,7 +37,6 @@ export const Route = createFileRoute("/")({
 
 
 function Home() {
-  const { period } = usePlanPeriod();
   const [versions, setVersions] = useState<PlanVersion[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
