@@ -118,10 +118,10 @@ function GoalSetting() {
               >
                 <select
                   value={historicalPeriod}
-                  onChange={(e) => setHistoricalPeriod(e.target.value as PlanPeriod)}
+                  onChange={(e) => setHistoricalPeriod(e.target.value)}
                   className="w-full h-9 px-2.5 rounded-md border border-border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
                 >
-                  {PLAN_PERIODS.filter((p) => p < period).map((p) => <option key={p} value={p}>{p}</option>)}
+                  {historicalOptions.map((p) => <option key={p} value={p}>{p}</option>)}
                 </select>
               </NumberField>
               <NumberField label="Growth Factor" hint="e.g. 1.10 = 10% growth">
