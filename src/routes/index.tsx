@@ -41,6 +41,7 @@ function Home() {
   const { period } = usePlanPeriod();
   const [versions, setVersions] = useState<PlanVersion[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
 
   useEffect(() => {
     let cancelled = false;
@@ -55,6 +56,11 @@ function Home() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  const filteredVersions =
+    statusFilter === "All"
+      ? versions
+      : versions.filter((v) => v.status === statusFilter);
 
   const selectVersion = async (id: string) => {
     if (typeof window !== "undefined") localStorage.setItem("ic_active_version", id);
