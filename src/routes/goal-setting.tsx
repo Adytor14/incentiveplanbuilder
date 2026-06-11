@@ -71,7 +71,23 @@ function GoalSetting() {
     <div>
       <PageHeader
         step={3}
-        title="Goal Setting"
+        title={
+          <span className="inline-flex items-center gap-2">
+            Goal Setting
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button" className="inline-flex items-center justify-center size-6 rounded-full border border-border bg-background text-muted-foreground hover:text-foreground transition-colors">
+                    <Info className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs text-[12px] leading-relaxed">
+                  Goal = (Historical × W₁) + (Potential × W₂) + (Equal Distribution × W₃). Weights must sum to 100%.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </span>
+        }
         prev={{ to: "/plan-builder", label: "Plan Builder" }}
         actions={
           <button
