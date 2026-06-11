@@ -72,7 +72,7 @@ function DataInputsPage() {
   }, []);
 
   useEffect(() => {
-    if (activeVersionId && typeof window !== "undefined") {
+    if (typeof window !== "undefined") {
       localStorage.setItem("ic_active_version", activeVersionId);
     }
   }, [activeVersionId]);
