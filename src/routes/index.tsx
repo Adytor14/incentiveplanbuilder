@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 import { usePlanPeriod } from "@/lib/plan-period";
 import { supabase } from "@/integrations/supabase/client";
 
-type PlanVersion = { id: string; name: string; created_at: string };
+type PlanVersion = {
+  id: string;
+  name: string;
+  created_at: string;
+  quarter: string | null;
+  last_used_at: string | null;
+  created_by: string | null;
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -40,9 +47,17 @@ function Home() {
     return () => { cancelled = true; };
   }, []);
 
-  const selectVersion = (id: string) => {
+  const selectVersion = async (id: string) => {
     if (typeof window !== "undefined") localStorage.setItem("ic_active_version", id);
+    const nowIso = new Date().toISOString();
+    setVersions((prev) =>
+      prev.map((v) => (v.id === id ? { ...v, last_used_at: nowIso } : v)),
+    );
+    await supabase.from("ic_plan_versions").update({ last_used_at: nowIso }).eq("id", id);
   };
+
+  const fmt = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleString() : "—";
 
   return (
     <div className="px-8 py-12 max-w-[1100px] mx-auto">
@@ -75,6 +90,9 @@ function Home() {
           </div>
           <Link
             to="/data-inputs"
+            onClick={() => {
+              if (typeof window !== "undefined") localStorage.removeItem("ic_active_version");
+            }}
             className="text-[12px] font-medium text-primary hover:underline inline-flex items-center gap-1"
           >
             Build a new plan <ArrowRight className="size-3" />
@@ -85,21 +103,27 @@ function Home() {
             <thead className="bg-muted/40 text-[11.5px] uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="text-left font-semibold px-5 py-3">Version</th>
+                <th className="text-left font-semibold px-5 py-3">Quarter</th>
+                <th className="text-left font-semibold px-5 py-3">Created by</th>
                 <th className="text-left font-semibold px-5 py-3">Created</th>
+                <th className="text-left font-semibold px-5 py-3">Last used</th>
                 <th className="text-right font-semibold px-5 py-3">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {loadingVersions && (
-                <tr><td colSpan={3} className="px-5 py-6 text-center text-muted-foreground">Loading…</td></tr>
+                <tr><td colSpan={6} className="px-5 py-6 text-center text-muted-foreground">Loading…</td></tr>
               )}
               {!loadingVersions && versions.length === 0 && (
-                <tr><td colSpan={3} className="px-5 py-6 text-center text-muted-foreground">No saved versions yet.</td></tr>
+                <tr><td colSpan={6} className="px-5 py-6 text-center text-muted-foreground">No saved versions yet.</td></tr>
               )}
               {versions.map((v) => (
                 <tr key={v.id} className="hover:bg-muted/30">
                   <td className="px-5 py-3 font-medium text-foreground">{v.name}</td>
-                  <td className="px-5 py-3 text-muted-foreground">{new Date(v.created_at).toLocaleString()}</td>
+                  <td className="px-5 py-3 text-muted-foreground">{v.quarter ?? "—"}</td>
+                  <td className="px-5 py-3 text-muted-foreground">{v.created_by ?? "—"}</td>
+                  <td className="px-5 py-3 text-muted-foreground">{fmt(v.created_at)}</td>
+                  <td className="px-5 py-3 text-muted-foreground">{fmt(v.last_used_at)}</td>
                   <td className="px-5 py-3 text-right">
                     <Link
                       to="/data-inputs"

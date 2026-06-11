@@ -17,18 +17,27 @@ export type Database = {
       ic_plan_versions: {
         Row: {
           created_at: string
+          created_by: string | null
           id: string
+          last_used_at: string
           name: string
+          quarter: string | null
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           id?: string
+          last_used_at?: string
           name: string
+          quarter?: string | null
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           id?: string
+          last_used_at?: string
           name?: string
+          quarter?: string | null
         }
         Relationships: []
       }
