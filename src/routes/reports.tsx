@@ -21,7 +21,7 @@ const REPORTS: Report[] = [
   { id: "goal", name: "Goal Report", description: "Rep, territory, region and national goals", type: "Goals", rows: 15 },
   { id: "territory", name: "Territory Report", description: "Territory-level potential, goals and assignment", type: "Territory", rows: 15 },
   { id: "mbo", name: "MBO Report", description: "MBO definitions, weights and targets by role", type: "MBO", rows: 36 },
-  { id: "comp", name: "Compensation Summary", description: "Role-level target pay and total comp roll-up", type: "Compensation", rows: 1343 },
+  { id: "comp", name: "Compensation Summary", description: "Role-level target pay and total comp roll-up", type: "Compensation", rows: 15 },
   { id: "payout", name: "Payout Report", description: "Payout curve, inflexion points and expected payouts", type: "Payout", rows: 5 },
   { id: "ic", name: "IC Design Report", description: "Full plan design summary with assumptions and methodology", type: "IC Design", rows: 1 },
 ];
