@@ -220,7 +220,7 @@ function GoalSetting() {
                   <td className="px-5 py-3"><Badge tone="neutral">GEO-{r.region}</Badge></td>
                   <td className="px-5 py-3 text-right num text-muted-foreground">${r.histContrib}K</td>
                   <td className="px-5 py-3 text-right num text-muted-foreground">${r.potContrib}K</td>
-                  <td className="px-5 py-3 text-right num text-muted-foreground">${r.eqContrib}K</td>
+                  <td className="px-5 py-3 text-right num text-muted-foreground">${r.eqContrib.toLocaleString()}</td>
                   <td className="px-5 py-3 text-right num font-semibold pr-6">${r.goal}K</td>
                 </tr>
               ))}
