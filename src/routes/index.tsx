@@ -1,6 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles, Layers, Target, ShieldCheck, TrendingUp, FileText, Database } from "lucide-react";
+import { ArrowRight, Sparkles, Layers, Target, ShieldCheck, TrendingUp, FileText, Database, History } from "lucide-react";
+import { useEffect, useState } from "react";
 import { usePlanPeriod } from "@/lib/plan-period";
+import { supabase } from "@/integrations/supabase/client";
+
+type PlanVersion = { id: string; name: string; created_at: string };
 
 export const Route = createFileRoute("/")({
   head: () => ({
