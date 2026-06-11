@@ -1,17 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
 import {
   CheckCircle2,
   AlertTriangle,
-  
   Upload,
   RefreshCw,
   ArrowRight,
   Database,
   FileSpreadsheet,
   Calendar,
+  Layers,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { usePlanPeriod, PLAN_PERIODS } from "@/lib/plan-period";
 import {
@@ -19,6 +21,9 @@ import {
   datasetsReady,
   type Dataset,
 } from "@/lib/data-inputs";
+import { supabase } from "@/integrations/supabase/client";
+
+type PlanVersion = { id: string; name: string; created_at: string };
 
 export const Route = createFileRoute("/data-inputs")({
   head: () => ({
