@@ -1,0 +1,1 @@
+ALTER TABLE public.ic_plan_versions ADD COLUMN status TEXT NOT NULL DEFAULT 'Draft' CHECK (status IN ('Draft', 'In Review', 'Approved'));
