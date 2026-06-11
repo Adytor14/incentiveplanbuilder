@@ -137,7 +137,7 @@ function Home() {
                 <th className="text-left font-semibold px-5 py-3">Status</th>
                 <th className="text-left font-semibold px-5 py-3">Created by</th>
                 <th className="text-left font-semibold px-5 py-3">Created</th>
-                <th className="text-left font-semibold px-5 py-3">Last used</th>
+                <th className="text-left font-semibold px-5 py-3">Last autosaved</th>
                 <th className="text-right font-semibold px-5 py-3">Action</th>
               </tr>
             </thead>
