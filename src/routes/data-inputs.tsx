@@ -24,7 +24,95 @@ import { supabase } from "@/integrations/supabase/client";
 type PlanVersion = { id: string; name: string; created_at: string };
 
 export const Route = createFileRoute("/data-inputs")({
-...
+  head: () => ({
+    meta: [
+      { title: "Data Inputs · IC Design" },
+      {
+        name: "description",
+        content:
+          "Validate the source datasets that drive plan design — HCP sales, alignment, roster, territory potential and MBOs.",
+      },
+    ],
+  }),
+  component: DataInputsPage,
+});
+
+function DataInputsPage() {
+  const [datasets, setDatasets] = useState<Dataset[]>(INITIAL_DATASETS);
+  const { period, setPeriod } = usePlanPeriod();
+  const ready = datasetsReady(datasets);
+  const validated = datasets.filter((d) => d.status === "validated").length;
+
+  const [activeVersion, setActiveVersion] = useState<PlanVersion | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const id = typeof window !== "undefined" ? localStorage.getItem("ic_active_version") : null;
+    if (!id) {
+      setActiveVersion(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("ic_plan_versions")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (cancelled) return;
+      setActiveVersion((data as PlanVersion) ?? null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const isExistingVersion = !!activeVersion;
+
+  const revalidate = (id: string) =>
+    setDatasets((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, status: "validated", updatedAt: "Just now" } : d)),
+    );
+
+  return (
+    <div>
+      <PageHeader
+        step={1}
+        title="Data Inputs"
+        prev={{ to: "/", label: "Home" }}
+        next={{ to: "/plan-builder", label: "Plan Builder" }}
+      />
+      <div className="px-8 py-7 max-w-[1400px] space-y-6">
+        <Card className="p-5 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="size-9 rounded-lg bg-primary-muted text-primary grid place-items-center">
+              <Calendar className="size-4" />
+            </div>
+            <div>
+              <div className="text-[13px] font-semibold tracking-tight flex items-center gap-2">
+                Plan Period
+                {isExistingVersion && (
+                  <Badge tone="neutral">
+                    <Lock className="size-3" /> Locked · {activeVersion?.name}
+                  </Badge>
+                )}
+              </div>
+              <div className="text-[12px] text-muted-foreground">
+                {isExistingVersion
+                  ? "Editing a saved IC plan version — plan period can't be changed."
+                  : "This selection drives all downstream calculations."}
+              </div>
+            </div>
+          </div>
+          <select
+            value={period}
+            onChange={(e) => setPeriod(e.target.value as typeof period)}
+            disabled={isExistingVersion}
+            className="h-9 px-3 rounded-md border border-border bg-background text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {PLAN_PERIODS.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
         </Card>
 
         <Card className="p-0">
@@ -101,7 +189,6 @@ export const Route = createFileRoute("/data-inputs")({
             </Link>
           </div>
         </Card>
-
       </div>
     </div>
   );
