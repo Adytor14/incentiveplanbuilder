@@ -2,7 +2,13 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { Sparkles, AlertCircle, AlertTriangle, X, Calculator } from "lucide-react";
+import { Info, AlertCircle, AlertTriangle, X, Calculator } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { usePlanPeriod, PLAN_PERIODS, type PlanPeriod, previousQuarter } from "@/lib/plan-period";
 
 export const Route = createFileRoute("/goal-setting")({
