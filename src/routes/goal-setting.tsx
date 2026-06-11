@@ -315,27 +315,3 @@ function Stat({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
-function CalcRow({ color, label, value, weight }: { color: string; label: string; value: string; weight: number }) {
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2 min-w-0">
-        <span className="size-2 rounded-sm shrink-0" style={{ background: color }} />
-        <span className="truncate">{label}</span>
-      </div>
-      <div className="flex items-center gap-3 shrink-0">
-        <span className="num text-muted-foreground">{value}</span>
-        <span className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium">× {weight}%</span>
-      </div>
-    </div>
-  );
-}
-
-function Roll({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={`num ${strong ? "font-semibold text-foreground text-[13px]" : ""}`}>{value}</span>
-    </div>
-  );
-}
