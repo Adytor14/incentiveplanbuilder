@@ -59,7 +59,6 @@ function GoalSetting() {
     });
   }, [wHist, wPot, wEqual, growth, equalShare]);
 
-  const territoryTotal = preview.reduce((s, r) => s + r.goal, 0);
   const sample = preview[0];
 
   const handleContinue = () => {
