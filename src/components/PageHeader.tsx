@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 interface Props {
   step?: number;
   eyebrow?: string;
-  title: string;
+  title: React.ReactNode;
   description?: string;
   prev?: { to: string; label: string };
   next?: { to: string; label: string };
