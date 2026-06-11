@@ -32,7 +32,7 @@ const REPS = [
   { rep: "T. Nakamura", region: "MW", historical: 1360, potential: 1540 },
   { rep: "L. García", region: "W", historical: 890, potential: 1340 },
 ];
-const NATIONAL_TARGET_K = 1_420_000;
+const NATIONAL_TARGET_K = 21_300_000;
 const REP_COUNT = 15;
 
 function GoalSetting() {
