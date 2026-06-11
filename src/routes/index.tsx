@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 import { usePlanPeriod } from "@/lib/plan-period";
 import { supabase } from "@/integrations/supabase/client";
 
-type PlanVersion = { id: string; name: string; created_at: string };
+type PlanVersion = {
+  id: string;
+  name: string;
+  created_at: string;
+  quarter: string | null;
+  last_used_at: string | null;
+  created_by: string | null;
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
