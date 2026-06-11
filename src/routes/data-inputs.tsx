@@ -61,7 +61,7 @@ function DataInputsPage() {
       if (!error && data) {
         setVersions(data as PlanVersion[]);
         const stored = typeof window !== "undefined" ? localStorage.getItem("ic_active_version") : null;
-        const pick = data.find((v) => v.id === stored)?.id ?? data[0]?.id ?? "";
+        const pick = data.find((v) => v.id === stored)?.id ?? "";
         setActiveVersionId(pick);
       }
       setLoadingVersions(false);
