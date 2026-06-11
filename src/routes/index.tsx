@@ -20,14 +20,6 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const STEPS = [
-  { icon: Database, label: "Data Inputs", to: "/data-inputs" },
-  { icon: Layers, label: "Plan Builder", to: "/plan-builder" },
-  { icon: Target, label: "Goal Setting", to: "/goal-setting" },
-  { icon: ShieldCheck, label: "Fairness Testing", to: "/fairness" },
-  { icon: TrendingUp, label: "Payout Curve", to: "/payout-curve" },
-  { icon: FileText, label: "Reports & Outputs", to: "/reports" },
-] as const;
 
 function Home() {
   const { period } = usePlanPeriod();
