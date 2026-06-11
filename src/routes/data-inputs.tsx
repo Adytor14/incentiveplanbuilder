@@ -21,7 +21,7 @@ import {
 } from "@/lib/data-inputs";
 import { supabase } from "@/integrations/supabase/client";
 
-type PlanVersion = { id: string; name: string; created_at: string };
+type PlanVersion = { id: string; name: string; created_at: string; status: string };
 
 export const Route = createFileRoute("/data-inputs")({
   head: () => ({
