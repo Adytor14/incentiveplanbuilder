@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { usePlanPeriod, PLAN_PERIODS, type PlanPeriod, previousQuarter } from "@/lib/plan-period";
+import { usePlanPeriod, PLAN_PERIODS, type PlanPeriod, previousQuarter, previousQuartersBefore } from "@/lib/plan-period";
 
 export const Route = createFileRoute("/goal-setting")({
   head: () => ({
