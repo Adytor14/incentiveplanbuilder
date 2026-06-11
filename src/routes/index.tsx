@@ -11,6 +11,15 @@ type PlanVersion = {
   quarter: string | null;
   last_used_at: string | null;
   created_by: string | null;
+  status: string;
+};
+
+type StatusFilter = "All" | "Draft" | "In Review" | "Approved";
+
+const STATUS_STYLES: Record<string, string> = {
+  Draft: "bg-muted text-muted-foreground border border-border",
+  "In Review": "bg-warning/15 text-warning border border-warning/30",
+  Approved: "bg-success/15 text-success border border-success/30",
 };
 
 export const Route = createFileRoute("/")({
