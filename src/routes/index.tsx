@@ -100,6 +100,54 @@ function Home() {
           })}
         </div>
       </div>
+
+      <div className="mt-12">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-[12px] uppercase tracking-[0.1em] text-muted-foreground font-semibold flex items-center gap-2">
+            <History className="size-3.5" /> IC Plan Versions
+          </div>
+          <Link
+            to="/data-inputs"
+            className="text-[12px] font-medium text-primary hover:underline inline-flex items-center gap-1"
+          >
+            Build a new plan <ArrowRight className="size-3" />
+          </Link>
+        </div>
+        <div className="rounded-xl border border-border bg-surface overflow-hidden">
+          <table className="w-full text-[13px]">
+            <thead className="bg-muted/40 text-[11.5px] uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="text-left font-semibold px-5 py-3">Version</th>
+                <th className="text-left font-semibold px-5 py-3">Created</th>
+                <th className="text-right font-semibold px-5 py-3">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {loadingVersions && (
+                <tr><td colSpan={3} className="px-5 py-6 text-center text-muted-foreground">Loading…</td></tr>
+              )}
+              {!loadingVersions && versions.length === 0 && (
+                <tr><td colSpan={3} className="px-5 py-6 text-center text-muted-foreground">No saved versions yet.</td></tr>
+              )}
+              {versions.map((v) => (
+                <tr key={v.id} className="hover:bg-muted/30">
+                  <td className="px-5 py-3 font-medium text-foreground">{v.name}</td>
+                  <td className="px-5 py-3 text-muted-foreground">{new Date(v.created_at).toLocaleString()}</td>
+                  <td className="px-5 py-3 text-right">
+                    <Link
+                      to="/data-inputs"
+                      onClick={() => selectVersion(v.id)}
+                      className="inline-flex items-center gap-1 h-8 px-3 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
+                    >
+                      Open <ArrowRight className="size-3" />
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
