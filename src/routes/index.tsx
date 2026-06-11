@@ -11,6 +11,15 @@ type PlanVersion = {
   quarter: string | null;
   last_used_at: string | null;
   created_by: string | null;
+  status: string;
+};
+
+type StatusFilter = "All" | "Draft" | "In Review" | "Approved";
+
+const STATUS_STYLES: Record<string, string> = {
+  Draft: "bg-muted text-muted-foreground border border-border",
+  "In Review": "bg-warning/15 text-warning border border-warning/30",
+  Approved: "bg-success/15 text-success border border-success/30",
 };
 
 export const Route = createFileRoute("/")({
@@ -32,6 +41,7 @@ function Home() {
   const { period } = usePlanPeriod();
   const [versions, setVersions] = useState<PlanVersion[]>([]);
   const [loadingVersions, setLoadingVersions] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
 
   useEffect(() => {
     let cancelled = false;
@@ -46,6 +56,11 @@ function Home() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  const filteredVersions =
+    statusFilter === "All"
+      ? versions
+      : versions.filter((v) => v.status === statusFilter);
 
   const selectVersion = async (id: string) => {
     if (typeof window !== "undefined") localStorage.setItem("ic_active_version", id);
@@ -98,12 +113,28 @@ function Home() {
             Build a new plan <ArrowRight className="size-3" />
           </Link>
         </div>
+        <div className="flex items-center gap-2 mb-4">
+          {(["All", "Draft", "In Review", "Approved"] as StatusFilter[]).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`h-7 px-3 rounded-full text-[12px] font-medium transition-colors ${
+                statusFilter === s
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
           <table className="w-full text-[13px]">
             <thead className="bg-muted/40 text-[11.5px] uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="text-left font-semibold px-5 py-3">Version</th>
                 <th className="text-left font-semibold px-5 py-3">Quarter</th>
+                <th className="text-left font-semibold px-5 py-3">Status</th>
                 <th className="text-left font-semibold px-5 py-3">Created by</th>
                 <th className="text-left font-semibold px-5 py-3">Created</th>
                 <th className="text-left font-semibold px-5 py-3">Last used</th>
@@ -112,15 +143,20 @@ function Home() {
             </thead>
             <tbody className="divide-y divide-border">
               {loadingVersions && (
-                <tr><td colSpan={6} className="px-5 py-6 text-center text-muted-foreground">Loading…</td></tr>
+                <tr><td colSpan={7} className="px-5 py-6 text-center text-muted-foreground">Loading…</td></tr>
               )}
-              {!loadingVersions && versions.length === 0 && (
-                <tr><td colSpan={6} className="px-5 py-6 text-center text-muted-foreground">No saved versions yet.</td></tr>
+              {!loadingVersions && filteredVersions.length === 0 && (
+                <tr><td colSpan={7} className="px-5 py-6 text-center text-muted-foreground">No saved versions yet.</td></tr>
               )}
-              {versions.map((v) => (
+              {filteredVersions.map((v) => (
                 <tr key={v.id} className="hover:bg-muted/30">
                   <td className="px-5 py-3 font-medium text-foreground">{v.name}</td>
                   <td className="px-5 py-3 text-muted-foreground">{v.quarter ?? "—"}</td>
+                  <td className="px-5 py-3">
+                    <span className={`inline-flex items-center h-6 px-2 rounded-full text-[11px] font-semibold ${STATUS_STYLES[v.status] ?? "bg-muted text-muted-foreground"}`}>
+                      {v.status}
+                    </span>
+                  </td>
                   <td className="px-5 py-3 text-muted-foreground">{v.created_by ?? "—"}</td>
                   <td className="px-5 py-3 text-muted-foreground">{fmt(v.created_at)}</td>
                   <td className="px-5 py-3 text-muted-foreground">{fmt(v.last_used_at)}</td>
