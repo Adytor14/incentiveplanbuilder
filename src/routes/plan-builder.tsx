@@ -236,6 +236,7 @@ function PlanBuilder() {
           >
             Continue to Goal Setting
           </button>
+          </div>
         }
       />
       <div className="px-8 py-7 max-w-[1400px] space-y-5">
