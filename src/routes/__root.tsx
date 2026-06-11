@@ -11,7 +11,6 @@ import {
   Database,
   Calendar,
   Download,
-  Save,
 } from "lucide-react";
 import { PlanPeriodProvider, usePlanPeriod, PLAN_PERIODS } from "@/lib/plan-period";
 
@@ -196,9 +195,6 @@ function Topbar() {
           ))}
         </select>
       </label>
-      <button className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12.5px] font-medium hover:bg-muted">
-        <Save className="size-3.5" /> Save Draft
-      </button>
       <button className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12.5px] font-medium hover:bg-muted">
         <Download className="size-3.5" /> Export
       </button>
