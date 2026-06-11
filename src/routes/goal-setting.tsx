@@ -38,7 +38,8 @@ const REP_COUNT = 15;
 function GoalSetting() {
   const navigate = useNavigate();
   const { period } = usePlanPeriod();
-  const [historicalPeriod, setHistoricalPeriod] = useState<PlanPeriod>(previousQuarter(period));
+  const historicalOptions = useMemo(() => previousQuartersBefore(period, 4), [period]);
+  const [historicalPeriod, setHistoricalPeriod] = useState<string>(previousQuarter(period));
   const [growth, setGrowth] = useState<number>(1.10);
   const [wHist, setWHist] = useState(50);
   const [wPot, setWPot] = useState(30);
