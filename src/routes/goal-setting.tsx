@@ -194,9 +194,6 @@ function GoalSetting() {
             <Card className="p-0 sticky top-20">
               <div className="px-5 pt-5 pb-3 border-b border-border">
                 <div className="text-[13.5px] font-semibold tracking-tight">Rep-Level Goal Calculation</div>
-                <div className="text-[11.5px] text-muted-foreground mt-0.5">
-                  Sample · {sample?.rep} ({sample?.region})
-                </div>
               </div>
               <div className="px-5 py-4 space-y-2 text-[12.5px]">
                 <CalcRow color="var(--chart-1)" label="Historical Contribution" value={`$${sample?.histContrib}K`} weight={wHist} />
