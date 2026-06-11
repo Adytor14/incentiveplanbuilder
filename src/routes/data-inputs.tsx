@@ -121,6 +121,50 @@ function DataInputsPage() {
         <Card className="p-5 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <div className="size-9 rounded-lg bg-primary-muted text-primary grid place-items-center">
+              <Layers className="size-4" />
+            </div>
+            <div>
+              <div className="text-[13px] font-semibold tracking-tight">IC Plan Version</div>
+              <div className="text-[12px] text-muted-foreground">
+                Switch between saved versions of this incentive plan.
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <select
+              value={activeVersionId}
+              onChange={(e) => setActiveVersionId(e.target.value)}
+              disabled={loadingVersions || versions.length === 0}
+              className="h-9 px-3 rounded-md border border-border bg-background text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary min-w-[180px]"
+            >
+              {loadingVersions && <option>Loading…</option>}
+              {!loadingVersions && versions.length === 0 && <option value="">No versions</option>}
+              {versions.map((v) => (
+                <option key={v.id} value={v.id}>{v.name}</option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={createVersion}
+              className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12.5px] font-medium hover:bg-muted"
+            >
+              <Plus className="size-3.5" /> New version
+            </button>
+            <button
+              type="button"
+              onClick={deleteActiveVersion}
+              disabled={versions.length <= 1 || !activeVersionId}
+              className="h-9 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12.5px] font-medium hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Delete current version"
+            >
+              <Trash2 className="size-3.5" />
+            </button>
+          </div>
+        </Card>
+
+        <Card className="p-5 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="size-9 rounded-lg bg-primary-muted text-primary grid place-items-center">
               <Calendar className="size-4" />
             </div>
             <div>
