@@ -31,6 +31,27 @@ const STEPS = [
 
 function Home() {
   const { period } = usePlanPeriod();
+  const [versions, setVersions] = useState<PlanVersion[]>([]);
+  const [loadingVersions, setLoadingVersions] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("ic_plan_versions")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (cancelled) return;
+      if (!error && data) setVersions(data as PlanVersion[]);
+      setLoadingVersions(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const selectVersion = (id: string) => {
+    if (typeof window !== "undefined") localStorage.setItem("ic_active_version", id);
+  };
+
   return (
     <div className="px-8 py-12 max-w-[1100px] mx-auto">
       <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary via-primary to-[oklch(0.32_0.13_262)] text-primary-foreground shadow-premium">
