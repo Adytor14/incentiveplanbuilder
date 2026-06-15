@@ -1,14 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, ArrowRight, TrendingUp, Users, MapPin, GitCompare, Sigma } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from "recharts";
+import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, ArrowRight, TrendingUp, Users, Sigma } from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLine } from "recharts";
 
 export const Route = createFileRoute("/fairness")({
   head: () => ({
     meta: [
       { title: "Fairness Testing · Helix IC" },
-      { name: "description", content: "Validate whether goals are equitable and achievable across reps and territories." },
+      { name: "description", content: "Validate whether goals are equitable and achievable across reps." },
     ],
   }),
   component: Fairness,
@@ -22,7 +22,7 @@ const SEV_META: Record<Severity, { label: string; tone: "success" | "warning" | 
   warning: { label: "Action needed", tone: "danger", Icon: AlertTriangle },
 };
 
-// Test 1 — Goal Attainment Distribution
+// Test 1 — Achievability fairness: goal attainment distribution
 const attainmentDist = [
   { bucket: "<60%", count: 0 },
   { bucket: "60–80%", count: 2 },
@@ -32,17 +32,35 @@ const attainmentDist = [
   { bucket: ">150%", count: 0 },
 ];
 
-// Test 3 — Top vs Bottom Performer Analysis
-const topBottom = [
-  { group: "Top 20%", lyAttain: 128, newAttain: 102 },
-  { group: "Bottom 20%", lyAttain: 71, newAttain: 99 },
+// Test 2 — Performer fairness: attainment by quartile
+const quartileAttain = [
+  { group: "Top 25%", lyAttain: 128, newAttain: 101 },
+  { group: "Quartile 2", lyAttain: 110, newAttain: 100 },
+  { group: "Quartile 3", lyAttain: 92, newAttain: 99 },
+  { group: "Bottom 25%", lyAttain: 71, newAttain: 98 },
 ];
+// Gap = (Top 25% LY attainment) − (Bottom 25% LY attainment) drop after new goals
+const performerGapPts = Math.abs(
+  (quartileAttain[0].lyAttain - quartileAttain[0].newAttain) -
+  (quartileAttain[3].lyAttain - quartileAttain[3].newAttain)
+);
 
-// Test 4 — High vs Low Potential Territories
-const potentialBuckets = [
-  { group: "High Potential", goalDifficulty: 92, expectedAttain: 96 },
-  { group: "Low Potential", goalDifficulty: 118, expectedAttain: 82 },
+function performerAssessment(gap: number): { label: string; tone: "success" | "warning" | "danger"; severity: Severity } {
+  if (gap < 10) return { label: "Excellent", tone: "success", severity: "healthy" };
+  if (gap < 20) return { label: "Good", tone: "success", severity: "healthy" };
+  if (gap < 30) return { label: "Review", tone: "warning", severity: "caution" };
+  return { label: "Unfair", tone: "danger", severity: "warning" };
+}
+const performerVerdict = performerAssessment(performerGapPts);
+
+// Test 3 — Goal growth fairness: # reps per growth range
+const growthDist = [
+  { bucket: "0–10%", count: 6 },
+  { bucket: "10–20%", count: 5 },
+  { bucket: "20–30%", count: 3 },
+  { bucket: ">30%", count: 1 },
 ];
+const medianGrowthPct = 12; // illustrative
 
 function Fairness() {
   return (
@@ -56,21 +74,21 @@ function Fairness() {
       />
       <div className="px-8 py-7 max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
         <div className="space-y-5">
-          {/* Test 1 */}
+          {/* Test 1 — Achievability fairness */}
           <TestCard
             icon={TrendingUp}
             number={1}
-            title="Goal Attainment Distribution"
-            subtitle="Previous Sales vs New Goals"
+            title="Achievability Fairness"
+            subtitle="Are goals similarly achievable across reps?"
             severity="healthy"
-            insight="Distribution is roughly bell-shaped with the bulk between 80% and 120%. Goals appear reasonably calibrated overall."
+            insight="Goal attainment distribution (previous sales vs new goals) is roughly bell-shaped and centred around 100%. A fair plan should look like this — most reps clustered near target, thin tails on either side."
           >
             <div className="h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={attainmentDist} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="bucket" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false } />
                   <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
                   <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                     {attainmentDist.map((d, i) => (
@@ -80,86 +98,90 @@ function Fairness() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
+            <div className="mt-2 text-[11.5px] text-muted-foreground">Target shape: bell curve centred on 100% attainment.</div>
           </TestCard>
 
-          {/* Test 2 */}
-          <TestCard
-            icon={Sigma}
-            number={2}
-            title="Goal Growth %"
-            subtitle="How much goals grew vs prior year"
-            severity="caution"
-            insight="Median growth (12%) is below the average (15.2%), indicating a long tail of reps with very high goal growth (>30%). Review outliers."
-          >
-            <div className="grid grid-cols-3 gap-3">
-              <Stat label="Average Growth" value="15.2%" tone="primary" />
-              <Stat label="Median Growth" value="12.0%" tone="info" />
-              <Stat label="P90 Growth" value="34.5%" tone="warning" />
-            </div>
-          </TestCard>
-
-          {/* Test 3 */}
+          {/* Test 2 — Performer fairness */}
           <TestCard
             icon={Users}
-            number={3}
-            title="Top vs Bottom Performer Analysis"
-            subtitle="Compare expected attainment by historical performance"
-            severity="warning"
-            insight="High performers (Top 20%) and low performers (Bottom 20%) are projected to land at nearly identical attainment (~100%). High performers may be receiving easier goals while low performers are receiving harder ones."
-            recommendation={["Decrease Historical Sales Weight", "Increase Territory Potential Weight"]}
+            number={2}
+            title="Performer Fairness"
+            subtitle="Are historically strong performers getting disproportionately easy goals?"
+            severity={performerVerdict.severity}
+            insight={`Top performers historically attained ${quartileAttain[0].lyAttain}% and are projected at ${quartileAttain[0].newAttain}% on new goals. Bottom performers were at ${quartileAttain[3].lyAttain}% historically and are projected at ${quartileAttain[3].newAttain}%. Gap shift across quartiles is ${performerGapPts} pts — ${performerVerdict.label.toLowerCase()}.`}
+            recommendation={
+              performerGapPts >= 20
+                ? ["Increase Territory Potential weight", "Decrease Historical Sales weight"]
+                : undefined
+            }
           >
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topBottom} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+                <BarChart data={quartileAttain} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="group" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
                   <Bar dataKey="lyAttain" name="LY Attainment" fill="var(--muted-foreground)" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="newAttain" name="Expected New Attainment" fill="var(--warning)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="newAttain" name="Expected New Attainment" fill="var(--chart-1)" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
+
+            {/* Gap assessment legend */}
+            <div className="mt-3 rounded-md border border-border bg-background overflow-hidden">
+              <div className="grid grid-cols-4 text-[11px]">
+                <GapCell range="<10 pts" label="Excellent" tone="success" active={performerVerdict.label === "Excellent"} />
+                <GapCell range="10–20 pts" label="Good" tone="success" active={performerVerdict.label === "Good"} />
+                <GapCell range="20–30 pts" label="Review" tone="warning" active={performerVerdict.label === "Review"} />
+                <GapCell range=">30 pts" label="Unfair" tone="danger" active={performerVerdict.label === "Unfair"} />
+              </div>
+              <div className="px-3 py-2 border-t border-border flex items-center justify-between text-[11.5px]">
+                <span className="text-muted-foreground">Current quartile gap shift</span>
+                <span className="font-semibold num">{performerGapPts} pts</span>
+              </div>
+            </div>
           </TestCard>
 
-          {/* Test 4 */}
+          {/* Test 3 — Goal growth fairness */}
           <TestCard
-            icon={MapPin}
-            number={4}
-            title="High vs Low Potential Territories"
-            subtitle="Goal difficulty and expected attainment by territory potential"
-            severity="warning"
-            insight="Low-potential territories are receiving disproportionately difficult goals (118% difficulty index vs 92% in high-potential). Expected attainment gap is 14 points."
-            recommendation={["Increase Territory Potential Weight", "Review goal allocation in low-potential geographies"]}
+            icon={Sigma}
+            number={3}
+            title="Goal Growth Fairness"
+            subtitle="Are some reps receiving unrealistic goal increases?"
+            severity={medianGrowthPct > 20 ? "warning" : medianGrowthPct > 15 ? "caution" : "healthy"}
+            insight={`Median goal growth is ${medianGrowthPct}% (target ≈ 10%). Most reps fall in the 0–20% range; ${growthDist[3].count} rep(s) have >30% growth — review those outliers.`}
+            recommendation={
+              growthDist[3].count > 2
+                ? ["Cap maximum goal growth", "Smooth growth across reps"]
+                : undefined
+            }
           >
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={potentialBuckets} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+                <BarChart data={growthDist} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="group" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="bucket" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
-                  <Bar dataKey="goalDifficulty" name="Goal Difficulty Index" fill="var(--chart-2)" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="expectedAttain" name="Expected Attainment" fill="var(--chart-1)" radius={[3, 3, 0, 0]} />
+                  <ReferenceLine x="10–20%" stroke="var(--primary)" strokeDasharray="4 4" label={{ value: "Target median ≈ 10%", position: "top", fontSize: 10, fill: "var(--primary)" }} />
+                  <Bar dataKey="count" name="Reps" radius={[4, 4, 0, 0]}>
+                    {growthDist.map((d, i) => (
+                      <Cell key={i} fill={d.bucket === ">30%" ? "var(--warning)" : "var(--chart-2)"} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </TestCard>
-
-          {/* Test 5 */}
-          <TestCard
-            icon={GitCompare}
-            number={5}
-            title="Goal Similarity Test"
-            subtitle="Variance across rep-level goals"
-            severity="caution"
-            insight="Goal coefficient of variation is 0.09 — goals are quite similar across reps. This may reflect over-reliance on equal distribution at the expense of differentiated territory plans."
-            recommendation={["Reduce Equal Distribution Weight", "Increase performance-based allocation"]}
-          >
-            <div className="grid grid-cols-3 gap-3">
-              <Stat label="Variance" value="$48K²" tone="info" />
-              <Stat label="Std Deviation" value="±$22K" tone="info" />
-              <Stat label="CoV" value="0.09" tone="warning" />
+            <div className="mt-3 grid grid-cols-2 gap-2 text-[11.5px]">
+              <div className="rounded-md border border-border bg-background px-3 py-2">
+                <div className="text-muted-foreground">If growth is very similar across reps</div>
+                <div className="text-foreground font-medium mt-0.5">Reduce Equal Goal component</div>
+              </div>
+              <div className="rounded-md border border-border bg-background px-3 py-2">
+                <div className="text-muted-foreground">If growth varies a lot across reps</div>
+                <div className="text-foreground font-medium mt-0.5">Increase Equal Goal component</div>
+              </div>
             </div>
           </TestCard>
         </div>
@@ -175,11 +197,16 @@ function Fairness() {
               </div>
             </div>
             <ul className="px-5 py-4 space-y-2.5 text-[12.5px]">
-              <RecItem tone="danger" text="Decrease Historical Sales Weight (currently overweighted)" />
-              <RecItem tone="danger" text="Increase Territory Potential Weight" />
-              <RecItem tone="warning" text="Reduce Equal Distribution Weight" />
-              <RecItem tone="warning" text="Rebalance Goals Across Territories" />
-              <RecItem tone="info" text="Review High-Potential Territories outliers" />
+              {performerGapPts >= 20 && (
+                <>
+                  <RecItem tone="danger" text="Decrease Historical Sales Weight (high quartile gap)" />
+                  <RecItem tone="danger" text="Increase Territory Potential Weight" />
+                </>
+              )}
+              {growthDist[3].count > 2 && (
+                <RecItem tone="warning" text="Cap or smooth goal growth above 30%" />
+              )}
+              <RecItem tone="info" text="Confirm attainment distribution stays bell-shaped after weight changes" />
             </ul>
             <div className="px-5 py-3 border-t border-border">
               <a
@@ -243,12 +270,22 @@ function TestCard({
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: string; tone: "primary" | "info" | "warning" }) {
-  const toneCls = { primary: "text-primary", info: "text-info", warning: "text-warning" }[tone];
+function GapCell({ range, label, tone, active }: { range: string; label: string; tone: "success" | "warning" | "danger"; active: boolean }) {
+  const toneCls = {
+    success: "text-success",
+    warning: "text-warning",
+    danger: "text-destructive",
+  }[tone];
+  const bgCls = active
+    ? { success: "bg-success/10", warning: "bg-warning/10", danger: "bg-destructive/10" }[tone]
+    : "bg-transparent";
   return (
-    <div className="rounded-md border border-border bg-background px-3 py-2.5">
-      <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{label}</div>
-      <div className={`text-[18px] font-semibold tracking-tight num ${toneCls}`}>{value}</div>
+    <div className={`px-3 py-2 border-r last:border-r-0 border-border ${bgCls}`}>
+      <div className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-semibold">{range}</div>
+      <div className={`text-[12px] font-semibold ${toneCls} ${active ? "" : "opacity-70"}`}>
+        {label}
+        {active && <span className="ml-1 text-[10px] font-medium">• current</span>}
+      </div>
     </div>
   );
 }
