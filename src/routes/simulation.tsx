@@ -137,6 +137,37 @@ function Simulation() {
           </button>
         }
       />
+
+      {/* Applied-recommendations banner */}
+      {appliedRecs && (
+        <div className="px-8 pt-5 pb-0 max-w-[1600px]">
+          <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 flex flex-col md:flex-row md:items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Wand2 className="size-4 text-success shrink-0" />
+              <span className="text-[13px] font-semibold text-success">Fairness recommendations applied automatically</span>
+            </div>
+            <div className="flex-1 text-[12.5px] text-muted-foreground">
+              Growth set to <span className="font-semibold text-foreground">+{appliedRecs.growthPercent}%</span>, variability to <span className="font-semibold text-foreground">{appliedRecs.variability}%</span>.
+              Weights updated for Goal Setting.
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => navigate({ to: "/goal-setting" })}
+                className="h-8 px-3 rounded-md border border-border bg-background text-[12px] font-medium text-foreground hover:bg-muted"
+              >
+                Review in Goal Setting
+              </button>
+              <button
+                onClick={() => setAppliedRecs(null)}
+                className="size-7 grid place-items-center rounded-md hover:bg-success/20"
+              >
+                <X className="size-3.5 text-muted-foreground" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="px-8 py-7 max-w-[1600px] space-y-6">
         {/* Top KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
