@@ -58,7 +58,6 @@ function GoalSetting() {
       setWPot(recs.wPot);
       setWEqual(recs.wEqual);
       setGrowth(1 + recs.growthPercent / 100);
-      clearRecommendations();
     }
   }, []);
 
