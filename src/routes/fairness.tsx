@@ -1,8 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, ArrowRight, TrendingUp, Users, Sigma, Sparkles } from "lucide-react";
+import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, ArrowRight, TrendingUp, Users, Sigma, Sparkles, Wand2, X } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLine } from "recharts";
+import { computeRecommendations, storeRecommendations } from "@/lib/fairness-recommendations";
+
 
 export const Route = createFileRoute("/fairness")({
   head: () => ({
