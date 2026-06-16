@@ -212,9 +212,10 @@ function Fairness() {
           </TestCard>
         </div>
 
-        {/* Row 2: Fairness Recommendations — compact, centred */}
-        <div className="flex justify-center">
-          <Card className="p-0 w-full lg:w-2/3 xl:w-1/2 relative overflow-hidden">
+        {/* Row 2: Fairness Recommendations — left-aligned under first card */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-1">
+            <Card className="p-0 w-full relative overflow-hidden">
             {/* Prominent left accent strip */}
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-success to-primary" />
             <div className="px-5 pt-4 pb-2.5 border-b border-border flex items-center gap-2">
@@ -256,7 +257,8 @@ function Fairness() {
                 </a>
               </div>
             </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
 
