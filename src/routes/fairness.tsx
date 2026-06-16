@@ -72,8 +72,9 @@ function Fairness() {
         prev={{ to: "/goal-setting", label: "Goal Setting" }}
         next={{ to: "/payout-curve", label: "Payout Curve" }}
       />
-      <div className="px-8 py-7 max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
-        <div className="space-y-5">
+      <div className="px-8 py-4 max-w-[1600px] space-y-4">
+        {/* Row 1: Three tests side-by-side */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Test 1 — Achievability fairness */}
           <TestCard
             icon={TrendingUp}
@@ -81,16 +82,16 @@ function Fairness() {
             title="Achievability Fairness"
             subtitle="Are goals similarly achievable across reps?"
             severity="healthy"
-            insight="Goal attainment distribution (previous sales vs new goals) is roughly bell-shaped and centred around 100%. A fair plan should look like this — most reps clustered near target, thin tails on either side."
+            insight="Goal attainment distribution is roughly bell-shaped and centred around 100%. Most reps clustered near target, thin tails on either side."
           >
-            <div className="h-[220px]">
+            <div className="h-[140px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={attainmentDist} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+                <BarChart data={attainmentDist} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="bucket" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false } />
-                  <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
-                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} width={20} />
+                  <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 11 }} />
+                  <Bar dataKey="count" radius={[3, 3, 0, 0]}>
                     {attainmentDist.map((d, i) => (
                       <Cell key={i} fill={d.bucket.includes(">") || d.bucket.includes("<") ? "var(--warning)" : "var(--chart-1)"} />
                     ))}
@@ -98,7 +99,7 @@ function Fairness() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-2 text-[11.5px] text-muted-foreground">Target shape: bell curve centred on 100% attainment.</div>
+            <div className="mt-1 text-[11px] text-muted-foreground">Target shape: bell curve centred on 100% attainment.</div>
           </TestCard>
 
           {/* Test 2 — Performer fairness */}
@@ -106,37 +107,37 @@ function Fairness() {
             icon={Users}
             number={2}
             title="Performer Fairness"
-            subtitle="Are historically strong performers getting disproportionately easy goals?"
+            subtitle="Are strong performers getting disproportionately easy goals?"
             severity={performerVerdict.severity}
-            insight={`Top performers historically attained ${quartileAttain[0].lyAttain}% and are projected at ${quartileAttain[0].newAttain}% on new goals. Bottom performers were at ${quartileAttain[3].lyAttain}% historically and are projected at ${quartileAttain[3].newAttain}%. Gap shift across quartiles is ${performerGapPts} pts — ${performerVerdict.label.toLowerCase()}.`}
+            insight={`Top performers historically attained ${quartileAttain[0].lyAttain}% and are projected at ${quartileAttain[0].newAttain}%. Bottom performers were at ${quartileAttain[3].lyAttain}% historically and projected at ${quartileAttain[3].newAttain}%. Gap shift is ${performerGapPts} pts — ${performerVerdict.label.toLowerCase()}.`}
             recommendation={
               performerGapPts >= 20
                 ? ["Increase Territory Potential weight", "Decrease Historical Sales weight"]
                 : undefined
             }
           >
-            <div className="h-[200px]">
+            <div className="h-[140px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={quartileAttain} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+                <BarChart data={quartileAttain} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="group" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
-                  <Bar dataKey="lyAttain" name="LY Attainment" fill="var(--muted-foreground)" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="newAttain" name="Expected New Attainment" fill="var(--chart-1)" radius={[3, 3, 0, 0]} />
+                  <XAxis dataKey="group" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} width={24} />
+                  <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 11 }} />
+                  <Bar dataKey="lyAttain" name="LY Attainment" fill="var(--muted-foreground)" radius={[2, 2, 0, 0]} barSize={16} />
+                  <Bar dataKey="newAttain" name="Expected New Attainment" fill="var(--chart-1)" radius={[2, 2, 0, 0]} barSize={16} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
             {/* Gap assessment legend */}
-            <div className="mt-3 rounded-md border border-border bg-background overflow-hidden">
-              <div className="grid grid-cols-4 text-[11px]">
+            <div className="mt-2 rounded-md border border-border bg-background overflow-hidden">
+              <div className="grid grid-cols-4 text-[10px]">
                 <GapCell range="<10 pts" label="Excellent" tone="success" active={performerVerdict.label === "Excellent"} />
                 <GapCell range="10–20 pts" label="Good" tone="success" active={performerVerdict.label === "Good"} />
                 <GapCell range="20–30 pts" label="Review" tone="warning" active={performerVerdict.label === "Review"} />
                 <GapCell range=">30 pts" label="Unfair" tone="danger" active={performerVerdict.label === "Unfair"} />
               </div>
-              <div className="px-3 py-2 border-t border-border flex items-center justify-between text-[11.5px]">
+              <div className="px-3 py-1.5 border-t border-border flex items-center justify-between text-[11px]">
                 <span className="text-muted-foreground">Current quartile gap shift</span>
                 <span className="font-semibold num">{performerGapPts} pts</span>
               </div>
@@ -157,15 +158,15 @@ function Fairness() {
                 : undefined
             }
           >
-            <div className="h-[200px]">
+            <div className="h-[140px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={growthDist} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+                <BarChart data={growthDist} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="bucket" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
-                  <ReferenceLine x="10–20%" stroke="var(--primary)" strokeDasharray="4 4" label={{ value: "Target median ≈ 10%", position: "top", fontSize: 10, fill: "var(--primary)" }} />
-                  <Bar dataKey="count" name="Reps" radius={[4, 4, 0, 0]}>
+                  <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} width={20} />
+                  <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 11 }} />
+                  <ReferenceLine x="10–20%" stroke="var(--primary)" strokeDasharray="4 4" label={{ value: "Target ≈ 10%", position: "top", fontSize: 9, fill: "var(--primary)" }} />
+                  <Bar dataKey="count" name="Reps" radius={[3, 3, 0, 0]}>
                     {growthDist.map((d, i) => (
                       <Cell key={i} fill={d.bucket === ">30%" ? "var(--warning)" : "var(--chart-2)"} />
                     ))}
@@ -173,12 +174,12 @@ function Fairness() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 text-[11.5px]">
-              <div className="rounded-md border border-border bg-background px-3 py-2">
+            <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+              <div className="rounded-md border border-border bg-background px-2.5 py-1.5">
                 <div className="text-muted-foreground">If growth is very similar across reps</div>
                 <div className="text-foreground font-medium mt-0.5">Reduce Equal Goal component</div>
               </div>
-              <div className="rounded-md border border-border bg-background px-3 py-2">
+              <div className="rounded-md border border-border bg-background px-2.5 py-1.5">
                 <div className="text-muted-foreground">If growth varies a lot across reps</div>
                 <div className="text-foreground font-medium mt-0.5">Increase Equal Goal component</div>
               </div>
@@ -186,17 +187,17 @@ function Fairness() {
           </TestCard>
         </div>
 
-        {/* Recommendations panel */}
-        <aside className="space-y-4">
-          <Card className="p-0 sticky top-20">
-            <div className="px-5 pt-5 pb-3 border-b border-border flex items-center gap-2">
-              <ShieldCheck className="size-4 text-primary" />
-              <div>
-                <div className="text-[14px] font-semibold tracking-tight">Fairness Recommendations</div>
-                <div className="text-[11.5px] text-muted-foreground mt-0.5">Auto-generated from test results</div>
-              </div>
+        {/* Row 2: Fairness Recommendations */}
+        <Card className="p-0">
+          <div className="px-5 pt-4 pb-2.5 border-b border-border flex items-center gap-2">
+            <ShieldCheck className="size-4 text-primary" />
+            <div>
+              <div className="text-[14px] font-semibold tracking-tight">Fairness Recommendations</div>
+              <div className="text-[11.5px] text-muted-foreground mt-0.5">Auto-generated from test results</div>
             </div>
-            <ul className="px-5 py-4 space-y-2.5 text-[12.5px]">
+          </div>
+          <div className="px-5 py-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <ul className="space-y-2 text-[12.5px]">
               {performerGapPts >= 20 && (
                 <>
                   <RecItem tone="danger" text="Decrease Historical Sales Weight (high quartile gap)" />
@@ -208,20 +209,19 @@ function Fairness() {
               )}
               <RecItem tone="info" text="Confirm attainment distribution stays bell-shaped after weight changes" />
             </ul>
-            <div className="px-5 py-3 border-t border-border">
+            <div className="md:col-span-2 flex items-center justify-between gap-4">
+              <div className="text-[12px] text-muted-foreground">
+                Fairness Testing runs <span className="text-foreground font-medium">before</span> Payout Curve Design — validate the goals first so payouts are built on equitable targets.
+              </div>
               <a
                 href="/goal-setting"
-                className="h-9 w-full inline-flex items-center justify-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12.5px] font-semibold hover:bg-primary/90"
+                className="h-9 inline-flex items-center justify-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12.5px] font-semibold hover:bg-primary/90 px-5 shrink-0"
               >
                 Back to Goal Setting <ArrowRight className="size-3.5" />
               </a>
             </div>
-          </Card>
-
-          <div className="rounded-lg border border-border bg-surface p-4 text-[12px] text-muted-foreground">
-            Fairness Testing runs <span className="text-foreground font-medium">before</span> Payout Curve Design — validate the goals first so payouts are built on equitable targets.
           </div>
-        </aside>
+        </Card>
       </div>
     </div>
   );
@@ -237,31 +237,31 @@ function TestCard({
   const SevIcon = meta.Icon;
   return (
     <Card className="p-0">
-      <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3 border-b border-border">
-        <div className="flex items-start gap-3 min-w-0">
-          <div className="size-9 rounded-lg bg-primary-muted text-primary grid place-items-center shrink-0">
-            <Icon className="size-4" />
+      <div className="px-4 pt-4 pb-2.5 flex items-start justify-between gap-2 border-b border-border">
+        <div className="flex items-start gap-2.5 min-w-0">
+          <div className="size-8 rounded-lg bg-primary-muted text-primary grid place-items-center shrink-0">
+            <Icon className="size-3.5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground font-semibold">Test {number}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-semibold">Test {number}</span>
             </div>
-            <div className="text-[14.5px] font-semibold tracking-tight">{title}</div>
-            <div className="text-[12px] text-muted-foreground mt-0.5">{subtitle}</div>
+            <div className="text-[13.5px] font-semibold tracking-tight leading-tight">{title}</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{subtitle}</div>
           </div>
         </div>
-        <Badge tone={meta.tone}><SevIcon className="size-3" /> {meta.label}</Badge>
+        <Badge tone={meta.tone} className="shrink-0"><SevIcon className="size-3" /> {meta.label}</Badge>
       </div>
-      <div className="px-5 py-4">{children}</div>
-      <div className="px-5 py-3 border-t border-border bg-muted/30 text-[12.5px] text-foreground">
+      <div className="px-4 py-3">{children}</div>
+      <div className="px-4 py-2.5 border-t border-border bg-muted/30 text-[11.5px] text-foreground leading-snug">
         <span className="font-semibold">Insight: </span>{insight}
       </div>
       {recommendation && (
-        <div className="px-5 py-3 border-t border-border bg-warning/5">
-          <div className="text-[10.5px] uppercase tracking-[0.06em] text-warning font-semibold mb-1.5">
+        <div className="px-4 py-2.5 border-t border-border bg-warning/5">
+          <div className="text-[10px] uppercase tracking-[0.06em] text-warning font-semibold mb-1">
             Recommended Actions
           </div>
-          <ul className="text-[12.5px] text-foreground space-y-1 list-disc pl-5">
+          <ul className="text-[11.5px] text-foreground space-y-0.5 list-disc pl-4">
             {recommendation.map((r) => <li key={r}>{r}</li>)}
           </ul>
         </div>
