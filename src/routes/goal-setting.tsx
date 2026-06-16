@@ -127,6 +127,28 @@ function GoalSetting() {
           </div>
         }
       />
+
+      {/* Applied-recommendations banner */}
+      {appliedRecs && (
+        <div className="px-8 pt-5 pb-0 max-w-[1600px]">
+          <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 flex flex-col md:flex-row md:items-center gap-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="size-4 text-success shrink-0" />
+              <span className="text-[13px] font-semibold text-success">Fairness recommendations applied</span>
+            </div>
+            <div className="flex-1 text-[12.5px] text-muted-foreground">
+              Weights updated: Historical <span className="font-semibold text-foreground">{appliedRecs.wHist}%</span>, Potential <span className="font-semibold text-foreground">{appliedRecs.wPot}%</span>, Equal <span className="font-semibold text-foreground">{appliedRecs.wEqual}%</span>. Growth set to <span className="font-semibold text-foreground">{(appliedRecs.growthPercent / 100).toFixed(2)}x</span>.
+            </div>
+            <button
+              onClick={() => setAppliedRecs(null)}
+              className="size-7 grid place-items-center rounded-md hover:bg-success/20 shrink-0"
+            >
+              <X className="size-3.5 text-muted-foreground" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="px-8 py-7 max-w-[1600px] space-y-6">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
           {/* Historical */}
