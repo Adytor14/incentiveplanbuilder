@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider, SegmentedTabs } from "@/components/ui-kit";
-import { Play, Activity, TrendingUp, ShieldCheck, Layers3, RefreshCw } from "lucide-react";
+import { Play, Activity, TrendingUp, ShieldCheck, Layers3, RefreshCw, X, Wand2 } from "lucide-react";
+import { loadRecommendations } from "@/lib/fairness-recommendations";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -43,12 +44,15 @@ const SCENARIOS = [
 const RUN_PRESETS = [1000, 5000, 10000, 25000, 50000];
 
 function Simulation() {
+  const navigate = useNavigate();
   const [variability, setVariability] = useState(18);
   const [runs, setRuns] = useState(10000);
   const [growth, setGrowth] = useState(15);
   const [view, setView] = useState<"distribution" | "scenarios">("distribution");
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [appliedRecs, setAppliedRecs] = useState<ReturnType<typeof loadRecommendations>>(null);
+  const autoRunRef = useRef(false);
   const [lastRun, setLastRun] = useState<{ runs: number; durationMs: number; volatility: number; overrun: number; at: number }>({
     runs: 12000,
     durationMs: 4200,
@@ -57,7 +61,26 @@ function Simulation() {
     at: Date.now() - 2 * 60 * 60 * 1000,
   });
 
-  // Derived summary outputs — deterministic preview from inputs
+  // Auto-apply fairness recommendations on mount
+  useEffect(() => {
+    const recs = loadRecommendations();
+    if (recs) {
+      setAppliedRecs(recs);
+      setGrowth(recs.growthPercent);
+      setVariability(recs.variability);
+      autoRunRef.current = true;
+    }
+  }, []);
+
+  // Auto-run simulation once recommendations have been applied
+  useEffect(() => {
+    if (autoRunRef.current && !running) {
+      autoRunRef.current = false;
+      // Small delay so the UI updates with new values before starting
+      const t = setTimeout(() => runSimulation(), 300);
+      return () => clearTimeout(t);
+    }
+  }, [appliedRecs, running]);
   const summary = useMemo(() => {
     const noise = Math.max(0.5, 1 - Math.log10(runs) / 5);
     const volatility = Math.min(0.6, (variability / 100) * 1.15 * noise);
@@ -113,6 +136,37 @@ function Simulation() {
           </button>
         }
       />
+
+      {/* Applied-recommendations banner */}
+      {appliedRecs && (
+        <div className="px-8 pt-5 pb-0 max-w-[1600px]">
+          <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 flex flex-col md:flex-row md:items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Wand2 className="size-4 text-success shrink-0" />
+              <span className="text-[13px] font-semibold text-success">Fairness recommendations applied automatically</span>
+            </div>
+            <div className="flex-1 text-[12.5px] text-muted-foreground">
+              Growth set to <span className="font-semibold text-foreground">+{appliedRecs.growthPercent}%</span>, variability to <span className="font-semibold text-foreground">{appliedRecs.variability}%</span>.
+              Weights updated for Goal Setting.
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => navigate({ to: "/goal-setting" })}
+                className="h-8 px-3 rounded-md border border-border bg-background text-[12px] font-medium text-foreground hover:bg-muted"
+              >
+                Review in Goal Setting
+              </button>
+              <button
+                onClick={() => setAppliedRecs(null)}
+                className="size-7 grid place-items-center rounded-md hover:bg-success/20"
+              >
+                <X className="size-3.5 text-muted-foreground" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="px-8 py-7 max-w-[1600px] space-y-6">
         {/* Top KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
