@@ -38,10 +38,10 @@ function Reports() {
   return (
     <div>
       <PageHeader
-        step={6}
+        step={7}
         title="Reports & Outputs"
         description={`Final reports for IC Plan ${period}. View any report inline or export to PDF / Excel.`}
-        prev={{ to: "/payout-curve", label: "Payout Curve" }}
+        prev={{ to: "/simulation", label: "Monte Carlo" }}
       />
       <div className="px-8 py-7 max-w-[1400px] space-y-5">
         <Card className="p-5 bg-success/5 border-success/30 flex items-center gap-3">
