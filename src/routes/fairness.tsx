@@ -214,9 +214,11 @@ function Fairness() {
 
         {/* Row 2: Fairness Recommendations — compact, centred */}
         <div className="flex justify-center">
-          <Card className="p-0 w-full lg:w-2/3 xl:w-1/2">
+          <Card className="p-0 w-full lg:w-2/3 xl:w-1/2 relative overflow-hidden">
+            {/* Prominent left accent strip */}
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-success to-primary" />
             <div className="px-5 pt-4 pb-2.5 border-b border-border flex items-center gap-2">
-              <div className="size-8 rounded-lg bg-primary-muted text-primary grid place-items-center shrink-0">
+              <div className="size-8 rounded-lg bg-success/15 text-success grid place-items-center shrink-0">
                 <Sparkles className="size-4" />
               </div>
               <div>
@@ -237,10 +239,18 @@ function Fairness() {
                 )}
                 <RecItem tone="info" text="Confirm attainment distribution stays bell-shaped after weight changes" />
               </ul>
-              <div className="shrink-0">
+              <div className="shrink-0 flex flex-col gap-2">
+                {hasActionableRecs && (
+                  <button
+                    onClick={() => setShowApplyConfirm(true)}
+                    className="h-9 px-4 inline-flex items-center justify-center gap-1.5 rounded-md bg-success text-success-foreground text-[12.5px] font-semibold hover:opacity-90 shadow-card"
+                  >
+                    <Wand2 className="size-3.5" /> Apply Recommendations
+                  </button>
+                )}
                 <a
                   href="/goal-setting"
-                  className="h-9 inline-flex items-center justify-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12.5px] font-semibold hover:bg-primary/90 px-5"
+                  className="h-9 inline-flex items-center justify-center gap-1.5 rounded-md border border-border bg-background text-[12.5px] font-medium text-foreground hover:bg-muted px-5"
                 >
                   Back to Goal Setting <ArrowRight className="size-3.5" />
                 </a>
@@ -249,6 +259,75 @@ function Fairness() {
           </Card>
         </div>
       </div>
+
+      {/* Apply Recommendations Confirmation Modal */}
+      {showApplyConfirm && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm p-4">
+          <Card className="max-w-lg w-full p-0">
+            <div className="px-5 py-4 border-b border-border flex items-center gap-2.5">
+              <div className="size-9 rounded-lg bg-success/15 text-success grid place-items-center">
+                <Wand2 className="size-4" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[14px] font-semibold">Apply Fairness Recommendations?</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">
+                  This will update plan inputs and rerun the Monte Carlo simulation automatically.
+                </div>
+              </div>
+              <button onClick={() => setShowApplyConfirm(false)} className="size-7 grid place-items-center rounded-md hover:bg-muted">
+                <X className="size-4 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <div className="text-[12.5px] text-muted-foreground">The following adjustments will be made:</div>
+              <div className="space-y-2">
+                {recs.reason.map((r, i) => (
+                  <div key={i} className="flex items-start gap-2 text-[12.5px]">
+                    <CheckCircle2 className="size-3.5 text-success shrink-0 mt-0.5" />
+                    <span>{r}</span>
+                  </div>
+                ))}
+                <div className="flex items-start gap-2 text-[12.5px]">
+                  <CheckCircle2 className="size-3.5 text-success shrink-0 mt-0.5" />
+                  <span>Updated weights will be saved for Goal Setting.</span>
+                </div>
+                <div className="flex items-start gap-2 text-[12.5px]">
+                  <CheckCircle2 className="size-3.5 text-success shrink-0 mt-0.5" />
+                  <span>Monte Carlo simulation will run automatically with new parameters.</span>
+                </div>
+              </div>
+              <div className="rounded-md bg-muted/40 border border-border p-3 grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Historical</div>
+                  <div className="text-[14px] font-semibold num mt-0.5">{recs.wHist}%</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Potential</div>
+                  <div className="text-[14px] font-semibold num mt-0.5">{recs.wPot}%</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Equal</div>
+                  <div className="text-[14px] font-semibold num mt-0.5">{recs.wEqual}%</div>
+                </div>
+              </div>
+            </div>
+            <div className="px-5 pb-4 flex justify-end gap-2">
+              <button
+                onClick={() => setShowApplyConfirm(false)}
+                className="h-9 px-3.5 rounded-md border border-border bg-background text-[13px] font-medium text-foreground hover:bg-muted"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApply}
+                className="h-9 px-4 rounded-md bg-success text-success-foreground text-[13px] font-semibold hover:opacity-90 shadow-card inline-flex items-center gap-1.5"
+              >
+                <Wand2 className="size-3.5" /> Apply & Run Simulation
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
