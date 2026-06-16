@@ -66,14 +66,39 @@ const growthDist = [
 const medianGrowthPct = 12; // illustrative
 
 function Fairness() {
+  const navigate = useNavigate();
+  const [showApplyConfirm, setShowApplyConfirm] = useState(false);
+
+  const hasActionableRecs = performerGapPts >= 20 || growthDist[3].count > 2;
+
+  const recs = useMemo(
+    () => computeRecommendations(performerGapPts, growthDist[3].count, medianGrowthPct),
+    []
+  );
+
+  const handleApply = () => {
+    storeRecommendations(recs);
+    setShowApplyConfirm(false);
+    navigate({ to: "/simulation" });
+  };
+
   return (
     <div>
       <PageHeader
         step={4}
         title="Fairness Testing"
-        description="Validate whether goals are equitable and achievable before designing the payout curve."
         prev={{ to: "/goal-setting", label: "Goal Setting" }}
         next={{ to: "/payout-curve", label: "Payout Curve" }}
+        actions={
+          hasActionableRecs && (
+            <button
+              onClick={() => setShowApplyConfirm(true)}
+              className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-success text-success-foreground text-[13px] font-semibold hover:opacity-90 shadow-card"
+            >
+              <Wand2 className="size-3.5" /> Apply Recommendations
+            </button>
+          )
+        }
       />
       <div className="px-8 py-4 max-w-[1600px] space-y-4">
         {/* Row 1: Three tests side-by-side */}
