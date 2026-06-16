@@ -68,7 +68,6 @@ function Simulation() {
       setAppliedRecs(recs);
       setGrowth(recs.growthPercent);
       setVariability(recs.variability);
-      clearRecommendations();
       autoRunRef.current = true;
     }
   }, []);
