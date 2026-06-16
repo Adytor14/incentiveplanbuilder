@@ -97,12 +97,12 @@ function Simulation() {
   return (
     <div>
       <PageHeader
-        step={4}
+        step={6}
         eyebrow="Decision Engine"
         title="Monte Carlo Simulation"
         description="Stress-test the plan across thousands of futures. Quantify goal fairness and payout volatility."
         prev={{ to: "/payout-curve", label: "Payout Curve" }}
-        next={{ to: "/fairness", label: "Fairness Testing" }}
+        next={{ to: "/reports", label: "Reports & Outputs" }}
         actions={
           <button
             onClick={runSimulation}
