@@ -11,6 +11,7 @@ import {
   Database,
   Calendar,
   Download,
+  Activity,
 } from "lucide-react";
 import { PlanPeriodProvider, usePlanPeriod, PLAN_PERIODS } from "@/lib/plan-period";
 
@@ -90,7 +91,8 @@ const NAV = [
   { to: "/goal-setting", label: "Goal Setting", icon: Target, step: 3 },
   { to: "/fairness", label: "Fairness Testing", icon: ShieldCheck, step: 4 },
   { to: "/payout-curve", label: "Payout Curve", icon: TrendingUp, step: 5 },
-  { to: "/reports", label: "Reports & Outputs", icon: FileText, step: 6 },
+  { to: "/simulation", label: "Monte Carlo", icon: Activity, step: 6 },
+  { to: "/reports", label: "Reports & Outputs", icon: FileText, step: 7 },
 ] as const;
 
 function Sidebar() {

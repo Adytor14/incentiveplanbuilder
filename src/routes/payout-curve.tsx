@@ -109,7 +109,7 @@ function PayoutCurve() {
         title="Payout Curve Designer"
         description="Define inflexion points for Threshold, Target and Excellence achievement. Add as many points as needed."
         prev={{ to: "/fairness", label: "Fairness Testing" }}
-        next={{ to: "/reports", label: "Reports & Outputs" }}
+        next={{ to: "/simulation", label: "Monte Carlo" }}
         actions={
           <button className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card">
             <Save className="size-3.5" /> Save to Curve Library
