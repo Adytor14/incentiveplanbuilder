@@ -73,7 +73,15 @@ function Simulation() {
     }
   }, []);
 
-  // Derived summary outputs — deterministic preview from inputs
+  // Auto-run simulation once recommendations have been applied
+  useEffect(() => {
+    if (autoRunRef.current && !running) {
+      autoRunRef.current = false;
+      // Small delay so the UI updates with new values before starting
+      const t = setTimeout(() => runSimulation(), 300);
+      return () => clearTimeout(t);
+    }
+  }, [appliedRecs, running]);
   const summary = useMemo(() => {
     const noise = Math.max(0.5, 1 - Math.log10(runs) / 5);
     const volatility = Math.min(0.6, (variability / 100) * 1.15 * noise);
