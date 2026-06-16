@@ -47,6 +47,20 @@ function GoalSetting() {
   const [wEqual, setWEqual] = useState(20);
   const [showInvalid, setShowInvalid] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [appliedRecs, setAppliedRecs] = useState<ReturnType<typeof loadRecommendations>>(null);
+
+  // Auto-apply fairness weight recommendations on mount
+  useEffect(() => {
+    const recs = loadRecommendations();
+    if (recs) {
+      setAppliedRecs(recs);
+      setWHist(recs.wHist);
+      setWPot(recs.wPot);
+      setWEqual(recs.wEqual);
+      setGrowth(1 + recs.growthPercent / 100);
+      clearRecommendations();
+    }
+  }, []);
 
   const total = wHist + wPot + wEqual;
   const balanced = total === 100;
