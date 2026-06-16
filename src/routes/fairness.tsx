@@ -237,31 +237,31 @@ function TestCard({
   const SevIcon = meta.Icon;
   return (
     <Card className="p-0">
-      <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3 border-b border-border">
-        <div className="flex items-start gap-3 min-w-0">
-          <div className="size-9 rounded-lg bg-primary-muted text-primary grid place-items-center shrink-0">
-            <Icon className="size-4" />
+      <div className="px-4 pt-4 pb-2.5 flex items-start justify-between gap-2 border-b border-border">
+        <div className="flex items-start gap-2.5 min-w-0">
+          <div className="size-8 rounded-lg bg-primary-muted text-primary grid place-items-center shrink-0">
+            <Icon className="size-3.5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground font-semibold">Test {number}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-semibold">Test {number}</span>
             </div>
-            <div className="text-[14.5px] font-semibold tracking-tight">{title}</div>
-            <div className="text-[12px] text-muted-foreground mt-0.5">{subtitle}</div>
+            <div className="text-[13.5px] font-semibold tracking-tight leading-tight">{title}</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{subtitle}</div>
           </div>
         </div>
-        <Badge tone={meta.tone}><SevIcon className="size-3" /> {meta.label}</Badge>
+        <Badge tone={meta.tone} className="shrink-0"><SevIcon className="size-3" /> {meta.label}</Badge>
       </div>
-      <div className="px-5 py-4">{children}</div>
-      <div className="px-5 py-3 border-t border-border bg-muted/30 text-[12.5px] text-foreground">
+      <div className="px-4 py-3">{children}</div>
+      <div className="px-4 py-2.5 border-t border-border bg-muted/30 text-[11.5px] text-foreground leading-snug">
         <span className="font-semibold">Insight: </span>{insight}
       </div>
       {recommendation && (
-        <div className="px-5 py-3 border-t border-border bg-warning/5">
-          <div className="text-[10.5px] uppercase tracking-[0.06em] text-warning font-semibold mb-1.5">
+        <div className="px-4 py-2.5 border-t border-border bg-warning/5">
+          <div className="text-[10px] uppercase tracking-[0.06em] text-warning font-semibold mb-1">
             Recommended Actions
           </div>
-          <ul className="text-[12.5px] text-foreground space-y-1 list-disc pl-5">
+          <ul className="text-[11.5px] text-foreground space-y-0.5 list-disc pl-4">
             {recommendation.map((r) => <li key={r}>{r}</li>)}
           </ul>
         </div>
