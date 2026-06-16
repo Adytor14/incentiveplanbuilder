@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge, Slider, SegmentedTabs } from "@/components/ui-kit";
-import { Play, Activity, TrendingUp, ShieldCheck, Layers3, RefreshCw } from "lucide-react";
+import { Play, Activity, TrendingUp, ShieldCheck, Layers3, RefreshCw, CheckCircle2, X, Wand2 } from "lucide-react";
+import { loadRecommendations, clearRecommendations } from "@/lib/fairness-recommendations";
 import {
   ResponsiveContainer,
   AreaChart,
