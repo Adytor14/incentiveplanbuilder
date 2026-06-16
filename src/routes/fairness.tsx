@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, ArrowRight, TrendingUp, Users, Sigma } from "lucide-react";
+import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, ArrowRight, TrendingUp, Users, Sigma, Sparkles } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLine } from "recharts";
 
 export const Route = createFileRoute("/fairness")({
@@ -78,7 +78,6 @@ function Fairness() {
           {/* Test 1 — Achievability fairness */}
           <TestCard
             icon={TrendingUp}
-            number={1}
             title="Achievability Fairness"
             subtitle="Are goals similarly achievable across reps?"
             severity="healthy"
@@ -105,7 +104,6 @@ function Fairness() {
           {/* Test 2 — Performer fairness */}
           <TestCard
             icon={Users}
-            number={2}
             title="Performer Fairness"
             subtitle="Are strong performers getting disproportionately easy goals?"
             severity={performerVerdict.severity}
@@ -147,7 +145,6 @@ function Fairness() {
           {/* Test 3 — Goal growth fairness */}
           <TestCard
             icon={Sigma}
-            number={3}
             title="Goal Growth Fairness"
             subtitle="Are some reps receiving unrealistic goal increases?"
             severity={medianGrowthPct > 20 ? "warning" : medianGrowthPct > 15 ? "caution" : "healthy"}
@@ -187,50 +184,51 @@ function Fairness() {
           </TestCard>
         </div>
 
-        {/* Row 2: Fairness Recommendations */}
-        <Card className="p-0">
-          <div className="px-5 pt-4 pb-2.5 border-b border-border flex items-center gap-2">
-            <ShieldCheck className="size-4 text-primary" />
-            <div>
-              <div className="text-[14px] font-semibold tracking-tight">Fairness Recommendations</div>
-              <div className="text-[11.5px] text-muted-foreground mt-0.5">Auto-generated from test results</div>
-            </div>
-          </div>
-          <div className="px-5 py-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <ul className="space-y-2 text-[12.5px]">
-              {performerGapPts >= 20 && (
-                <>
-                  <RecItem tone="danger" text="Decrease Historical Sales Weight (high quartile gap)" />
-                  <RecItem tone="danger" text="Increase Territory Potential Weight" />
-                </>
-              )}
-              {growthDist[3].count > 2 && (
-                <RecItem tone="warning" text="Cap or smooth goal growth above 30%" />
-              )}
-              <RecItem tone="info" text="Confirm attainment distribution stays bell-shaped after weight changes" />
-            </ul>
-            <div className="md:col-span-2 flex items-center justify-between gap-4">
-              <div className="text-[12px] text-muted-foreground">
-                Fairness Testing runs <span className="text-foreground font-medium">before</span> Payout Curve Design — validate the goals first so payouts are built on equitable targets.
+        {/* Row 2: Fairness Recommendations — compact, centred */}
+        <div className="flex justify-center">
+          <Card className="p-0 w-full lg:w-2/3 xl:w-1/2">
+            <div className="px-5 pt-4 pb-2.5 border-b border-border flex items-center gap-2">
+              <div className="size-8 rounded-lg bg-primary-muted text-primary grid place-items-center shrink-0">
+                <Sparkles className="size-4" />
               </div>
-              <a
-                href="/goal-setting"
-                className="h-9 inline-flex items-center justify-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12.5px] font-semibold hover:bg-primary/90 px-5 shrink-0"
-              >
-                Back to Goal Setting <ArrowRight className="size-3.5" />
-              </a>
+              <div>
+                <div className="text-[14px] font-semibold tracking-tight">Fairness Recommendations</div>
+                <div className="text-[11.5px] text-muted-foreground mt-0.5">Auto-generated from test results</div>
+              </div>
             </div>
-          </div>
-        </Card>
+            <div className="px-5 py-3 flex flex-col md:flex-row md:items-center gap-4">
+              <ul className="flex-1 space-y-2 text-[12.5px]">
+                {performerGapPts >= 20 && (
+                  <>
+                    <RecItem tone="danger" text="Decrease Historical Sales Weight (high quartile gap)" />
+                    <RecItem tone="danger" text="Increase Territory Potential Weight" />
+                  </>
+                )}
+                {growthDist[3].count > 2 && (
+                  <RecItem tone="warning" text="Cap or smooth goal growth above 30%" />
+                )}
+                <RecItem tone="info" text="Confirm attainment distribution stays bell-shaped after weight changes" />
+              </ul>
+              <div className="shrink-0">
+                <a
+                  href="/goal-setting"
+                  className="h-9 inline-flex items-center justify-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12.5px] font-semibold hover:bg-primary/90 px-5"
+                >
+                  Back to Goal Setting <ArrowRight className="size-3.5" />
+                </a>
+              </div>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
 }
 
 function TestCard({
-  icon: Icon, number, title, subtitle, severity, insight, recommendation, children,
+  icon: Icon, title, subtitle, severity, insight, recommendation, children,
 }: {
-  icon: typeof CheckCircle2; number: number; title: string; subtitle: string;
+  icon: typeof CheckCircle2; title: string; subtitle: string;
   severity: Severity; insight: string; recommendation?: string[]; children: React.ReactNode;
 }) {
   const meta = SEV_META[severity];
@@ -243,9 +241,6 @@ function TestCard({
             <Icon className="size-3.5" />
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-semibold">Test {number}</span>
-            </div>
             <div className="text-[13.5px] font-semibold tracking-tight leading-tight">{title}</div>
             <div className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{subtitle}</div>
           </div>
