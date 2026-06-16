@@ -11,7 +11,7 @@ interface Props {
   actions?: React.ReactNode;
 }
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 
 export function PageHeader({ step, eyebrow, title, description, prev, next, actions }: Props) {
   return (
