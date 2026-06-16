@@ -257,7 +257,8 @@ function Fairness() {
                 </a>
               </div>
             </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
 
