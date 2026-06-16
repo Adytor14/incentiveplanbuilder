@@ -11,6 +11,7 @@ import {
   Database,
   Calendar,
   Download,
+  Activity,
 } from "lucide-react";
 import { PlanPeriodProvider, usePlanPeriod, PLAN_PERIODS } from "@/lib/plan-period";
 
