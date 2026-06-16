@@ -326,8 +326,10 @@ function Fairness() {
                 <Wand2 className="size-3.5" /> Apply & Run Simulation
               </button>
             </div>
+            </div>
           </Card>
         </div>
+      </div>
       )}
     </div>
   );
