@@ -44,12 +44,15 @@ const SCENARIOS = [
 const RUN_PRESETS = [1000, 5000, 10000, 25000, 50000];
 
 function Simulation() {
+  const navigate = useNavigate();
   const [variability, setVariability] = useState(18);
   const [runs, setRuns] = useState(10000);
   const [growth, setGrowth] = useState(15);
   const [view, setView] = useState<"distribution" | "scenarios">("distribution");
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [appliedRecs, setAppliedRecs] = useState<ReturnType<typeof loadRecommendations>>(null);
+  const autoRunRef = useRef(false);
   const [lastRun, setLastRun] = useState<{ runs: number; durationMs: number; volatility: number; overrun: number; at: number }>({
     runs: 12000,
     durationMs: 4200,
@@ -57,6 +60,18 @@ function Simulation() {
     overrun: 14,
     at: Date.now() - 2 * 60 * 60 * 1000,
   });
+
+  // Auto-apply fairness recommendations on mount
+  useEffect(() => {
+    const recs = loadRecommendations();
+    if (recs) {
+      setAppliedRecs(recs);
+      setGrowth(recs.growthPercent);
+      setVariability(recs.variability);
+      clearRecommendations();
+      autoRunRef.current = true;
+    }
+  }, []);
 
   // Derived summary outputs — deterministic preview from inputs
   const summary = useMemo(() => {
