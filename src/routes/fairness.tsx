@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
 import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, ArrowRight, TrendingUp, Users, Sigma, Sparkles, Wand2, X } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLine } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLine, ComposedChart, Line } from "recharts";
 import { computeRecommendations, storeRecommendations } from "@/lib/fairness-recommendations";
 
 
