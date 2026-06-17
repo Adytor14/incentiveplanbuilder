@@ -216,15 +216,15 @@ function GoalSetting() {
         </div>
 
         {/* Weight Total + Actions */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           <div
-            className={`rounded-xl border px-5 py-4 ${
+            className={`rounded-xl border px-4 py-3 ${
               balanced ? "border-success/30 bg-success/10" : "border-warning/40 bg-warning/10"
             }`}
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className={`size-8 rounded-full grid place-items-center text-sm font-bold ${
+                <div className={`size-7 rounded-full grid place-items-center text-xs font-bold ${
                   balanced ? "bg-success text-success-foreground" : "bg-warning text-warning-foreground"
                 }`}>
                   {balanced ? "✓" : "!"}
