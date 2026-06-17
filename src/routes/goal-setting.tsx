@@ -139,7 +139,7 @@ function GoalSetting() {
       )}
 
       <div className="px-8 py-5 max-w-[1600px] mx-auto space-y-4">
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* Historical */}
           <ComponentCard
             accent="bg-chart-1"
