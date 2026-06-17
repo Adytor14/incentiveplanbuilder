@@ -271,8 +271,7 @@ function GoalSetting() {
             </div>
           </div>
 
-          {/* Bottom action bar */}
-          <div className="flex items-center justify-end gap-3" />
+          </div>
         </div>
 
         {/* Preview modal */}
