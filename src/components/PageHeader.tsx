@@ -11,29 +11,19 @@ interface Props {
   actions?: React.ReactNode;
 }
 
-const TOTAL_STEPS = 7;
-
-export function PageHeader({ step, eyebrow, title, description, prev, next, actions }: Props) {
+export function PageHeader({ eyebrow, title, description, prev, next, actions }: Props) {
   return (
     <div className="border-b border-border bg-surface">
-      <div className="px-8 py-7 max-w-[1600px]">
+      <div className="px-8 py-4 max-w-[1600px]">
         <div className="flex items-start justify-between gap-6">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 mb-2.5">
-              {step !== undefined && step > 0 && (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">
-                  <span className="size-5 rounded-full bg-primary text-primary-foreground grid place-items-center text-[10px]">
-                    {step}
-                  </span>
-                  Step {step} of {TOTAL_STEPS}
-                </span>
-              )}
-              {eyebrow && (
+            {eyebrow && (
+              <div className="mb-1.5">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                  {step !== undefined && step > 0 ? "· " : ""}{eyebrow}
+                  {eyebrow}
                 </span>
-              )}
-            </div>
+              </div>
+            )}
             <h1 className="text-[26px] font-semibold tracking-tight text-foreground text-balance">
               {title}
             </h1>
