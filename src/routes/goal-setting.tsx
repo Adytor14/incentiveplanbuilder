@@ -254,16 +254,6 @@ function GoalSetting() {
               <Eye className="size-3.5" />
               Goal Preview
             </button>
-            <button
-              type="button"
-              onClick={handleContinue}
-              className={`h-9 px-5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card transition-colors ${
-                balanced ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-muted-foreground cursor-not-allowed"
-              }`}
-              disabled={!balanced}
-            >
-              Continue to Fairness Testing
-            </button>
           </div>
         </div>
 
