@@ -162,22 +162,23 @@ function GoalSetting() {
               <NumberField
                 label="Historical Time Period"
                 hint={`Defaults to the quarter before ${period}.`}
+                required
               >
                 <select
                   value={historicalPeriod}
                   onChange={(e) => setHistoricalPeriod(e.target.value)}
-                  className="w-full h-9 px-2.5 rounded-md border border-border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                  className="w-full h-9 px-2.5 rounded-md border border-border bg-required-bg text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
                 >
                   {historicalOptions.map((p) => <option key={p} value={p}>{p}</option>)}
                 </select>
               </NumberField>
-              <NumberField label="Growth Factor" hint="e.g. 1.10 = 10% growth">
+              <NumberField label="Growth Factor" hint="e.g. 1.10 = 10% growth" required>
                 <input
                   type="number"
                   step={0.01}
                   value={growth}
                   onChange={(e) => setGrowth(Number(e.target.value) || 0)}
-                  className="w-full h-9 px-2.5 rounded-md border border-border bg-background text-[13px] num font-semibold focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                  className="w-full h-9 px-2.5 rounded-md border border-border bg-required-bg text-[13px] num font-semibold focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
                 />
               </NumberField>
             </div>
@@ -368,7 +369,10 @@ function ComponentCard({
           <div className="text-[12px] text-muted-foreground mt-0.5 leading-relaxed">{description}</div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Weight</span>
+          <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium flex items-center gap-0.5">
+            Weight
+            <span className="text-destructive">*</span>
+          </span>
           <div className="relative">
             <input
               type="number"
@@ -376,7 +380,7 @@ function ComponentCard({
               max={100}
               value={weight}
               onChange={(e) => onWeightChange(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
-              className="w-20 h-9 pr-6 pl-2.5 rounded-md border border-border bg-background text-[13px] num font-semibold text-right focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+              className="w-20 h-9 pr-6 pl-2.5 rounded-md border border-border bg-required-bg text-[13px] num font-semibold text-right focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
             />
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground">%</span>
           </div>
@@ -387,10 +391,13 @@ function ComponentCard({
   );
 }
 
-function NumberField({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function NumberField({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1.5">{label}</div>
+      <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1.5 flex items-center gap-1">
+        {label}
+        {required && <span className="text-destructive">*</span>}
+      </div>
       {children}
       {hint && <div className="mt-1.5 text-[11px] text-muted-foreground">{hint}</div>}
     </label>
