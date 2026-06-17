@@ -191,16 +191,6 @@ function Fairness() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
-              <div className="rounded-md border border-border bg-background px-2.5 py-1.5">
-                <div className="text-muted-foreground">If growth is very similar across reps</div>
-                <div className="text-foreground font-medium mt-0.5">Reduce Equal Goal component</div>
-              </div>
-              <div className="rounded-md border border-border bg-background px-2.5 py-1.5">
-                <div className="text-muted-foreground">If growth varies a lot across reps</div>
-                <div className="text-foreground font-medium mt-0.5">Increase Equal Goal component</div>
-              </div>
-            </div>
           </TestCard>
         </div>
 
