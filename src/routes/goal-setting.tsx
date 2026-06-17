@@ -394,9 +394,9 @@ function ComponentCard({
 function NumberField({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1.5 flex items-center gap-1">
-        {label}
-        {required && <span className="text-destructive">*</span>}
+      <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1.5 min-h-[2.25rem] flex items-start gap-1">
+        <span>{label}</span>
+        {required && <span className="text-destructive shrink-0">*</span>}
       </div>
       {children}
       {hint && <div className="mt-1.5 text-[11px] text-muted-foreground">{hint}</div>}
