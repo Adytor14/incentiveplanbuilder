@@ -107,7 +107,6 @@ function PayoutCurve() {
       <PageHeader
         step={5}
         title="Payout Curve Designer"
-        description="Define inflexion points for Threshold, Target and Excellence achievement. Add as many points as needed."
         prev={{ to: "/fairness", label: "Fairness Testing" }}
         next={{ to: "/simulation", label: "Monte Carlo" }}
         actions={

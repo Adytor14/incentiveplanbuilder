@@ -40,7 +40,6 @@ function Reports() {
       <PageHeader
         step={7}
         title="Reports & Outputs"
-        description={`Final reports for IC Plan ${period}. View any report inline or export to PDF / Excel.`}
         prev={{ to: "/simulation", label: "Monte Carlo" }}
       />
       <div className="px-8 py-7 max-w-[1400px] space-y-5">
