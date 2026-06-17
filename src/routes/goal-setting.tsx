@@ -272,16 +272,7 @@ function GoalSetting() {
           </div>
 
           {/* Bottom action bar */}
-          <div className="flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => setShowPreview(true)}
-              className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold border border-border bg-background hover:bg-muted transition-colors"
-            >
-              <Eye className="size-3.5" />
-              Goal Preview
-            </button>
-          </div>
+          <div className="flex items-center justify-end gap-3" />
         </div>
 
         {/* Preview modal */}
