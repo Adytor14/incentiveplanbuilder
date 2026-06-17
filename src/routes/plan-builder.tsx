@@ -327,7 +327,7 @@ function PlanBuilder() {
                             onChange={(e) =>
                               updateComponent(c.id, { weight: Math.max(0, Math.min(100, Number(e.target.value) || 0)) })
                             }
-                            className="w-20 h-8 px-2 rounded-md border border-border bg-background text-[13px] num font-semibold text-right focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                            className="w-20 h-8 px-2 rounded-md border border-border bg-required-bg text-[13px] num font-semibold text-right focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
                           />
                           <span className="ml-1 text-[12px] text-muted-foreground">%</span>
                         </div>
