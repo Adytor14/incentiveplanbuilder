@@ -26,13 +26,14 @@ const SEV_META: Record<Severity, { label: string; tone: "success" | "warning" | 
 };
 
 // Test 1 — Achievability fairness: goal attainment distribution
+// `curve` overlays a target bell curve (Gaussian μ=100%, σ≈22) for visual comparison.
 const attainmentDist = [
-  { bucket: "<60%", count: 0 },
-  { bucket: "60–80%", count: 2 },
-  { bucket: "80–100%", count: 5 },
-  { bucket: "100–120%", count: 5 },
-  { bucket: "120–150%", count: 3 },
-  { bucket: ">150%", count: 0 },
+  { bucket: "<60%", count: 0, curve: 0.5 },
+  { bucket: "60–80%", count: 2, curve: 2.4 },
+  { bucket: "80–100%", count: 5, curve: 5.4 },
+  { bucket: "100–120%", count: 5, curve: 5.4 },
+  { bucket: "120–150%", count: 2, curve: 1.7 },
+  { bucket: ">150%", count: 0, curve: 0.1 },
 ];
 
 // Test 2 — Performer fairness: attainment by quartile
