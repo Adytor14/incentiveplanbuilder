@@ -37,6 +37,7 @@ const NATIONAL_TARGET_K = 100_000;
 const REP_COUNT = 15;
 
 function GoalSetting() {
+  const navigate = useNavigate();
   const { period } = usePlanPeriod();
   const historicalOptions = useMemo(() => previousQuartersBefore(period, 4), [period]);
   const [historicalPeriod, setHistoricalPeriod] = useState<string>(previousQuarter(period));
@@ -75,6 +76,11 @@ function GoalSetting() {
   }, [wHist, wPot, wEqual, growth, equalShare]);
 
   const sample = preview[0];
+
+  const handleContinue = () => {
+    if (!balanced) { setShowInvalid(true); return; }
+    navigate({ to: "/fairness" });
+  };
 
   return (
     <div className="min-h-screen bg-background">
