@@ -160,19 +160,6 @@ function Fairness() {
               </ResponsiveContainer>
             </div>
 
-            {/* Gap assessment legend */}
-            <div className="mt-2 rounded-md border border-border bg-background overflow-hidden">
-              <div className="grid grid-cols-4 text-[10px]">
-                <GapCell range="<10 pts" label="Excellent" tone="success" active={performerVerdict.label === "Excellent"} />
-                <GapCell range="10–20 pts" label="Good" tone="success" active={performerVerdict.label === "Good"} />
-                <GapCell range="20–30 pts" label="Review" tone="warning" active={performerVerdict.label === "Review"} />
-                <GapCell range=">30 pts" label="Unfair" tone="danger" active={performerVerdict.label === "Unfair"} />
-              </div>
-              <div className="px-3 py-1.5 border-t border-border flex items-center justify-between text-[11px]">
-                <span className="text-muted-foreground">Current quartile gap shift</span>
-                <span className="font-semibold num">{performerGapPts} pts</span>
-              </div>
-            </div>
           </TestCard>
 
           {/* Test 3 — Goal growth fairness */}
@@ -203,16 +190,6 @@ function Fairness() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-            </div>
-            <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
-              <div className="rounded-md border border-border bg-background px-2.5 py-1.5">
-                <div className="text-muted-foreground">If growth is very similar across reps</div>
-                <div className="text-foreground font-medium mt-0.5">Reduce Equal Goal component</div>
-              </div>
-              <div className="rounded-md border border-border bg-background px-2.5 py-1.5">
-                <div className="text-muted-foreground">If growth varies a lot across reps</div>
-                <div className="text-foreground font-medium mt-0.5">Increase Equal Goal component</div>
-              </div>
             </div>
           </TestCard>
         </div>
@@ -342,7 +319,7 @@ function TestCard({
   const meta = SEV_META[severity];
   const SevIcon = meta.Icon;
   return (
-    <Card className="p-0">
+    <Card className="p-0 flex flex-col h-full">
       <div className="px-4 pt-4 pb-2.5 flex items-start justify-between gap-2 border-b border-border">
         <div className="flex items-start gap-2.5 min-w-0">
           <div className="size-8 rounded-lg bg-primary-muted text-primary grid place-items-center shrink-0">
@@ -373,7 +350,7 @@ function TestCard({
           <Badge tone={meta.tone} className="shrink-0"><SevIcon className="size-3" /> {meta.label}</Badge>
         )}
       </div>
-      <div className="px-4 py-3">{children}</div>
+      <div className="px-4 py-3 flex-1">{children}</div>
       <div className="px-4 py-2.5 border-t border-border bg-muted/30 text-[11.5px] text-foreground leading-snug">
         <span className="font-semibold">Insight: </span>{insight}
       </div>
@@ -381,25 +358,6 @@ function TestCard({
   );
 }
 
-function GapCell({ range, label, tone, active }: { range: string; label: string; tone: "success" | "warning" | "danger"; active: boolean }) {
-  const toneCls = {
-    success: "text-success",
-    warning: "text-warning",
-    danger: "text-destructive",
-  }[tone];
-  const bgCls = active
-    ? { success: "bg-success/10", warning: "bg-warning/10", danger: "bg-destructive/10" }[tone]
-    : "bg-transparent";
-  return (
-    <div className={`px-3 py-2 border-r last:border-r-0 border-border ${bgCls}`}>
-      <div className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-semibold">{range}</div>
-      <div className={`text-[12px] font-semibold ${toneCls} ${active ? "" : "opacity-70"}`}>
-        {label}
-        {active && <span className="ml-1 text-[10px] font-medium">• current</span>}
-      </div>
-    </div>
-  );
-}
 
 function RecItem({ tone, text }: { tone: "danger" | "warning" | "info"; text: string }) {
   const dotCls = { danger: "bg-destructive", warning: "bg-warning", info: "bg-info" }[tone];
