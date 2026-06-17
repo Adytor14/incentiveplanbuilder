@@ -1,42 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/ui-kit";
-import { Plus, Trash2, AlertTriangle, X, Info, Check, Loader2 } from "lucide-react";
-
-type AutosaveState = "idle" | "saving" | "saved";
-
-function AutosaveBadge({ state, savedAt }: { state: AutosaveState; savedAt: Date | null }) {
-  const [, force] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => force((n) => n + 1), 15_000);
-    return () => clearInterval(t);
-  }, []);
-  const rel = (d: Date) => {
-    const s = Math.max(1, Math.floor((Date.now() - d.getTime()) / 1000));
-    if (s < 60) return `${s}s ago`;
-    const m = Math.floor(s / 60);
-    if (m < 60) return `${m}m ago`;
-    const h = Math.floor(m / 60);
-    return `${h}h ago`;
-  };
-  if (state === "saving") {
-    return (
-      <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full border border-info/30 bg-info/10 text-info text-[11.5px] font-medium">
-        <Loader2 className="size-3 animate-spin" /> Saving…
-      </span>
-    );
-  }
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full border border-success/30 bg-success/10 text-success text-[11.5px] font-medium"
-      title={savedAt ? `Last autosaved ${savedAt.toLocaleString()}` : undefined}
-    >
-      <Check className="size-3" />
-      {savedAt ? `Saved · ${rel(savedAt)}` : "All changes saved"}
-    </span>
-  );
-}
+import { Plus, Trash2, AlertTriangle, X, Info } from "lucide-react";
 
 export const Route = createFileRoute("/plan-builder")({
   head: () => ({
@@ -95,26 +61,6 @@ function PlanBuilder() {
   const [showInvalid, setShowInvalid] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
-  const [autosaveState, setAutosaveState] = useState<AutosaveState>("saved");
-  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(new Date());
-  const firstRender = useRef(true);
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const doneTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (firstRender.current) { firstRender.current = false; return; }
-    setAutosaveState("saving");
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    if (doneTimer.current) clearTimeout(doneTimer.current);
-    saveTimer.current = setTimeout(() => {
-      setLastSavedAt(new Date());
-      setAutosaveState("saved");
-    }, 700);
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-      if (doneTimer.current) clearTimeout(doneTimer.current);
-    };
-  }, [data]);
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState<string>("Custom");
   const [newWeight, setNewWeight] = useState<number | "">(0);
@@ -224,7 +170,6 @@ function PlanBuilder() {
         prev={{ to: "/data-inputs", label: "Data Inputs" }}
         actions={
           <div className="flex items-center gap-3">
-            <AutosaveBadge state={autosaveState} savedAt={lastSavedAt} />
           <button
             type="button"
             onClick={handleContinue}
