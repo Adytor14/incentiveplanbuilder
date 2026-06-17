@@ -139,6 +139,16 @@ function GoalSetting() {
       )}
 
       <div className="px-8 py-5 max-w-[1600px] mx-auto space-y-4">
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowPreview(true)}
+            className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold border border-border bg-background hover:bg-muted transition-colors"
+          >
+            <Eye className="size-3.5" />
+            Goal Preview
+          </button>
+        </div>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* Historical */}
           <ComponentCard
@@ -259,18 +269,6 @@ function GoalSetting() {
                 </span>
               </div>
             </div>
-          </div>
-
-          {/* Bottom action bar */}
-          <div className="flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => setShowPreview(true)}
-              className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold border border-border bg-background hover:bg-muted transition-colors"
-            >
-              <Eye className="size-3.5" />
-              Goal Preview
-            </button>
           </div>
         </div>
 
