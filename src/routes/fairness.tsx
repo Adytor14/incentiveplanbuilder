@@ -358,25 +358,6 @@ function TestCard({
   );
 }
 
-function GapCell({ range, label, tone, active }: { range: string; label: string; tone: "success" | "warning" | "danger"; active: boolean }) {
-  const toneCls = {
-    success: "text-success",
-    warning: "text-warning",
-    danger: "text-destructive",
-  }[tone];
-  const bgCls = active
-    ? { success: "bg-success/10", warning: "bg-warning/10", danger: "bg-destructive/10" }[tone]
-    : "bg-transparent";
-  return (
-    <div className={`px-3 py-2 border-r last:border-r-0 border-border ${bgCls}`}>
-      <div className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-semibold">{range}</div>
-      <div className={`text-[12px] font-semibold ${toneCls} ${active ? "" : "opacity-70"}`}>
-        {label}
-        {active && <span className="ml-1 text-[10px] font-medium">• current</span>}
-      </div>
-    </div>
-  );
-}
 
 function RecItem({ tone, text }: { tone: "danger" | "warning" | "info"; text: string }) {
   const dotCls = { danger: "bg-destructive", warning: "bg-warning", info: "bg-info" }[tone];
