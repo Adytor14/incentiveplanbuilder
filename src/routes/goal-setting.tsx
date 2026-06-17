@@ -374,7 +374,7 @@ function ComponentCard({
   return (
     <Card className="p-0 overflow-hidden">
       <div className={`h-1 ${accent}`} />
-      <div className="px-5 pt-5 pb-3 border-b border-border flex items-start justify-between gap-3">
+      <div className="px-4 pt-4 pb-2.5 border-b border-border flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[14px] font-semibold tracking-tight">{title}</div>
           <div className="text-[12px] text-muted-foreground mt-0.5 leading-relaxed">{description}</div>
@@ -394,7 +394,7 @@ function ComponentCard({
           </div>
         </div>
       </div>
-      <div className="px-5 py-5">{children}</div>
+      <div className="px-4 py-4">{children}</div>
     </Card>
   );
 }
