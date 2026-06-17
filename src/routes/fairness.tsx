@@ -160,19 +160,6 @@ function Fairness() {
               </ResponsiveContainer>
             </div>
 
-            {/* Gap assessment legend */}
-            <div className="mt-2 rounded-md border border-border bg-background overflow-hidden">
-              <div className="grid grid-cols-4 text-[10px]">
-                <GapCell range="<10 pts" label="Excellent" tone="success" active={performerVerdict.label === "Excellent"} />
-                <GapCell range="10–20 pts" label="Good" tone="success" active={performerVerdict.label === "Good"} />
-                <GapCell range="20–30 pts" label="Review" tone="warning" active={performerVerdict.label === "Review"} />
-                <GapCell range=">30 pts" label="Unfair" tone="danger" active={performerVerdict.label === "Unfair"} />
-              </div>
-              <div className="px-3 py-1.5 border-t border-border flex items-center justify-between text-[11px]">
-                <span className="text-muted-foreground">Current quartile gap shift</span>
-                <span className="font-semibold num">{performerGapPts} pts</span>
-              </div>
-            </div>
           </TestCard>
 
           {/* Test 3 — Goal growth fairness */}
