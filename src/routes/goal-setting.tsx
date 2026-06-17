@@ -208,7 +208,7 @@ function GoalSetting() {
               <Stat label="# of Reps" value={REP_COUNT.toLocaleString()} />
               <Stat label="Equal Share" value={`$${Math.round(equalShare).toLocaleString()}`} />
             </div>
-            <div className="mt-4 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
+            <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2 text-[12.5px] flex items-center gap-2">
               <Calculator className="size-3.5 text-primary shrink-0" />
               <span className="font-medium">Goal Contribution = National Target ÷ # of Reps</span>
             </div>
