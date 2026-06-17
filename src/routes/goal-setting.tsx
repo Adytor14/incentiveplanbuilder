@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
@@ -37,7 +37,6 @@ const NATIONAL_TARGET_K = 100_000;
 const REP_COUNT = 15;
 
 function GoalSetting() {
-  const navigate = useNavigate();
   const { period } = usePlanPeriod();
   const historicalOptions = useMemo(() => previousQuartersBefore(period, 4), [period]);
   const [historicalPeriod, setHistoricalPeriod] = useState<string>(previousQuarter(period));
@@ -64,23 +63,6 @@ function GoalSetting() {
   const total = wHist + wPot + wEqual;
   const balanced = total === 100;
   const equalShare = NATIONAL_TARGET_K / REP_COUNT;
-
-  const preview = useMemo(() => {
-    return REPS.map((r) => {
-      const histContrib = r.historical * growth;
-      const potContrib = r.potential * 0.88;
-      const eqContrib = equalShare;
-      const goal = (histContrib * wHist + potContrib * wPot + eqContrib * wEqual) / 100;
-      return { ...r, histContrib: Math.round(histContrib), potContrib: Math.round(potContrib), eqContrib: Math.round(eqContrib), goal: Math.round(goal) };
-    });
-  }, [wHist, wPot, wEqual, growth, equalShare]);
-
-  const sample = preview[0];
-
-  const handleContinue = () => {
-    if (!balanced) { setShowInvalid(true); return; }
-    navigate({ to: "/fairness" });
-  };
 
   return (
     <div className="min-h-screen bg-background">
