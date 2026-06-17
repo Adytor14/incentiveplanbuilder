@@ -61,26 +61,6 @@ function PlanBuilder() {
   const [showInvalid, setShowInvalid] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
-  const [autosaveState, setAutosaveState] = useState<AutosaveState>("saved");
-  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(new Date());
-  const firstRender = useRef(true);
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const doneTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (firstRender.current) { firstRender.current = false; return; }
-    setAutosaveState("saving");
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    if (doneTimer.current) clearTimeout(doneTimer.current);
-    saveTimer.current = setTimeout(() => {
-      setLastSavedAt(new Date());
-      setAutosaveState("saved");
-    }, 700);
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-      if (doneTimer.current) clearTimeout(doneTimer.current);
-    };
-  }, [data]);
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState<string>("Custom");
   const [newWeight, setNewWeight] = useState<number | "">(0);
@@ -190,7 +170,6 @@ function PlanBuilder() {
         prev={{ to: "/data-inputs", label: "Data Inputs" }}
         actions={
           <div className="flex items-center gap-3">
-            <AutosaveBadge state={autosaveState} savedAt={lastSavedAt} />
           <button
             type="button"
             onClick={handleContinue}
