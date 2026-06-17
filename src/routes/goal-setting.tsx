@@ -104,6 +104,17 @@ function GoalSetting() {
           </span>
         }
         prev={{ to: "/plan-builder", label: "Plan Builder" }}
+        actions={
+          <button
+            type="button"
+            onClick={handleContinue}
+            className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card ${
+              balanced ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-muted-foreground"
+            }`}
+          >
+            Continue to Fairness Testing
+          </button>
+        }
       />
 
       {/* Applied-recommendations banner */}
