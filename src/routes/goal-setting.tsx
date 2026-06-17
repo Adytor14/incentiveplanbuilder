@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { Info, AlertTriangle, X, Calculator, Eye, CheckCircle2 } from "lucide-react";
+import { Info, AlertTriangle, X, Eye, CheckCircle2 } from "lucide-react";
 import { loadRecommendations } from "@/lib/fairness-recommendations";
 import {
   Tooltip,
@@ -86,23 +86,7 @@ function GoalSetting() {
     <div className="min-h-screen bg-background">
       <PageHeader
         step={3}
-        title={
-          <span className="inline-flex items-center gap-2">
-            Goal Setting
-            <TooltipProvider delayDuration={100}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button type="button" className="inline-flex items-center justify-center size-6 rounded-full border border-border bg-background text-muted-foreground hover:text-foreground transition-colors">
-                    <Info className="size-3.5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-xs text-[12px] leading-relaxed">
-                  Goal = (Historical × W₁) + (Potential × W₂) + (Equal Distribution × W₃). Weights must sum to 100%.
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </span>
-        }
+        title="Goal Setting"
         prev={{ to: "/plan-builder", label: "Plan Builder" }}
         actions={
           <button
@@ -139,15 +123,10 @@ function GoalSetting() {
       )}
 
       <div className="px-8 py-5 max-w-[1600px] mx-auto space-y-4">
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={() => setShowPreview(true)}
-            className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold border border-border bg-background hover:bg-muted transition-colors"
-          >
-            <Eye className="size-3.5" />
-            Goal Preview
-          </button>
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-[12.5px] text-muted-foreground leading-relaxed">
+            Goal = (Historical × W₁) + (Potential × W₂) + (Equal Distribution × W₃). Weights must sum to 100%.
+          </p>
         </div>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* Historical */}
@@ -155,6 +134,7 @@ function GoalSetting() {
             accent="bg-chart-1"
             title="Historical Sales"
             description="Uses historical sales performance as the basis for goal creation."
+            formula="Goal Contribution = Historical Sales × Growth Factor × Weight"
             weight={wHist}
             onWeightChange={setWHist}
           >
@@ -182,10 +162,6 @@ function GoalSetting() {
                 />
               </NumberField>
             </div>
-            <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2 text-[12.5px] flex items-center gap-2">
-              <Calculator className="size-3.5 text-primary shrink-0" />
-              <span className="font-medium">Goal Contribution = Historical Sales × Growth Factor × Weight</span>
-            </div>
           </ComponentCard>
 
           {/* Potential */}
@@ -193,16 +169,13 @@ function GoalSetting() {
             accent="bg-chart-2"
             title="Territory Potential"
             description="Uses territory opportunity to influence goal allocation."
+            formula="Goal Contribution = Territory Potential × Weight"
             weight={wPot}
             onWeightChange={setWPot}
           >
             <div className="text-[12.5px] text-muted-foreground leading-relaxed">
               Pulled from the <span className="font-medium text-foreground">Territory Potential</span> dataset for {period}.
               Sample territory potential value: <span className="num font-semibold text-foreground">${sample?.potential}K</span>.
-            </div>
-            <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2 text-[12.5px] flex items-center gap-2">
-              <Calculator className="size-3.5 text-primary shrink-0" />
-              <span className="font-medium">Goal Contribution = Territory Potential × Weight</span>
             </div>
           </ComponentCard>
 
@@ -211,6 +184,7 @@ function GoalSetting() {
             accent="bg-chart-3"
             title="Equal Distribution"
             description="National target divided equally across the rep population."
+            formula="Goal Contribution = National Target ÷ # of Reps"
             weight={wEqual}
             onWeightChange={setWEqual}
           >
@@ -219,59 +193,20 @@ function GoalSetting() {
               <Stat label="# of Reps" value={REP_COUNT.toLocaleString()} />
               <Stat label="Equal Share" value={`$${Math.round(equalShare).toLocaleString()}`} />
             </div>
-            <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2 text-[12.5px] flex items-center gap-2">
-              <Calculator className="size-3.5 text-primary shrink-0" />
-              <span className="font-medium">Goal Contribution = National Target ÷ # of Reps</span>
-            </div>
           </ComponentCard>
         </div>
 
-        {/* Weight Total + Actions */}
-        <div className="flex flex-col gap-3">
-          <div
-            className={`rounded-xl border px-4 py-3 ${
-              balanced ? "border-success/30 bg-success/10" : "border-warning/40 bg-warning/10"
-            }`}
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowPreview(true)}
+            className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold border border-border bg-background hover:bg-muted transition-colors"
           >
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className={`size-7 rounded-full grid place-items-center text-xs font-bold ${
-                  balanced ? "bg-success text-success-foreground" : "bg-warning text-warning-foreground"
-                }`}>
-                  {balanced ? "✓" : "!"}
-                </div>
-                <div>
-                  <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
-                    Weight Total
-                  </span>
-                  <div className="text-[14px] font-semibold num">
-                    {total}% {balanced ? "" : `(${total > 100 ? "+" : ""}${total - 100})`}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                {/* Weight distribution bars */}
-                <div className="hidden md:flex items-center gap-1.5 w-48">
-                  <div
-                    className="h-2 rounded-full bg-chart-1 transition-all duration-300"
-                    style={{ width: `${wHist}%` }}
-                  />
-                  <div
-                    className="h-2 rounded-full bg-chart-2 transition-all duration-300"
-                    style={{ width: `${wPot}%` }}
-                  />
-                  <div
-                    className="h-2 rounded-full bg-chart-3 transition-all duration-300"
-                    style={{ width: `${wEqual}%` }}
-                  />
-                </div>
-                <span className={`text-[13px] font-semibold ${balanced ? "text-success" : "text-warning"}`}>
-                  {balanced ? "Balanced" : "Unbalanced"}
-                </span>
-              </div>
-            </div>
-          </div>
+            <Eye className="size-3.5" />
+            Goal Preview
+          </button>
         </div>
+
 
         {/* Preview modal */}
         {showPreview && (
@@ -355,9 +290,9 @@ function GoalSetting() {
 }
 
 function ComponentCard({
-  accent, title, description, weight, onWeightChange, children,
+  accent, title, description, formula, weight, onWeightChange, children,
 }: {
-  accent: string; title: string; description: string; weight: number;
+  accent: string; title: string; description: string; formula: string; weight: number;
   onWeightChange: (n: number) => void; children: React.ReactNode;
 }) {
   return (
@@ -365,7 +300,21 @@ function ComponentCard({
       <div className={`h-1 ${accent}`} />
       <div className="px-4 pt-4 pb-2.5 border-b border-border flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[14px] font-semibold tracking-tight">{title}</div>
+          <div className="text-[14px] font-semibold tracking-tight flex items-center gap-1.5">
+            {title}
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button" className="inline-flex items-center justify-center size-5 rounded-full text-muted-foreground hover:text-foreground transition-colors">
+                    <Info className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs text-[12px] leading-relaxed">
+                  {formula}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <div className="text-[12px] text-muted-foreground mt-0.5 leading-relaxed">{description}</div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -390,6 +339,7 @@ function ComponentCard({
     </Card>
   );
 }
+
 
 function NumberField({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
   return (
