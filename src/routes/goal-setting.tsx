@@ -138,8 +138,8 @@ function GoalSetting() {
         </div>
       )}
 
-      <div className="px-8 py-7 max-w-[1600px] mx-auto space-y-6">
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+      <div className="px-8 py-5 max-w-[1600px] mx-auto space-y-4">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* Historical */}
           <ComponentCard
             accent="bg-chart-1"
@@ -171,7 +171,7 @@ function GoalSetting() {
                 />
               </NumberField>
             </div>
-            <div className="mt-4 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
+            <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2 text-[12.5px] flex items-center gap-2">
               <Calculator className="size-3.5 text-primary shrink-0" />
               <span className="font-medium">Goal Contribution = Historical Sales × Growth Factor × Weight</span>
             </div>
@@ -189,7 +189,7 @@ function GoalSetting() {
               Pulled from the <span className="font-medium text-foreground">Territory Potential</span> dataset for {period}.
               Sample territory potential value: <span className="num font-semibold text-foreground">${sample?.potential}K</span>.
             </div>
-            <div className="mt-4 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
+            <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2 text-[12.5px] flex items-center gap-2">
               <Calculator className="size-3.5 text-primary shrink-0" />
               <span className="font-medium">Goal Contribution = Territory Potential × Weight</span>
             </div>
@@ -208,7 +208,7 @@ function GoalSetting() {
               <Stat label="# of Reps" value={REP_COUNT.toLocaleString()} />
               <Stat label="Equal Share" value={`$${Math.round(equalShare).toLocaleString()}`} />
             </div>
-            <div className="mt-4 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
+            <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2 text-[12.5px] flex items-center gap-2">
               <Calculator className="size-3.5 text-primary shrink-0" />
               <span className="font-medium">Goal Contribution = National Target ÷ # of Reps</span>
             </div>
@@ -216,15 +216,15 @@ function GoalSetting() {
         </div>
 
         {/* Weight Total + Actions */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           <div
-            className={`rounded-xl border px-5 py-4 ${
+            className={`rounded-xl border px-4 py-3 ${
               balanced ? "border-success/30 bg-success/10" : "border-warning/40 bg-warning/10"
             }`}
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className={`size-8 rounded-full grid place-items-center text-sm font-bold ${
+                <div className={`size-7 rounded-full grid place-items-center text-xs font-bold ${
                   balanced ? "bg-success text-success-foreground" : "bg-warning text-warning-foreground"
                 }`}>
                   {balanced ? "✓" : "!"}
@@ -374,7 +374,7 @@ function ComponentCard({
   return (
     <Card className="p-0 overflow-hidden">
       <div className={`h-1 ${accent}`} />
-      <div className="px-5 pt-5 pb-3 border-b border-border flex items-start justify-between gap-3">
+      <div className="px-4 pt-4 pb-2.5 border-b border-border flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[14px] font-semibold tracking-tight">{title}</div>
           <div className="text-[12px] text-muted-foreground mt-0.5 leading-relaxed">{description}</div>
@@ -394,7 +394,7 @@ function ComponentCard({
           </div>
         </div>
       </div>
-      <div className="px-5 py-5">{children}</div>
+      <div className="px-4 py-4">{children}</div>
     </Card>
   );
 }
@@ -411,7 +411,7 @@ function NumberField({ label, hint, children }: { label: string; hint?: string; 
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-border bg-background px-3 py-2.5">
+    <div className="rounded-md border border-border bg-background px-3 py-2">
       <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{label}</div>
       <div className="text-[14px] font-semibold num mt-0.5">{value}</div>
     </div>
