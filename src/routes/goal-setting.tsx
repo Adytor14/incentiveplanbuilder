@@ -270,8 +270,6 @@ function GoalSetting() {
               </div>
             </div>
           </div>
-
-          </div>
         </div>
 
         {/* Preview modal */}
