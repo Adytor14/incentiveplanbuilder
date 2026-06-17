@@ -83,7 +83,7 @@ function GoalSetting() {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-background">
       <PageHeader
         step={3}
         title={
@@ -105,31 +105,21 @@ function GoalSetting() {
         }
         prev={{ to: "/plan-builder", label: "Plan Builder" }}
         actions={
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowPreview(true)}
-              className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold border border-border bg-background hover:bg-muted"
-            >
-              <Eye className="size-3.5" />
-              Goal Preview
-            </button>
-            <button
-              type="button"
-              onClick={handleContinue}
-              className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card ${
-                balanced ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-muted-foreground"
-              }`}
-            >
-              Continue to Fairness Testing
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleContinue}
+            className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card ${
+              balanced ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-muted-foreground"
+            }`}
+          >
+            Continue to Fairness Testing
+          </button>
         }
       />
 
       {/* Applied-recommendations banner */}
       {appliedRecs && (
-        <div className="px-8 pt-5 pb-0 max-w-[1600px]">
+        <div className="px-8 pt-5 pb-0 max-w-[1600px] mx-auto">
           <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 flex flex-col md:flex-row md:items-center gap-3">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-4 text-success shrink-0" />
@@ -148,17 +138,17 @@ function GoalSetting() {
         </div>
       )}
 
-      <div className="px-8 py-7 max-w-[1600px] space-y-6">
+      <div className="px-8 py-7 max-w-[1600px] mx-auto space-y-6">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
           {/* Historical */}
           <ComponentCard
-            accent="var(--chart-1)"
+            accent="bg-chart-1"
             title="Historical Sales"
             description="Uses historical sales performance as the basis for goal creation."
             weight={wHist}
             onWeightChange={setWHist}
           >
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <NumberField
                 label="Historical Time Period"
                 hint={`Defaults to the quarter before ${period}.`}
@@ -181,33 +171,33 @@ function GoalSetting() {
                 />
               </NumberField>
             </div>
-            <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
-              <Calculator className="size-3.5 text-primary" />
+            <div className="mt-4 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
+              <Calculator className="size-3.5 text-primary shrink-0" />
               <span className="font-medium">Goal Contribution = Historical Sales × Growth Factor × Weight</span>
             </div>
           </ComponentCard>
 
           {/* Potential */}
           <ComponentCard
-            accent="var(--chart-2)"
+            accent="bg-chart-2"
             title="Territory Potential"
             description="Uses territory opportunity to influence goal allocation."
             weight={wPot}
             onWeightChange={setWPot}
           >
-            <div className="text-[12.5px] text-muted-foreground">
+            <div className="text-[12.5px] text-muted-foreground leading-relaxed">
               Pulled from the <span className="font-medium text-foreground">Territory Potential</span> dataset for {period}.
               Sample territory potential value: <span className="num font-semibold text-foreground">${sample?.potential}K</span>.
             </div>
-            <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
-              <Calculator className="size-3.5 text-primary" />
+            <div className="mt-4 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
+              <Calculator className="size-3.5 text-primary shrink-0" />
               <span className="font-medium">Goal Contribution = Territory Potential × Weight</span>
             </div>
           </ComponentCard>
 
           {/* Equal Distribution */}
           <ComponentCard
-            accent="var(--chart-3)"
+            accent="bg-chart-3"
             title="Equal Distribution"
             description="National target divided equally across the rep population."
             weight={wEqual}
@@ -218,25 +208,80 @@ function GoalSetting() {
               <Stat label="# of Reps" value={REP_COUNT.toLocaleString()} />
               <Stat label="Equal Share" value={`$${Math.round(equalShare).toLocaleString()}`} />
             </div>
-            <div className="mt-3 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
-              <Calculator className="size-3.5 text-primary" />
+            <div className="mt-4 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-[12.5px] flex items-center gap-2">
+              <Calculator className="size-3.5 text-primary shrink-0" />
               <span className="font-medium">Goal Contribution = National Target ÷ # of Reps</span>
             </div>
           </ComponentCard>
         </div>
 
-        {/* Total */}
-        <div
-          className={`flex items-center justify-between rounded-md border px-4 py-3 ${
-            balanced ? "border-success/30 bg-success/10" : "border-warning/40 bg-warning/10"
-          }`}
-        >
-          <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
-            Weight Total
-          </span>
-          <span className="text-[16px] font-semibold num">
-            {total}% {balanced ? "✓" : `(${total > 100 ? "+" : ""}${total - 100})`}
-          </span>
+        {/* Weight Total + Actions */}
+        <div className="flex flex-col gap-4">
+          <div
+            className={`rounded-xl border px-5 py-4 ${
+              balanced ? "border-success/30 bg-success/10" : "border-warning/40 bg-warning/10"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className={`size-8 rounded-full grid place-items-center text-sm font-bold ${
+                  balanced ? "bg-success text-success-foreground" : "bg-warning text-warning-foreground"
+                }`}>
+                  {balanced ? "✓" : "!"}
+                </div>
+                <div>
+                  <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
+                    Weight Total
+                  </span>
+                  <div className="text-[14px] font-semibold num">
+                    {total}% {balanced ? "" : `(${total > 100 ? "+" : ""}${total - 100})`}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {/* Weight distribution bars */}
+                <div className="hidden md:flex items-center gap-1.5 w-48">
+                  <div
+                    className="h-2 rounded-full bg-chart-1 transition-all duration-300"
+                    style={{ width: `${wHist}%` }}
+                  />
+                  <div
+                    className="h-2 rounded-full bg-chart-2 transition-all duration-300"
+                    style={{ width: `${wPot}%` }}
+                  />
+                  <div
+                    className="h-2 rounded-full bg-chart-3 transition-all duration-300"
+                    style={{ width: `${wEqual}%` }}
+                  />
+                </div>
+                <span className={`text-[13px] font-semibold ${balanced ? "text-success" : "text-warning"}`}>
+                  {balanced ? "Balanced" : "Unbalanced"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom action bar */}
+          <div className="flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setShowPreview(true)}
+              className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold border border-border bg-background hover:bg-muted transition-colors"
+            >
+              <Eye className="size-3.5" />
+              Goal Preview
+            </button>
+            <button
+              type="button"
+              onClick={handleContinue}
+              className={`h-9 px-5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card transition-colors ${
+                balanced ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-muted-foreground cursor-not-allowed"
+              }`}
+              disabled={!balanced}
+            >
+              Continue to Fairness Testing
+            </button>
+          </div>
         </div>
 
         {/* Preview modal */}
@@ -327,11 +372,12 @@ function ComponentCard({
   onWeightChange: (n: number) => void; children: React.ReactNode;
 }) {
   return (
-    <Card className="p-0">
-        <div className="px-5 pt-5 pb-3 border-b border-border flex items-start justify-between gap-3">
+    <Card className="p-0 overflow-hidden">
+      <div className={`h-1 ${accent}`} />
+      <div className="px-5 pt-5 pb-3 border-b border-border flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[14px] font-semibold tracking-tight">{title}</div>
-          <div className="text-[12px] text-muted-foreground mt-0.5">{description}</div>
+          <div className="text-[12px] text-muted-foreground mt-0.5 leading-relaxed">{description}</div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Weight</span>
@@ -348,7 +394,7 @@ function ComponentCard({
           </div>
         </div>
       </div>
-      <div className="px-5 py-4">{children}</div>
+      <div className="px-5 py-5">{children}</div>
     </Card>
   );
 }
@@ -356,18 +402,18 @@ function ComponentCard({
 function NumberField({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">{label}</div>
+      <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1.5">{label}</div>
       {children}
-      {hint && <div className="mt-1 text-[11px] text-muted-foreground">{hint}</div>}
+      {hint && <div className="mt-1.5 text-[11px] text-muted-foreground">{hint}</div>}
     </label>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-border bg-background px-3 py-2">
+    <div className="rounded-md border border-border bg-background px-3 py-2.5">
       <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{label}</div>
-      <div className="text-[14px] font-semibold num">{value}</div>
+      <div className="text-[14px] font-semibold num mt-0.5">{value}</div>
     </div>
   );
 }
