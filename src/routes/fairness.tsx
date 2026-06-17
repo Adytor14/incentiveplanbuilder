@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, ArrowRight, TrendingUp, Users, Sigma, Sparkles, Wand2, X } from "lucide-react";
+import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, TrendingUp, Users, Sigma, Sparkles, Wand2, X } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLine, ComposedChart, Line } from "recharts";
 import { computeRecommendations, storeRecommendations } from "@/lib/fairness-recommendations";
 
@@ -226,9 +226,9 @@ function Fairness() {
           </TestCard>
         </div>
 
-        {/* Row 2: Fairness Recommendations — left-aligned under first card */}
+        {/* Row 2: Fairness Recommendations — full width */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-3">
             <Card className="p-0 w-full relative overflow-hidden">
             {/* Prominent left accent strip */}
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-success to-primary" />
@@ -241,7 +241,7 @@ function Fairness() {
                 <div className="text-[11.5px] text-muted-foreground mt-0.5">Auto-generated from test results</div>
               </div>
             </div>
-            <div className="px-5 py-3 flex flex-col md:flex-row md:items-center gap-4">
+            <div className="px-5 py-3">
               <ul className="flex-1 space-y-2 text-[12.5px]">
                 {performerGapPts >= 20 && (
                   <>
@@ -254,22 +254,6 @@ function Fairness() {
                 )}
                 <RecItem tone="info" text="Confirm attainment distribution stays bell-shaped after weight changes" />
               </ul>
-              <div className="shrink-0 flex flex-col gap-2">
-                {hasActionableRecs && (
-                  <button
-                    onClick={() => setShowApplyConfirm(true)}
-                    className="h-9 px-4 inline-flex items-center justify-center gap-1.5 rounded-md bg-success text-success-foreground text-[12.5px] font-semibold hover:opacity-90 shadow-card"
-                  >
-                    <Wand2 className="size-3.5" /> Apply Recommendations
-                  </button>
-                )}
-                <a
-                  href="/goal-setting"
-                  className="h-9 inline-flex items-center justify-center gap-1.5 rounded-md border border-border bg-background text-[12.5px] font-medium text-foreground hover:bg-muted px-5"
-                >
-                  Back to Goal Setting <ArrowRight className="size-3.5" />
-                </a>
-              </div>
             </div>
             </Card>
           </div>
