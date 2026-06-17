@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
@@ -37,6 +37,7 @@ const NATIONAL_TARGET_K = 100_000;
 const REP_COUNT = 15;
 
 function GoalSetting() {
+  const navigate = useNavigate();
   const { period } = usePlanPeriod();
   const historicalOptions = useMemo(() => previousQuartersBefore(period, 4), [period]);
   const [historicalPeriod, setHistoricalPeriod] = useState<string>(previousQuarter(period));
@@ -76,6 +77,11 @@ function GoalSetting() {
 
   const sample = preview[0];
 
+  const handleContinue = () => {
+    if (!balanced) { setShowInvalid(true); return; }
+    navigate({ to: "/fairness" });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <PageHeader
@@ -98,6 +104,17 @@ function GoalSetting() {
           </span>
         }
         prev={{ to: "/plan-builder", label: "Plan Builder" }}
+        actions={
+          <button
+            type="button"
+            onClick={handleContinue}
+            className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card ${
+              balanced ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-muted-foreground"
+            }`}
+          >
+            Continue to Fairness Testing
+          </button>
+        }
       />
 
       {/* Applied-recommendations banner */}
