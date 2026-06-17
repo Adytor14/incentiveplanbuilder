@@ -114,20 +114,33 @@ function Fairness() {
           >
             <div className="h-[140px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={attainmentDist} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
+                <ComposedChart data={attainmentDist} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} width={20} />
                   <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 11 }} />
-                  <Bar dataKey="count" radius={[3, 3, 0, 0]}>
+                  <Bar dataKey="count" name="Reps" radius={[3, 3, 0, 0]}>
                     {attainmentDist.map((d, i) => (
                       <Cell key={i} fill={d.bucket.includes(">") || d.bucket.includes("<") ? "var(--warning)" : "var(--chart-1)"} />
                     ))}
                   </Bar>
-                </BarChart>
+                  <Line
+                    type="monotone"
+                    dataKey="curve"
+                    name="Target bell curve"
+                    stroke="var(--chart-2)"
+                    strokeWidth={2}
+                    strokeDasharray="4 3"
+                    dot={{ r: 2.5, fill: "var(--chart-2)", strokeWidth: 0 }}
+                    isAnimationActive={false}
+                  />
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-1 text-[11px] text-muted-foreground">Target shape: bell curve centred on 100% attainment.</div>
+            <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[var(--chart-1)]" /> Actual reps</span>
+              <span className="inline-flex items-center gap-1.5"><span className="inline-block w-3 h-[2px] bg-[var(--chart-2)]" style={{ backgroundImage: "repeating-linear-gradient(90deg,var(--chart-2) 0 3px,transparent 3px 5px)" }} /> Target bell curve (μ=100%)</span>
+            </div>
           </TestCard>
 
           {/* Test 2 — Performer fairness */}
