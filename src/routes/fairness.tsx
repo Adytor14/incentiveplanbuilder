@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
 import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, TrendingUp, Users, Sigma, Sparkles, Wand2, X } from "lucide-react";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLine, ComposedChart, Line } from "recharts";
 import { computeRecommendations, storeRecommendations } from "@/lib/fairness-recommendations";
 
@@ -352,22 +353,30 @@ function TestCard({
             <div className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{subtitle}</div>
           </div>
         </div>
-        <Badge tone={meta.tone} className="shrink-0"><SevIcon className="size-3" /> {meta.label}</Badge>
+        {recommendation ? (
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <button className="shrink-0 p-0 m-0 border-0 bg-transparent inline-flex cursor-pointer">
+                <Badge tone={meta.tone}><SevIcon className="size-3" /> {meta.label}</Badge>
+              </button>
+            </HoverCardTrigger>
+            <HoverCardContent className="w-64">
+              <div className="text-[10px] uppercase tracking-[0.06em] text-warning font-semibold mb-1.5">
+                Recommended Actions
+              </div>
+              <ul className="text-[11.5px] text-foreground space-y-0.5 list-disc pl-4">
+                {recommendation.map((r) => <li key={r}>{r}</li>)}
+              </ul>
+            </HoverCardContent>
+          </HoverCard>
+        ) : (
+          <Badge tone={meta.tone} className="shrink-0"><SevIcon className="size-3" /> {meta.label}</Badge>
+        )}
       </div>
       <div className="px-4 py-3">{children}</div>
       <div className="px-4 py-2.5 border-t border-border bg-muted/30 text-[11.5px] text-foreground leading-snug">
         <span className="font-semibold">Insight: </span>{insight}
       </div>
-      {recommendation && (
-        <div className="px-4 py-2.5 border-t border-border bg-warning/5">
-          <div className="text-[10px] uppercase tracking-[0.06em] text-warning font-semibold mb-1">
-            Recommended Actions
-          </div>
-          <ul className="text-[11.5px] text-foreground space-y-0.5 list-disc pl-4">
-            {recommendation.map((r) => <li key={r}>{r}</li>)}
-          </ul>
-        </div>
-      )}
     </Card>
   );
 }
