@@ -319,7 +319,7 @@ function TestCard({
   const meta = SEV_META[severity];
   const SevIcon = meta.Icon;
   return (
-    <Card className="p-0">
+    <Card className="p-0 flex flex-col h-full">
       <div className="px-4 pt-4 pb-2.5 flex items-start justify-between gap-2 border-b border-border">
         <div className="flex items-start gap-2.5 min-w-0">
           <div className="size-8 rounded-lg bg-primary-muted text-primary grid place-items-center shrink-0">
@@ -350,7 +350,7 @@ function TestCard({
           <Badge tone={meta.tone} className="shrink-0"><SevIcon className="size-3" /> {meta.label}</Badge>
         )}
       </div>
-      <div className="px-4 py-3">{children}</div>
+      <div className="px-4 py-3 flex-1">{children}</div>
       <div className="px-4 py-2.5 border-t border-border bg-muted/30 text-[11.5px] text-foreground leading-snug">
         <span className="font-semibold">Insight: </span>{insight}
       </div>
