@@ -290,9 +290,9 @@ function GoalSetting() {
 }
 
 function ComponentCard({
-  accent, title, description, weight, onWeightChange, children,
+  accent, title, description, formula, weight, onWeightChange, children,
 }: {
-  accent: string; title: string; description: string; weight: number;
+  accent: string; title: string; description: string; formula: string; weight: number;
   onWeightChange: (n: number) => void; children: React.ReactNode;
 }) {
   return (
@@ -300,7 +300,21 @@ function ComponentCard({
       <div className={`h-1 ${accent}`} />
       <div className="px-4 pt-4 pb-2.5 border-b border-border flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[14px] font-semibold tracking-tight">{title}</div>
+          <div className="text-[14px] font-semibold tracking-tight flex items-center gap-1.5">
+            {title}
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button" className="inline-flex items-center justify-center size-5 rounded-full text-muted-foreground hover:text-foreground transition-colors">
+                    <Info className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs text-[12px] leading-relaxed">
+                  {formula}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <div className="text-[12px] text-muted-foreground mt-0.5 leading-relaxed">{description}</div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -325,6 +339,7 @@ function ComponentCard({
     </Card>
   );
 }
+
 
 function NumberField({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
   return (
