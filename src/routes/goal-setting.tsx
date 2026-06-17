@@ -184,7 +184,7 @@ function GoalSetting() {
             accent="bg-chart-3"
             title="Equal Distribution"
             description="National target divided equally across the rep population."
-            formula="Goal Contribution = National Target ÷ # of Reps"
+            formula="Goal Contribution = National Target ÷ # of Reps*Weight"
             weight={wEqual}
             onWeightChange={setWEqual}
           >
