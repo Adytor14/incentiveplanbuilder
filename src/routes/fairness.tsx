@@ -91,16 +91,6 @@ function Fairness() {
         title="Fairness Testing"
         prev={{ to: "/goal-setting", label: "Goal Setting" }}
         next={{ to: "/payout-curve", label: "Payout Curve" }}
-        actions={
-          hasActionableRecs && (
-            <button
-              onClick={() => setShowApplyConfirm(true)}
-              className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-success text-success-foreground text-[13px] font-semibold hover:opacity-90 shadow-card"
-            >
-              <Wand2 className="size-3.5" /> Apply Recommendations
-            </button>
-          )
-        }
       />
       <div className="px-8 py-4 max-w-[1600px] space-y-4">
         {/* Row 1: Three tests side-by-side */}
@@ -233,14 +223,24 @@ function Fairness() {
             <Card className="p-0 w-full relative overflow-hidden">
             {/* Prominent left accent strip */}
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-success to-primary" />
-            <div className="px-5 pt-4 pb-2.5 border-b border-border flex items-center gap-2">
-              <div className="size-8 rounded-lg bg-success/15 text-success grid place-items-center shrink-0">
-                <Sparkles className="size-4" />
+            <div className="px-5 pt-4 pb-2.5 border-b border-border flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="size-8 rounded-lg bg-success/15 text-success grid place-items-center shrink-0">
+                  <Sparkles className="size-4" />
+                </div>
+                <div>
+                  <div className="text-[14px] font-semibold tracking-tight">Fairness Recommendations</div>
+                  <div className="text-[11.5px] text-muted-foreground mt-0.5">Auto-generated from test results</div>
+                </div>
               </div>
-              <div>
-                <div className="text-[14px] font-semibold tracking-tight">Fairness Recommendations</div>
-                <div className="text-[11.5px] text-muted-foreground mt-0.5">Auto-generated from test results</div>
-              </div>
+              {hasActionableRecs && (
+                <button
+                  onClick={() => setShowApplyConfirm(true)}
+                  className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-success text-success-foreground text-[13px] font-semibold hover:opacity-90 shadow-card"
+                >
+                  <Wand2 className="size-3.5" /> Apply Recommendations
+                </button>
+              )}
             </div>
             <div className="px-5 py-3">
               <ul className="flex-1 space-y-2 text-[12.5px]">
