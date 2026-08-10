@@ -1,8 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { Plus, Trash2, Save, Info } from "lucide-react";
+import { Plus, Trash2, Save, Info, Library, Check, X } from "lucide-react";
+import {
+  CURVE_PRESETS,
+  loadCurveLibrary,
+  saveCurve,
+  deleteCurve,
+  type SavedCurve,
+} from "@/lib/curve-library";
+
 import {
   ResponsiveContainer,
   AreaChart,
