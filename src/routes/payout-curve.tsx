@@ -77,6 +77,33 @@ function buildCurve(points: Point[]) {
 
 function PayoutCurve() {
   const [points, setPoints] = useState<Point[]>(DEFAULT_POINTS);
+  const [library, setLibrary] = useState<SavedCurve[]>(CURVE_PRESETS);
+  const [activeCurveId, setActiveCurveId] = useState<string>("preset-standard");
+  const [showSave, setShowSave] = useState(false);
+  const [curveName, setCurveName] = useState("");
+
+  useEffect(() => {
+    setLibrary(loadCurveLibrary());
+  }, []);
+
+  const applyCurve = (c: SavedCurve) => {
+    setPoints(c.points.map((p, i) => ({ ...p, id: `${c.id}-${i}` })));
+    setActiveCurveId(c.id);
+  };
+
+  const removeCurve = (id: string) => {
+    deleteCurve(id);
+    setLibrary(loadCurveLibrary());
+  };
+
+  const commitSave = () => {
+    const name = curveName.trim() || `Custom Curve ${new Date().toLocaleDateString()}`;
+    const saved = saveCurve(name, points);
+    setLibrary(loadCurveLibrary());
+    setActiveCurveId(saved.id);
+    setCurveName("");
+    setShowSave(false);
+  };
 
   const update = (id: string, patch: Partial<Point>) =>
     setPoints((p) => p.map((pt) => (pt.id === id ? { ...pt, ...patch } : pt)));
@@ -110,11 +137,15 @@ function PayoutCurve() {
         prev={{ to: "/fairness", label: "Fairness Testing" }}
         next={{ to: "/simulation", label: "Monte Carlo" }}
         actions={
-          <button className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card">
+          <button
+            onClick={() => { setCurveName(""); setShowSave(true); }}
+            className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card"
+          >
             <Save className="size-3.5" /> Save to Curve Library
           </button>
         }
       />
+
 
       <div className="px-8 py-7 max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_460px] gap-6">
         {/* Chart */}
