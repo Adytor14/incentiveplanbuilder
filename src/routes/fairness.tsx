@@ -8,6 +8,8 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGri
 import { computeRecommendations, storeRecommendations } from "@/lib/fairness-recommendations";
 import { supabase } from "@/integrations/supabase/client";
 import { usePlanPeriod } from "@/lib/plan-period";
+import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
+import { Package } from "lucide-react";
 
 
 
@@ -66,6 +68,13 @@ function buildProductFairness(index: number): ProductFairness {
     ],
     medianGrowthPct: 12 + shift * 3,
   };
+}
+
+function performerAssessment(gap: number): { label: string; tone: "success" | "warning" | "danger"; severity: Severity } {
+  if (gap < 10) return { label: "Excellent", tone: "success", severity: "healthy" };
+  if (gap < 20) return { label: "Good", tone: "success", severity: "healthy" };
+  if (gap < 30) return { label: "Review", tone: "warning", severity: "caution" };
+  return { label: "Unfair", tone: "danger", severity: "warning" };
 }
 
 function performerGap(q: ProductFairness["quartileAttain"]) {
@@ -135,6 +144,21 @@ function Fairness() {
         title="Fairness Testing"
         prev={{ to: "/goal-setting", label: "Goal Setting" }}
         next={{ to: "/payout-curve", label: "Payout Curve" }}
+        actions={
+          <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
+            <Package className="size-3.5 text-muted-foreground" />
+            <span className="text-muted-foreground">Product</span>
+            <select
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+              className="bg-transparent text-foreground font-medium focus:outline-none"
+            >
+              {PRODUCTS.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </label>
+        }
       />
       <div className="px-8 py-4 max-w-[1600px] space-y-4">
         {/* Row 1: Three tests side-by-side */}
