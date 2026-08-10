@@ -75,16 +75,27 @@ export const DATASETS: Dataset[] = [
     source: "Upload",
   },
   {
-    id: "mbo_library",
-    name: "MBO Library",
-    description: "MBO type, description and definition catalog",
+    id: "ic_component_library",
+    name: "IC Component Library",
+    description: "IC component type, description and definition catalog",
     required: true,
     status: "validated",
     rows: 12,
     updatedAt: "Jun 4, 2026",
     source: "IC Admin",
   },
+  {
+    id: "products",
+    name: "Products",
+    description: "Product catalog with product codes, brands and eligibility by role",
+    required: true,
+    status: "validated",
+    rows: 3,
+    updatedAt: "Jun 5, 2026",
+    source: "IC Admin",
+  },
 ];
+
 
 export type DataInputs = {
   previousYearSales: number;
