@@ -77,14 +77,23 @@ function Fairness() {
   const navigate = useNavigate();
   const { period } = usePlanPeriod();
   const [showApplyConfirm, setShowApplyConfirm] = useState(false);
+  const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
+  const productIndex = Math.max(0, PRODUCTS.findIndex((p) => p.id === productId));
 
+  const { attainmentDist, quartileAttain, growthDist, medianGrowthPct } = useMemo(
+    () => buildProductFairness(productIndex),
+    [productIndex],
+  );
+  const performerGapPts = performerGap(quartileAttain);
+  const performerVerdict = performerAssessment(performerGapPts);
 
   const hasActionableRecs = performerGapPts >= 20 || growthDist[3].count > 2;
 
   const recs = useMemo(
     () => computeRecommendations(performerGapPts, growthDist[3].count, medianGrowthPct),
-    []
+    [performerGapPts, growthDist, medianGrowthPct]
   );
+
 
   const [applying, setApplying] = useState(false);
 
