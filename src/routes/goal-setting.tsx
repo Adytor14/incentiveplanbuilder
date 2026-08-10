@@ -11,6 +11,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { usePlanPeriod, previousQuarter, previousQuartersBefore } from "@/lib/plan-period";
+import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
+
+type ProductGoalConfig = {
+  historicalPeriod: string;
+  growth: number;
+  wHist: number;
+  wPot: number;
+  wEqual: number;
+};
+
 
 export const Route = createFileRoute("/goal-setting")({
   head: () => ({
