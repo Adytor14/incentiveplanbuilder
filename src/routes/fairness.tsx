@@ -281,7 +281,7 @@ function Fairness() {
               <div className="flex-1">
                 <div className="text-[14px] font-semibold">Apply Fairness Recommendations?</div>
                 <div className="text-[12px] text-muted-foreground mt-0.5">
-                  This will update plan inputs and rerun the Monte Carlo simulation automatically.
+                  This creates a new plan version with the adjusted inputs and opens Goal Setting.
                 </div>
               </div>
               <button onClick={() => setShowApplyConfirm(false)} className="size-7 grid place-items-center rounded-md hover:bg-muted">
@@ -330,10 +330,12 @@ function Fairness() {
               </button>
               <button
                 onClick={handleApply}
-                className="h-9 px-4 rounded-md bg-success text-success-foreground text-[13px] font-semibold hover:opacity-90 shadow-card inline-flex items-center gap-1.5"
+                disabled={applying}
+                className="h-9 px-4 rounded-md bg-success text-success-foreground text-[13px] font-semibold hover:opacity-90 shadow-card inline-flex items-center gap-1.5 disabled:opacity-60"
               >
-                <Wand2 className="size-3.5" /> Apply & Run Simulation
+                <Wand2 className="size-3.5" /> {applying ? "Creating version…" : "Create Version & Review Goals"}
               </button>
+
             </div>
           </Card>
         </div>
