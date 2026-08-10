@@ -270,6 +270,49 @@ function GoalSetting() {
           </ComponentCard>
         </div>
 
+        {/* Old vs New goal comparison — after applying fairness recommendations */}
+        {appliedRecs && (
+          <Card className="p-0 overflow-hidden">
+            <div className="px-5 pt-4 pb-3 border-b border-border flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <div className="text-[14px] font-semibold tracking-tight">Existing vs Recommended Goals</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">
+                  {product.name} · baseline weights {BASELINE.wHist}/{BASELINE.wPot}/{BASELINE.wEqual} at {BASELINE.growth.toFixed(2)}x vs recommended {wHist}/{wPot}/{wEqual} at {growth.toFixed(2)}x
+                </div>
+              </div>
+              <Badge tone="primary">
+                Avg change {(comparison.reduce((s, c) => s + c.deltaPct, 0) / (comparison.length || 1)).toFixed(1)}%
+              </Badge>
+            </div>
+            <div className="overflow-auto">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground bg-muted/40">
+                    <th className="text-left font-medium px-5 py-2.5">Rep</th>
+                    <th className="text-left font-medium px-5 py-2.5">Geo ID</th>
+                    <th className="text-right font-medium px-5 py-2.5">Old Goal</th>
+                    <th className="text-right font-medium px-5 py-2.5">New Goal</th>
+                    <th className="text-right font-medium px-5 py-2.5 pr-6">Change</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {comparison.map((c) => (
+                    <tr key={c.rep} className="hover:bg-muted/30">
+                      <td className="px-5 py-2.5 font-medium">{c.rep}</td>
+                      <td className="px-5 py-2.5"><Badge tone="neutral">GEO-{c.region}</Badge></td>
+                      <td className="px-5 py-2.5 text-right num text-muted-foreground">${c.oldGoal.toLocaleString()}</td>
+                      <td className="px-5 py-2.5 text-right num font-semibold">${c.newGoal.toLocaleString()}</td>
+                      <td className={`px-5 py-2.5 text-right num font-semibold pr-6 ${c.delta > 0 ? "text-warning" : c.delta < 0 ? "text-success" : "text-muted-foreground"}`}>
+                        {c.delta > 0 ? "+" : ""}{c.delta.toLocaleString()} ({c.deltaPct >= 0 ? "+" : ""}{c.deltaPct.toFixed(1)}%)
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )}
+
         <div className="flex justify-end">
           <button
             type="button"
@@ -280,6 +323,8 @@ function GoalSetting() {
             Goal Preview
           </button>
         </div>
+
+
 
 
         {/* Preview modal */}
