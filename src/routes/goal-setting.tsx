@@ -36,46 +36,96 @@ const REPS = [
 const NATIONAL_TARGET_K = 100_000;
 const REP_COUNT = 15;
 
+const BASELINE = { wHist: 50, wPot: 30, wEqual: 20, growth: 1.1 };
+
 function GoalSetting() {
   const navigate = useNavigate();
   const { period } = usePlanPeriod();
   const historicalOptions = useMemo(() => previousQuartersBefore(period, 4), [period]);
-  const [historicalPeriod, setHistoricalPeriod] = useState<string>(previousQuarter(period));
-  const [growth, setGrowth] = useState<number>(1.10);
-  const [wHist, setWHist] = useState(50);
-  const [wPot, setWPot] = useState(30);
-  const [wEqual, setWEqual] = useState(20);
+  const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
+  const product = PRODUCTS.find((p) => p.id === productId) ?? PRODUCTS[0];
+
+  const [byProduct, setByProduct] = useState<Record<string, ProductGoalConfig>>(() =>
+    Object.fromEntries(
+      PRODUCTS.map((p) => [
+        p.id,
+        {
+          historicalPeriod: previousQuarter(period),
+          growth: BASELINE.growth,
+          wHist: BASELINE.wHist,
+          wPot: BASELINE.wPot,
+          wEqual: BASELINE.wEqual,
+        },
+      ]),
+    ),
+  );
+  const cfg = byProduct[productId];
+  const patch = (p: Partial<ProductGoalConfig>) =>
+    setByProduct((prev) => ({ ...prev, [productId]: { ...prev[productId], ...p } }));
+
+  const { historicalPeriod, growth, wHist, wPot, wEqual } = cfg;
+  const setHistoricalPeriod = (v: string) => patch({ historicalPeriod: v });
+  const setGrowth = (v: number) => patch({ growth: v });
+  const setWHist = (v: number) => patch({ wHist: v });
+  const setWPot = (v: number) => patch({ wPot: v });
+  const setWEqual = (v: number) => patch({ wEqual: v });
+
   const [showInvalid, setShowInvalid] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [appliedRecs, setAppliedRecs] = useState<ReturnType<typeof loadRecommendations>>(null);
 
-  // Auto-apply fairness weight recommendations on mount
+  // Auto-apply fairness weight recommendations on mount — for every product
   useEffect(() => {
     const recs = loadRecommendations();
-    if (recs) {
-      setAppliedRecs(recs);
-      setWHist(recs.wHist);
-      setWPot(recs.wPot);
-      setWEqual(recs.wEqual);
-      setGrowth(1 + recs.growthPercent / 100);
-    }
+    if (!recs) return;
+    setAppliedRecs(recs);
+    setByProduct((prev) =>
+      Object.fromEntries(
+        Object.entries(prev).map(([id, c]) => [
+          id,
+          { ...c, wHist: recs.wHist, wPot: recs.wPot, wEqual: recs.wEqual, growth: 1 + recs.growthPercent / 100 },
+        ]),
+      ),
+    );
   }, []);
 
   const total = wHist + wPot + wEqual;
   const balanced = total === 100;
-  const equalShare = NATIONAL_TARGET_K / REP_COUNT;
+  const equalShare = (NATIONAL_TARGET_K * product.factor) / REP_COUNT;
 
-  const preview = useMemo(() => {
-    return REPS.map((r) => {
-      const histContrib = r.historical * growth;
-      const potContrib = r.potential * 0.88;
+  const computeGoals = (w: { wHist: number; wPot: number; wEqual: number }, g: number) =>
+    REPS.map((r) => {
+      const histContrib = r.historical * product.factor * g;
+      const potContrib = r.potential * product.factor * 0.88;
       const eqContrib = equalShare;
-      const goal = (histContrib * wHist + potContrib * wPot + eqContrib * wEqual) / 100;
-      return { ...r, histContrib: Math.round(histContrib), potContrib: Math.round(potContrib), eqContrib: Math.round(eqContrib), goal: Math.round(goal) };
+      const goal = (histContrib * w.wHist + potContrib * w.wPot + eqContrib * w.wEqual) / 100;
+      return {
+        ...r,
+        histContrib: Math.round(histContrib),
+        potContrib: Math.round(potContrib),
+        eqContrib: Math.round(eqContrib),
+        goal: Math.round(goal),
+      };
     });
-  }, [wHist, wPot, wEqual, growth, equalShare]);
+
+  const preview = useMemo(
+    () => computeGoals({ wHist, wPot, wEqual }, growth),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [wHist, wPot, wEqual, growth, equalShare, product.factor],
+  );
+
+  const comparison = useMemo(() => {
+    const oldGoals = computeGoals(BASELINE, BASELINE.growth);
+    return preview.map((r, i) => {
+      const oldGoal = oldGoals[i].goal;
+      const delta = r.goal - oldGoal;
+      return { rep: r.rep, region: r.region, oldGoal, newGoal: r.goal, delta, deltaPct: oldGoal ? (delta / oldGoal) * 100 : 0 };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preview]);
 
   const sample = preview[0];
+
 
   const handleContinue = () => {
     if (!balanced) { setShowInvalid(true); return; }
