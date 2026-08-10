@@ -144,9 +144,8 @@ function DataInputsPage() {
                     <div className="text-[13.5px] font-semibold text-foreground truncate">
                       {d.name}
                     </div>
-                    <Badge tone="neutral">{d.source}</Badge>
-                    {d.required && <Badge tone="primary">Required</Badge>}
                   </div>
+
                   <div className="text-[12px] text-muted-foreground mt-0.5 truncate">
                     {d.description}
                   </div>
