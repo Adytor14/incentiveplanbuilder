@@ -11,14 +11,17 @@ export const Route = createFileRoute("/plan-builder")({
     meta: [
       { title: "Plan Builder · IC Design" },
       { name: "description", content: "Configure IC components per role and product with numeric weight allocation." },
+      { property: "og:title", content: "Plan Builder · IC Design" },
+      { property: "og:description", content: "Configure product weightage and IC components per role." },
     ],
   }),
   component: PlanBuilder,
 });
 
 type Role = "rep" | "rbm" | "asm";
-type Product = { id: string; name: string; components: Component[] };
-type Component = { id: string; name: string; category: string; weight: number };
+type ComponentType = "Goal Attainment" | "MBO";
+type Product = { id: string; name: string; weight: number; components: Component[] };
+type Component = { id: string; type: ComponentType; subtype: string; weight: number };
 
 const ROLE_LABEL: Record<Role, { name: string; sub: string }> = {
   rep: { name: "Sales Representative", sub: "Field-facing · 15 reps" },
@@ -26,29 +29,36 @@ const ROLE_LABEL: Record<Role, { name: string; sub: string }> = {
   asm: { name: "Area Sales Manager", sub: "Senior leader · 12 ASMs" },
 };
 
-const COMPONENT_CATEGORIES = [
-  "Individual Goal Attainment",
-  "National Goal Attainment",
-  "MBO",
-  "Custom",
-] as const;
+const COMPONENT_TYPES: ComponentType[] = ["Goal Attainment", "MBO"];
 
-const makeProduct = (id: string, name: string): Product => ({
+const SUBTYPES: Record<ComponentType, string[]> = {
+  "Goal Attainment": ["Individual Goal Attainment", "National Goal Attainment"],
+  MBO: ["MBO 1", "MBO 2", "MBO 3", "MBO 4"],
+};
+
+const makeProduct = (id: string, name: string, weight: number): Product => ({
   id,
   name,
+  weight,
   components: [
-    { id: `${id}-c1`, name: "Individual Goal Attainment", category: "Individual Goal Attainment", weight: 40 },
-    { id: `${id}-c2`, name: "National Goal Attainment", category: "National Goal Attainment", weight: 30 },
-    { id: `${id}-c3`, name: "MBO 1 — Quality Calls", category: "MBO", weight: 20 },
-    { id: `${id}-c4`, name: "MBO 2 — Speaker Programs", category: "MBO", weight: 10 },
+    { id: `${id}-c1`, type: "Goal Attainment", subtype: "Individual Goal Attainment", weight: 40 },
+    { id: `${id}-c2`, type: "Goal Attainment", subtype: "National Goal Attainment", weight: 30 },
+    { id: `${id}-c3`, type: "MBO", subtype: "MBO 1", weight: 20 },
+    { id: `${id}-c4`, type: "MBO", subtype: "MBO 2", weight: 10 },
   ],
 });
 
-// Same set of products for every role (TMs, RMs, AMs).
+// Same set of products for every role (TMs, RMs, AMs) — product weightage differs by role.
+const PRODUCT_WEIGHTS: Record<Role, number[]> = {
+  rep: [50, 30, 20],
+  rbm: [40, 35, 25],
+  asm: [34, 33, 33],
+};
+
 const INITIAL: Record<Role, Product[]> = {
-  rep: PRODUCTS.map((p) => makeProduct(`rep-${p.id}`, p.name)),
-  rbm: PRODUCTS.map((p) => makeProduct(`rbm-${p.id}`, p.name)),
-  asm: PRODUCTS.map((p) => makeProduct(`asm-${p.id}`, p.name)),
+  rep: PRODUCTS.map((p, i) => makeProduct(`rep-${p.id}`, p.name, PRODUCT_WEIGHTS.rep[i] ?? 0)),
+  rbm: PRODUCTS.map((p, i) => makeProduct(`rbm-${p.id}`, p.name, PRODUCT_WEIGHTS.rbm[i] ?? 0)),
+  asm: PRODUCTS.map((p, i) => makeProduct(`asm-${p.id}`, p.name, PRODUCT_WEIGHTS.asm[i] ?? 0)),
 };
 
 
@@ -65,11 +75,11 @@ function PlanBuilder() {
   const [showInvalid, setShowInvalid] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [showAddProduct, setShowAddProduct] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newCategory, setNewCategory] = useState<string>("Custom");
+  const [newType, setNewType] = useState<ComponentType>("Goal Attainment");
+  const [newSubtype, setNewSubtype] = useState<string>(SUBTYPES["Goal Attainment"][0]);
   const [newWeight, setNewWeight] = useState<number | "">(0);
   const [newProductName, setNewProductName] = useState("");
-  const [addErrors, setAddErrors] = useState<{ name?: string; category?: string; weight?: string }>({});
+  const [addErrors, setAddErrors] = useState<{ subtype?: string; weight?: string }>({});
   const [productError, setProductError] = useState<string | null>(null);
 
   const products = data[role];
@@ -78,6 +88,8 @@ function PlanBuilder() {
   const totalWeight = components.reduce((s, c) => s + c.weight, 0);
   const balanced = totalWeight === 100;
   const remainingWeight = Math.max(0, 100 - totalWeight);
+  const productWeightTotal = products.reduce((s, p) => s + p.weight, 0);
+  const productWeightBalanced = productWeightTotal === 100;
 
   const updateComponent = (id: string, patch: Partial<Component>) =>
     setData((prev) => ({
@@ -95,9 +107,15 @@ function PlanBuilder() {
       ),
     }));
 
+  const updateProductWeight = (id: string, weight: number) =>
+    setData((prev) => ({
+      ...prev,
+      [role]: prev[role].map((p) => (p.id === id ? { ...p, weight } : p)),
+    }));
+
   const openAdd = () => {
-    setNewName("");
-    setNewCategory("Custom");
+    setNewType("Goal Attainment");
+    setNewSubtype(SUBTYPES["Goal Attainment"][0]);
     setNewWeight(remainingWeight);
     setAddErrors({});
     setShowAdd(true);
@@ -105,12 +123,9 @@ function PlanBuilder() {
 
   const validateAdd = () => {
     const errs: typeof addErrors = {};
-    const name = newName.trim();
-    if (!name) errs.name = "Name is required.";
-    else if (name.length > 60) errs.name = "Keep name under 60 characters.";
-    else if (components.some((c) => c.name.toLowerCase() === name.toLowerCase()))
-      errs.name = "A component with this name already exists.";
-    if (!newCategory.trim()) errs.category = "Category is required.";
+    if (!newSubtype) errs.subtype = "Select a component.";
+    else if (components.some((c) => c.subtype === newSubtype))
+      errs.subtype = "This component is already added for the product.";
     const w = typeof newWeight === "number" ? newWeight : Number(newWeight);
     if (newWeight === "" || Number.isNaN(w)) errs.weight = "Enter a number between 0 and 100.";
     else if (w < 0 || w > 100) errs.weight = "Weight must be between 0 and 100.";
@@ -125,8 +140,8 @@ function PlanBuilder() {
     const w = typeof newWeight === "number" ? newWeight : Number(newWeight);
     const newComp: Component = {
       id: `c${Date.now()}`,
-      name: newName.trim(),
-      category: newCategory,
+      type: newType,
+      subtype: newSubtype,
       weight: w,
     };
     setData((prev) => ({
@@ -147,7 +162,7 @@ function PlanBuilder() {
     const id = `${role}-p${Date.now()}`;
     setData((prev) => ({
       ...prev,
-      [role]: [...prev[role], { id, name, components: [] }],
+      [role]: [...prev[role], { id, name, weight: 0, components: [] }],
     }));
     setActiveProductId((p) => ({ ...p, [role]: id }));
     setNewProductName("");
@@ -159,7 +174,7 @@ function PlanBuilder() {
     const anyInvalid = products.some(
       (p) => p.components.length > 0 && p.components.reduce((s, c) => s + c.weight, 0) !== 100,
     );
-    if (anyInvalid) {
+    if (anyInvalid || !productWeightBalanced) {
       setShowInvalid(true);
       return;
     }
@@ -178,7 +193,7 @@ function PlanBuilder() {
             type="button"
             onClick={handleContinue}
             className={`h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md text-[13px] font-semibold shadow-card ${
-              balanced
+              balanced && productWeightBalanced
                 ? "bg-primary text-primary-foreground hover:bg-primary/90"
                 : "bg-muted text-muted-foreground"
             }`}
@@ -212,41 +227,80 @@ function PlanBuilder() {
           </div>
         </Card>
 
-        {/* Product tabs */}
+        {/* Product weightage + selection */}
         <Card className="p-0">
-          <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-3">
-            <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-semibold">
-              Products · {ROLE_LABEL[role].name}
+          <div className="px-5 pt-4 pb-3 flex items-center justify-between gap-3 border-b border-border">
+            <div>
+              <div className="text-[14px] font-semibold tracking-tight">
+                Product Weightage · {ROLE_LABEL[role].name}
+              </div>
+              <div className="text-[12px] text-muted-foreground mt-0.5">
+                Weight each product for this role. Total must equal 100%. Select a product to edit its IC components.
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={() => { setShowAddProduct(true); setNewProductName(""); setProductError(null); }}
-              className="h-7 px-2.5 inline-flex items-center gap-1 rounded-md border border-border bg-background text-[11.5px] font-medium hover:bg-muted"
-            >
-              <Plus className="size-3" /> Add Product
-            </button>
+            <div className="flex items-center gap-3">
+              <div className={`text-[12.5px] px-2.5 py-1 rounded-md border ${
+                productWeightBalanced
+                  ? "border-success/30 bg-success/10 text-success"
+                  : "border-warning/30 bg-warning/10 text-warning"
+              }`}>
+                Total: <span className="font-semibold num">{productWeightTotal}%</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowAddProduct(true); setNewProductName(""); setProductError(null); }}
+                className="h-8 px-2.5 inline-flex items-center gap-1 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
+              >
+                <Plus className="size-3" /> Add Product
+              </button>
+            </div>
           </div>
-          <div className="px-4 pb-4 flex flex-wrap gap-2">
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {products.map((p) => {
               const active = p.id === activeProduct?.id;
               const t = p.components.reduce((s, c) => s + c.weight, 0);
               const ok = p.components.length === 0 || t === 100;
               return (
-                <button
+                <div
                   key={p.id}
                   onClick={() => setActiveProductId((s) => ({ ...s, [role]: p.id }))}
-                  className={`px-3.5 h-9 rounded-md text-[13px] font-medium inline-flex items-center gap-2 border transition-all ${
-                    active
-                      ? "border-primary bg-primary-muted text-primary"
-                      : "border-border bg-background text-foreground hover:bg-muted"
+                  className={`rounded-lg border p-3 cursor-pointer transition-all ${
+                    active ? "border-primary bg-primary-muted/40" : "border-border bg-background hover:bg-muted/40"
                   }`}
                 >
-                  {p.name}
-                  <span className={`size-1.5 rounded-full ${ok ? "bg-success" : "bg-warning"}`} />
-                </button>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[13px] font-semibold truncate">{p.name}</div>
+                    <span className={`size-1.5 rounded-full shrink-0 ${ok ? "bg-success" : "bg-warning"}`} />
+                  </div>
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
+                      Weight
+                    </span>
+                    <div className="inline-flex items-center ml-auto">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={p.weight}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          updateProductWeight(p.id, Math.max(0, Math.min(100, Number(e.target.value) || 0)))
+                        }
+                        className="w-20 h-8 px-2 rounded-md border border-border bg-required-bg text-[13px] num font-semibold text-right focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                      />
+                      <span className="ml-1 text-[12px] text-muted-foreground">%</span>
+                    </div>
+                  </div>
+                </div>
               );
             })}
           </div>
+          {!productWeightBalanced && (
+            <div className="px-5 py-3 border-t border-border bg-warning/10 text-warning text-[12.5px] flex items-center gap-2">
+              <AlertTriangle className="size-3.5" />
+              Product weightage must total 100%. Currently {productWeightTotal}%.
+            </div>
+          )}
         </Card>
 
         {/* Components for active product */}
@@ -258,7 +312,7 @@ function PlanBuilder() {
                   IC Components · {activeProduct.name}
                 </div>
                 <div className="text-[12px] text-muted-foreground mt-0.5">
-                  Numeric weight per component. Total must equal 100%.
+                  Select a component type, then the specific component. Total weight must equal 100%.
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -287,8 +341,8 @@ function PlanBuilder() {
               <table className="w-full text-[13px]">
                 <thead>
                   <tr className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground bg-muted/40">
+                    <th className="text-left font-medium px-5 py-2.5 w-[240px]">Component Type</th>
                     <th className="text-left font-medium px-5 py-2.5">Component</th>
-                    <th className="text-left font-medium px-5 py-2.5">Category</th>
                     <th className="text-right font-medium px-5 py-2.5 w-[140px]">Weight</th>
                     <th className="px-5 py-2.5 w-[60px]" />
                   </tr>
@@ -296,29 +350,33 @@ function PlanBuilder() {
                 <tbody className="divide-y divide-border">
                   {components.map((c, i) => (
                     <tr key={c.id} className="hover:bg-muted/30">
-                      <td className="px-5 py-3 font-medium">
+                      <td className="px-5 py-3">
                         <span
                           className="inline-block size-2 rounded-sm mr-2 align-middle"
                           style={{ background: `var(--chart-${(i % 5) + 1})` }}
                         />
-                        <input
-                          value={c.name}
-                          onChange={(e) => updateComponent(c.id, { name: e.target.value })}
-                          className="bg-transparent border border-transparent hover:border-border focus:border-primary focus:bg-background rounded px-1.5 py-1 text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 w-[260px]"
-                        />
+                        <select
+                          value={c.type}
+                          onChange={(e) => {
+                            const type = e.target.value as ComponentType;
+                            updateComponent(c.id, { type, subtype: SUBTYPES[type][0] });
+                          }}
+                          className="h-8 px-2 rounded-md border border-border bg-background text-[12.5px] font-medium focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+                        >
+                          {COMPONENT_TYPES.map((t) => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
                       </td>
                       <td className="px-5 py-3">
                         <select
-                          value={c.category}
-                          onChange={(e) => updateComponent(c.id, { category: e.target.value })}
+                          value={c.subtype}
+                          onChange={(e) => updateComponent(c.id, { subtype: e.target.value })}
                           className="h-8 px-2 rounded-md border border-border bg-background text-[12.5px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
                         >
-                          {COMPONENT_CATEGORIES.map((cat) => (
-                            <option key={cat} value={cat}>{cat}</option>
+                          {SUBTYPES[c.type].map((s) => (
+                            <option key={s} value={s}>{s}</option>
                           ))}
-                          {!COMPONENT_CATEGORIES.includes(c.category as typeof COMPONENT_CATEGORIES[number]) && (
-                            <option value={c.category}>{c.category}</option>
-                          )}
                         </select>
                       </td>
                       <td className="px-5 py-3 text-right">
@@ -363,9 +421,9 @@ function PlanBuilder() {
       </div>
 
       {showInvalid && (
-        <Modal onClose={() => setShowInvalid(false)} title="Component weights must total 100%" tone="warning">
+        <Modal onClose={() => setShowInvalid(false)} title="Weights must total 100%" tone="warning">
           <p className="text-[12.5px] text-muted-foreground">
-            One or more products in this role have components that don't sum to 100%. Fix them before continuing.
+            Product weightage and every product's IC component weights must each sum to 100% before continuing.
           </p>
         </Modal>
       )}
@@ -396,27 +454,30 @@ function PlanBuilder() {
         <Modal onClose={() => setShowAdd(false)} title="Add Component" tone="primary" subtitle={`For ${activeProduct?.name}`}>
           <div className="space-y-3">
             <label className="block">
-              <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Name</div>
-              <input
-                type="text"
-                value={newName}
-                onChange={(e) => { setNewName(e.target.value); if (addErrors.name) setAddErrors((p) => ({ ...p, name: undefined })); }}
-                maxLength={80}
-                placeholder="e.g. MBO 3 — Coverage"
-                className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.name ? "border-destructive" : "border-border focus:border-primary"}`}
-              />
-              {addErrors.name && <div className="mt-1 text-[11.5px] text-destructive">{addErrors.name}</div>}
+              <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Component Type</div>
+              <select
+                value={newType}
+                onChange={(e) => {
+                  const t = e.target.value as ComponentType;
+                  setNewType(t);
+                  setNewSubtype(SUBTYPES[t][0]);
+                  setAddErrors((p) => ({ ...p, subtype: undefined }));
+                }}
+                className="w-full h-9 px-2.5 rounded-md border border-border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+              >
+                {COMPONENT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
             </label>
             <label className="block">
-              <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Category</div>
+              <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Component</div>
               <select
-                value={newCategory}
-                onChange={(e) => { setNewCategory(e.target.value); if (addErrors.category) setAddErrors((p) => ({ ...p, category: undefined })); }}
-                className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.category ? "border-destructive" : "border-border focus:border-primary"}`}
+                value={newSubtype}
+                onChange={(e) => { setNewSubtype(e.target.value); setAddErrors((p) => ({ ...p, subtype: undefined })); }}
+                className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${addErrors.subtype ? "border-destructive" : "border-border focus:border-primary"}`}
               >
-                {COMPONENT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                {SUBTYPES[newType].map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
-              {addErrors.category && <div className="mt-1 text-[11.5px] text-destructive">{addErrors.category}</div>}
+              {addErrors.subtype && <div className="mt-1 text-[11.5px] text-destructive">{addErrors.subtype}</div>}
             </label>
             <label className="block">
               <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Initial Weight</div>
