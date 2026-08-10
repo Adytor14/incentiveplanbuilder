@@ -78,11 +78,38 @@ function Fairness() {
     []
   );
 
-  const handleApply = () => {
+  const [applying, setApplying] = useState(false);
+
+  const handleApply = async () => {
+    setApplying(true);
     storeRecommendations(recs);
+
+    // Applying recommendations creates a NEW plan version rather than
+    // modifying the version currently being edited.
+    try {
+      const stamp = new Date();
+      const { data } = await supabase
+        .from("ic_plan_versions")
+        .insert({
+          name: `Fairness-adjusted · ${stamp.toLocaleDateString()} ${stamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
+          quarter: period,
+          status: "Draft",
+          created_by: "Shreya Mehta",
+        })
+        .select()
+        .maybeSingle();
+      if (data?.id && typeof window !== "undefined") {
+        localStorage.setItem("ic_active_version", data.id);
+      }
+    } catch {
+      // non-blocking — recommendations still apply locally
+    }
+
+    setApplying(false);
     setShowApplyConfirm(false);
-    navigate({ to: "/simulation" });
+    navigate({ to: "/goal-setting" });
   };
+
 
   return (
     <div>
