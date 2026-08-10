@@ -72,7 +72,9 @@ const medianGrowthPct = 12; // illustrative
 
 function Fairness() {
   const navigate = useNavigate();
+  const { period } = usePlanPeriod();
   const [showApplyConfirm, setShowApplyConfirm] = useState(false);
+
 
   const hasActionableRecs = performerGapPts >= 20 || growthDist[3].count > 2;
 
