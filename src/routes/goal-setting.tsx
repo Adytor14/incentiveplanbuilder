@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { Info, AlertTriangle, X, Eye, CheckCircle2, Package, ArrowRight } from "lucide-react";
+import { Info, AlertTriangle, X, Eye, CheckCircle2, Package } from "lucide-react";
 import { loadRecommendations } from "@/lib/fairness-recommendations";
 import {
   Tooltip,
