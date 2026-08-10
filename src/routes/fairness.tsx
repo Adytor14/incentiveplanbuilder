@@ -6,6 +6,9 @@ import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, TrendingUp, User
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLine, ComposedChart, Line } from "recharts";
 import { computeRecommendations, storeRecommendations } from "@/lib/fairness-recommendations";
+import { supabase } from "@/integrations/supabase/client";
+import { usePlanPeriod } from "@/lib/plan-period";
+
 
 
 export const Route = createFileRoute("/fairness")({
