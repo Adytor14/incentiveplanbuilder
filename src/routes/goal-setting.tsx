@@ -249,7 +249,7 @@ function GoalSetting() {
           >
             <div className="text-[12.5px] text-muted-foreground leading-relaxed">
               Pulled from the <span className="font-medium text-foreground">Territory Potential</span> dataset for {period}.
-              Sample territory potential value: <span className="num font-semibold text-foreground">${sample?.potential}K</span>.
+              Sample territory potential value: <span className="num font-semibold text-foreground">{sample?.potential}</span>.
             </div>
           </ComponentCard>
 
@@ -263,9 +263,9 @@ function GoalSetting() {
             onWeightChange={setWEqual}
           >
             <div className="grid grid-cols-3 gap-3 text-[12.5px]">
-              <Stat label="National Target" value={`$${NATIONAL_TARGET_K.toLocaleString()}`} />
+              <Stat label="National Target" value={NATIONAL_TARGET_K.toLocaleString()} />
               <Stat label="# of Reps" value={REP_COUNT.toLocaleString()} />
-              <Stat label="Equal Share" value={`$${Math.round(equalShare).toLocaleString()}`} />
+              <Stat label="Equal Share" value={Math.round(equalShare).toLocaleString()} />
             </div>
           </ComponentCard>
         </div>
@@ -300,8 +300,8 @@ function GoalSetting() {
                     <tr key={c.rep} className="hover:bg-muted/30">
                       <td className="px-5 py-2.5 font-medium">{c.rep}</td>
                       <td className="px-5 py-2.5"><Badge tone="neutral">GEO-{c.region}</Badge></td>
-                      <td className="px-5 py-2.5 text-right num text-muted-foreground">${c.oldGoal.toLocaleString()}</td>
-                      <td className="px-5 py-2.5 text-right num font-semibold">${c.newGoal.toLocaleString()}</td>
+                      <td className="px-5 py-2.5 text-right num text-muted-foreground">{c.oldGoal.toLocaleString()}</td>
+                      <td className="px-5 py-2.5 text-right num font-semibold">{c.newGoal.toLocaleString()}</td>
                       <td className={`px-5 py-2.5 text-right num font-semibold pr-6 ${c.delta > 0 ? "text-warning" : c.delta < 0 ? "text-success" : "text-muted-foreground"}`}>
                         {c.delta > 0 ? "+" : ""}{c.delta.toLocaleString()} ({c.deltaPct >= 0 ? "+" : ""}{c.deltaPct.toFixed(1)}%)
                       </td>
@@ -362,10 +362,10 @@ function GoalSetting() {
                       <tr key={r.rep} className="hover:bg-muted/30">
                         <td className="px-5 py-3 font-medium">{r.rep}</td>
                         <td className="px-5 py-3"><Badge tone="neutral">GEO-{r.region}</Badge></td>
-                        <td className="px-5 py-3 text-right num text-muted-foreground">${r.histContrib}K</td>
-                        <td className="px-5 py-3 text-right num text-muted-foreground">${r.potContrib}K</td>
-                        <td className="px-5 py-3 text-right num text-muted-foreground">${r.eqContrib.toLocaleString()}</td>
-                        <td className="px-5 py-3 text-right num font-semibold pr-6">${r.goal}K</td>
+                        <td className="px-5 py-3 text-right num text-muted-foreground">{r.histContrib.toLocaleString()}</td>
+                        <td className="px-5 py-3 text-right num text-muted-foreground">{r.potContrib.toLocaleString()}</td>
+                        <td className="px-5 py-3 text-right num text-muted-foreground">{r.eqContrib.toLocaleString()}</td>
+                        <td className="px-5 py-3 text-right num font-semibold pr-6">{r.goal.toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>

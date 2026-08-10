@@ -8,6 +8,8 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGri
 import { computeRecommendations, storeRecommendations } from "@/lib/fairness-recommendations";
 import { supabase } from "@/integrations/supabase/client";
 import { usePlanPeriod } from "@/lib/plan-period";
+import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
+import { Package } from "lucide-react";
 
 
 
@@ -29,29 +31,44 @@ const SEV_META: Record<Severity, { label: string; tone: "success" | "warning" | 
   warning: { label: "Action needed", tone: "danger", Icon: AlertTriangle },
 };
 
-// Test 1 — Achievability fairness: goal attainment distribution
-// `curve` overlays a target bell curve (Gaussian μ=100%, σ≈22) for visual comparison.
-const attainmentDist = [
-  { bucket: "<60%", count: 0, curve: 0.5 },
-  { bucket: "60–80%", count: 2, curve: 2.4 },
-  { bucket: "80–100%", count: 5, curve: 5.4 },
-  { bucket: "100–120%", count: 5, curve: 5.4 },
-  { bucket: "120–150%", count: 2, curve: 1.7 },
-  { bucket: ">150%", count: 0, curve: 0.1 },
-];
+// All fairness tests are evaluated per product.
+type ProductFairness = {
+  attainmentDist: { bucket: string; count: number; curve: number }[];
+  quartileAttain: { group: string; lyAttain: number; newAttain: number }[];
+  growthDist: { bucket: string; count: number }[];
+  medianGrowthPct: number;
+};
 
-// Test 2 — Performer fairness: attainment by quartile
-const quartileAttain = [
-  { group: "Top 25%", lyAttain: 128, newAttain: 101 },
-  { group: "Quartile 2", lyAttain: 110, newAttain: 100 },
-  { group: "Quartile 3", lyAttain: 92, newAttain: 99 },
-  { group: "Bottom 25%", lyAttain: 71, newAttain: 98 },
-];
-// Gap = (Top 25% LY attainment) − (Bottom 25% LY attainment) drop after new goals
-const performerGapPts = Math.abs(
-  (quartileAttain[0].lyAttain - quartileAttain[0].newAttain) -
-  (quartileAttain[3].lyAttain - quartileAttain[3].newAttain)
-);
+function buildProductFairness(index: number): ProductFairness {
+  const shift = index; // small deterministic variation per product
+  return {
+    // Test 1 — Achievability fairness: goal attainment distribution
+    // `curve` overlays a target bell curve (Gaussian μ=100%, σ≈22) for visual comparison.
+    attainmentDist: [
+      { bucket: "<60%", count: 0, curve: 0.5 },
+      { bucket: "60–80%", count: 2 + (shift === 2 ? 1 : 0), curve: 2.4 },
+      { bucket: "80–100%", count: 5 - (shift === 1 ? 1 : 0), curve: 5.4 },
+      { bucket: "100–120%", count: 5 + (shift === 1 ? 1 : 0), curve: 5.4 },
+      { bucket: "120–150%", count: 2 - (shift === 2 ? 1 : 0), curve: 1.7 },
+      { bucket: ">150%", count: 0, curve: 0.1 },
+    ],
+    // Test 2 — Performer fairness: attainment by quartile
+    quartileAttain: [
+      { group: "Top 25%", lyAttain: 128 - shift * 6, newAttain: 101 },
+      { group: "Quartile 2", lyAttain: 110 - shift * 3, newAttain: 100 },
+      { group: "Quartile 3", lyAttain: 92 + shift, newAttain: 99 },
+      { group: "Bottom 25%", lyAttain: 71 + shift * 4, newAttain: 98 },
+    ],
+    // Test 3 — Goal growth fairness: # reps per growth range
+    growthDist: [
+      { bucket: "0–10%", count: 6 - shift },
+      { bucket: "10–20%", count: 5 + shift },
+      { bucket: "20–30%", count: 3 },
+      { bucket: ">30%", count: 1 + shift },
+    ],
+    medianGrowthPct: 12 + shift * 3,
+  };
+}
 
 function performerAssessment(gap: number): { label: string; tone: "success" | "warning" | "danger"; severity: Severity } {
   if (gap < 10) return { label: "Excellent", tone: "success", severity: "healthy" };
@@ -59,29 +76,33 @@ function performerAssessment(gap: number): { label: string; tone: "success" | "w
   if (gap < 30) return { label: "Review", tone: "warning", severity: "caution" };
   return { label: "Unfair", tone: "danger", severity: "warning" };
 }
-const performerVerdict = performerAssessment(performerGapPts);
 
-// Test 3 — Goal growth fairness: # reps per growth range
-const growthDist = [
-  { bucket: "0–10%", count: 6 },
-  { bucket: "10–20%", count: 5 },
-  { bucket: "20–30%", count: 3 },
-  { bucket: ">30%", count: 1 },
-];
-const medianGrowthPct = 12; // illustrative
+function performerGap(q: ProductFairness["quartileAttain"]) {
+  return Math.abs((q[0].lyAttain - q[0].newAttain) - (q[3].lyAttain - q[3].newAttain));
+}
+
 
 function Fairness() {
   const navigate = useNavigate();
   const { period } = usePlanPeriod();
   const [showApplyConfirm, setShowApplyConfirm] = useState(false);
+  const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
+  const productIndex = Math.max(0, PRODUCTS.findIndex((p) => p.id === productId));
 
+  const { attainmentDist, quartileAttain, growthDist, medianGrowthPct } = useMemo(
+    () => buildProductFairness(productIndex),
+    [productIndex],
+  );
+  const performerGapPts = performerGap(quartileAttain);
+  const performerVerdict = performerAssessment(performerGapPts);
 
   const hasActionableRecs = performerGapPts >= 20 || growthDist[3].count > 2;
 
   const recs = useMemo(
     () => computeRecommendations(performerGapPts, growthDist[3].count, medianGrowthPct),
-    []
+    [performerGapPts, growthDist, medianGrowthPct]
   );
+
 
   const [applying, setApplying] = useState(false);
 
@@ -123,6 +144,21 @@ function Fairness() {
         title="Fairness Testing"
         prev={{ to: "/goal-setting", label: "Goal Setting" }}
         next={{ to: "/payout-curve", label: "Payout Curve" }}
+        actions={
+          <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
+            <Package className="size-3.5 text-muted-foreground" />
+            <span className="text-muted-foreground">Product</span>
+            <select
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+              className="bg-transparent text-foreground font-medium focus:outline-none"
+            >
+              {PRODUCTS.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </label>
+        }
       />
       <div className="px-8 py-4 max-w-[1600px] space-y-4">
         {/* Row 1: Three tests side-by-side */}

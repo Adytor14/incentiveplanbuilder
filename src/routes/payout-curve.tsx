@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { Plus, Trash2, Save, Info, Library, Check, X } from "lucide-react";
+import { Plus, Trash2, Save, Info, Library, Check, X, Package } from "lucide-react";
+import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
 import {
   CURVE_PRESETS,
   loadCurveLibrary,
@@ -84,9 +85,29 @@ function buildCurve(points: Point[]) {
 }
 
 function PayoutCurve() {
-  const [points, setPoints] = useState<Point[]>(DEFAULT_POINTS);
+  // Payout curve is defined per product.
+  const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
+  const [pointsByProduct, setPointsByProduct] = useState<Record<string, Point[]>>(() =>
+    Object.fromEntries(
+      PRODUCTS.map((p) => [
+        p.id,
+        DEFAULT_POINTS.map((pt) => ({ ...pt, id: `${p.id}-${pt.id}` })),
+      ]),
+    ),
+  );
+  const points = pointsByProduct[productId] ?? DEFAULT_POINTS;
+  const setPoints = (updater: Point[] | ((prev: Point[]) => Point[])) =>
+    setPointsByProduct((prev) => ({
+      ...prev,
+      [productId]: typeof updater === "function" ? (updater as (p: Point[]) => Point[])(prev[productId]) : updater,
+    }));
   const [library, setLibrary] = useState<SavedCurve[]>(CURVE_PRESETS);
-  const [activeCurveId, setActiveCurveId] = useState<string>("preset-standard");
+  const [activeCurveByProduct, setActiveCurveByProduct] = useState<Record<string, string>>(
+    () => Object.fromEntries(PRODUCTS.map((p) => [p.id, "preset-standard"])),
+  );
+  const activeCurveId = activeCurveByProduct[productId];
+  const setActiveCurveId = (id: string) =>
+    setActiveCurveByProduct((prev) => ({ ...prev, [productId]: id }));
   const [showSave, setShowSave] = useState(false);
   const [curveName, setCurveName] = useState("");
 
@@ -95,7 +116,7 @@ function PayoutCurve() {
   }, []);
 
   const applyCurve = (c: SavedCurve) => {
-    setPoints(c.points.map((p, i) => ({ ...p, id: `${c.id}-${i}` })));
+    setPoints(c.points.map((p, i) => ({ ...p, id: `${productId}-${c.id}-${i}` })));
     setActiveCurveId(c.id);
   };
 
@@ -145,12 +166,27 @@ function PayoutCurve() {
         prev={{ to: "/fairness", label: "Fairness Testing" }}
         next={{ to: "/simulation", label: "Monte Carlo" }}
         actions={
+          <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
+            <Package className="size-3.5 text-muted-foreground" />
+            <span className="text-muted-foreground">Product</span>
+            <select
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+              className="bg-transparent text-foreground font-medium focus:outline-none"
+            >
+              {PRODUCTS.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </label>
           <button
             onClick={() => { setCurveName(""); setShowSave(true); }}
             className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card"
           >
             <Save className="size-3.5" /> Save to Curve Library
           </button>
+          </div>
         }
       />
 
@@ -159,7 +195,7 @@ function PayoutCurve() {
         {/* Chart */}
         <Card className="p-0">
           <div className="px-5 pt-5 pb-3 border-b border-border">
-            <div className="text-[14px] font-semibold tracking-tight">Curve Preview</div>
+            <div className="text-[14px] font-semibold tracking-tight">Curve Preview · {PRODUCTS.find((p) => p.id === productId)?.name}</div>
             <div className="text-[12px] text-muted-foreground mt-0.5">
               Line is interpolated between the inflexion points defined on the right.
             </div>
