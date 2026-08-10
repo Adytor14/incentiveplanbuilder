@@ -183,11 +183,25 @@ function GoalSetting() {
       )}
 
       <div className="px-8 py-5 max-w-[1600px] mx-auto space-y-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <p className="text-[12.5px] text-muted-foreground leading-relaxed">
             Goal = (Historical × W₁) + (Potential × W₂) + (Equal Distribution × W₃). Weights must sum to 100%.
           </p>
+          <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px] shrink-0">
+            <Package className="size-3.5 text-muted-foreground" />
+            <span className="text-muted-foreground">Product</span>
+            <select
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+              className="bg-transparent text-foreground font-medium focus:outline-none"
+            >
+              {PRODUCTS.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </label>
         </div>
+
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* Historical */}
           <ComponentCard
