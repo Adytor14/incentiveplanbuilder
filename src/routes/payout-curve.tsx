@@ -1,8 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { Plus, Trash2, Save, Info } from "lucide-react";
+import { Plus, Trash2, Save, Info, Library, Check, X } from "lucide-react";
+import {
+  CURVE_PRESETS,
+  loadCurveLibrary,
+  saveCurve,
+  deleteCurve,
+  type SavedCurve,
+} from "@/lib/curve-library";
+
 import {
   ResponsiveContainer,
   AreaChart,
@@ -77,6 +85,33 @@ function buildCurve(points: Point[]) {
 
 function PayoutCurve() {
   const [points, setPoints] = useState<Point[]>(DEFAULT_POINTS);
+  const [library, setLibrary] = useState<SavedCurve[]>(CURVE_PRESETS);
+  const [activeCurveId, setActiveCurveId] = useState<string>("preset-standard");
+  const [showSave, setShowSave] = useState(false);
+  const [curveName, setCurveName] = useState("");
+
+  useEffect(() => {
+    setLibrary(loadCurveLibrary());
+  }, []);
+
+  const applyCurve = (c: SavedCurve) => {
+    setPoints(c.points.map((p, i) => ({ ...p, id: `${c.id}-${i}` })));
+    setActiveCurveId(c.id);
+  };
+
+  const removeCurve = (id: string) => {
+    deleteCurve(id);
+    setLibrary(loadCurveLibrary());
+  };
+
+  const commitSave = () => {
+    const name = curveName.trim() || `Custom Curve ${new Date().toLocaleDateString()}`;
+    const saved = saveCurve(name, points);
+    setLibrary(loadCurveLibrary());
+    setActiveCurveId(saved.id);
+    setCurveName("");
+    setShowSave(false);
+  };
 
   const update = (id: string, patch: Partial<Point>) =>
     setPoints((p) => p.map((pt) => (pt.id === id ? { ...pt, ...patch } : pt)));
@@ -110,11 +145,15 @@ function PayoutCurve() {
         prev={{ to: "/fairness", label: "Fairness Testing" }}
         next={{ to: "/simulation", label: "Monte Carlo" }}
         actions={
-          <button className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card">
+          <button
+            onClick={() => { setCurveName(""); setShowSave(true); }}
+            className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card"
+          >
             <Save className="size-3.5" /> Save to Curve Library
           </button>
         }
       />
+
 
       <div className="px-8 py-7 max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_460px] gap-6">
         {/* Chart */}
@@ -280,7 +319,98 @@ function PayoutCurve() {
             <Badge tone="neutral">Max payout: {Math.max(...points.map((p) => p.payout))}%</Badge>
           </div>
         </Card>
+
+        {/* Curve Library */}
+        <Card className="p-0 xl:col-span-2">
+          <div className="px-5 pt-5 pb-3 border-b border-border flex items-center justify-between gap-3">
+            <div>
+              <div className="text-[14px] font-semibold tracking-tight flex items-center gap-2">
+                <Library className="size-3.5 text-primary" /> Curve Library
+              </div>
+              <div className="text-[12px] text-muted-foreground mt-0.5">
+                Standard templates and curves you have saved. Load one to start from it.
+              </div>
+            </div>
+            <Badge tone="neutral">{library.length} curves</Badge>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 p-4">
+            {library.map((c) => {
+              const active = c.id === activeCurveId;
+              return (
+                <div
+                  key={c.id}
+                  className={`rounded-lg border p-3.5 transition-colors ${
+                    active ? "border-primary bg-primary-muted/40" : "border-border bg-background hover:bg-muted/40"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-[13px] font-semibold truncate flex items-center gap-1.5">
+                        {c.name}
+                        {active && <Check className="size-3.5 text-primary shrink-0" />}
+                      </div>
+                      <div className="text-[11.5px] text-muted-foreground mt-0.5">{c.description}</div>
+                    </div>
+                    <Badge tone={c.preset ? "neutral" : "primary"}>{c.preset ? "Preset" : "Saved"}</Badge>
+                  </div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <button
+                      onClick={() => applyCurve(c)}
+                      className="h-8 px-2.5 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
+                    >
+                      Load curve
+                    </button>
+                    {!c.preset && (
+                      <button
+                        onClick={() => removeCurve(c.id)}
+                        className="size-8 grid place-items-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        title="Delete curve"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
       </div>
+
+      {showSave && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-sm p-4">
+          <Card className="max-w-md w-full p-0">
+            <div className="px-5 py-4 border-b border-border flex items-center gap-2.5">
+              <div className="size-9 rounded-lg bg-primary-muted text-primary grid place-items-center">
+                <Save className="size-4" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[14px] font-semibold">Save to Curve Library</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">
+                  {points.length} inflexion points will be stored as a reusable template.
+                </div>
+              </div>
+              <button onClick={() => setShowSave(false)} className="size-7 grid place-items-center rounded-md hover:bg-muted">
+                <X className="size-4 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="px-5 py-4">
+              <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Curve Name</div>
+              <input
+                value={curveName}
+                onChange={(e) => setCurveName(e.target.value)}
+                placeholder="e.g. Q2 2026 Rep Curve"
+                className="w-full h-9 px-2.5 rounded-md border border-border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary"
+              />
+            </div>
+            <div className="px-5 pb-4 flex justify-end gap-2">
+              <button onClick={() => setShowSave(false)} className="h-9 px-3.5 rounded-md border border-border bg-background text-[13px] font-medium hover:bg-muted">Cancel</button>
+              <button onClick={commitSave} className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90">Save curve</button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
+

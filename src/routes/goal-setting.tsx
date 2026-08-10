@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { Info, AlertTriangle, X, Eye, CheckCircle2 } from "lucide-react";
+import { Info, AlertTriangle, X, Eye, CheckCircle2, Package } from "lucide-react";
 import { loadRecommendations } from "@/lib/fairness-recommendations";
 import {
   Tooltip,
@@ -11,6 +11,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { usePlanPeriod, previousQuarter, previousQuartersBefore } from "@/lib/plan-period";
+import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
+
+type ProductGoalConfig = {
+  historicalPeriod: string;
+  growth: number;
+  wHist: number;
+  wPot: number;
+  wEqual: number;
+};
+
 
 export const Route = createFileRoute("/goal-setting")({
   head: () => ({
@@ -36,46 +46,96 @@ const REPS = [
 const NATIONAL_TARGET_K = 100_000;
 const REP_COUNT = 15;
 
+const BASELINE = { wHist: 50, wPot: 30, wEqual: 20, growth: 1.1 };
+
 function GoalSetting() {
   const navigate = useNavigate();
   const { period } = usePlanPeriod();
   const historicalOptions = useMemo(() => previousQuartersBefore(period, 4), [period]);
-  const [historicalPeriod, setHistoricalPeriod] = useState<string>(previousQuarter(period));
-  const [growth, setGrowth] = useState<number>(1.10);
-  const [wHist, setWHist] = useState(50);
-  const [wPot, setWPot] = useState(30);
-  const [wEqual, setWEqual] = useState(20);
+  const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
+  const product = PRODUCTS.find((p) => p.id === productId) ?? PRODUCTS[0];
+
+  const [byProduct, setByProduct] = useState<Record<string, ProductGoalConfig>>(() =>
+    Object.fromEntries(
+      PRODUCTS.map((p) => [
+        p.id,
+        {
+          historicalPeriod: previousQuarter(period),
+          growth: BASELINE.growth,
+          wHist: BASELINE.wHist,
+          wPot: BASELINE.wPot,
+          wEqual: BASELINE.wEqual,
+        },
+      ]),
+    ),
+  );
+  const cfg = byProduct[productId];
+  const patch = (p: Partial<ProductGoalConfig>) =>
+    setByProduct((prev) => ({ ...prev, [productId]: { ...prev[productId], ...p } }));
+
+  const { historicalPeriod, growth, wHist, wPot, wEqual } = cfg;
+  const setHistoricalPeriod = (v: string) => patch({ historicalPeriod: v });
+  const setGrowth = (v: number) => patch({ growth: v });
+  const setWHist = (v: number) => patch({ wHist: v });
+  const setWPot = (v: number) => patch({ wPot: v });
+  const setWEqual = (v: number) => patch({ wEqual: v });
+
   const [showInvalid, setShowInvalid] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [appliedRecs, setAppliedRecs] = useState<ReturnType<typeof loadRecommendations>>(null);
 
-  // Auto-apply fairness weight recommendations on mount
+  // Auto-apply fairness weight recommendations on mount — for every product
   useEffect(() => {
     const recs = loadRecommendations();
-    if (recs) {
-      setAppliedRecs(recs);
-      setWHist(recs.wHist);
-      setWPot(recs.wPot);
-      setWEqual(recs.wEqual);
-      setGrowth(1 + recs.growthPercent / 100);
-    }
+    if (!recs) return;
+    setAppliedRecs(recs);
+    setByProduct((prev) =>
+      Object.fromEntries(
+        Object.entries(prev).map(([id, c]) => [
+          id,
+          { ...c, wHist: recs.wHist, wPot: recs.wPot, wEqual: recs.wEqual, growth: 1 + recs.growthPercent / 100 },
+        ]),
+      ),
+    );
   }, []);
 
   const total = wHist + wPot + wEqual;
   const balanced = total === 100;
-  const equalShare = NATIONAL_TARGET_K / REP_COUNT;
+  const equalShare = (NATIONAL_TARGET_K * product.factor) / REP_COUNT;
 
-  const preview = useMemo(() => {
-    return REPS.map((r) => {
-      const histContrib = r.historical * growth;
-      const potContrib = r.potential * 0.88;
+  const computeGoals = (w: { wHist: number; wPot: number; wEqual: number }, g: number) =>
+    REPS.map((r) => {
+      const histContrib = r.historical * product.factor * g;
+      const potContrib = r.potential * product.factor * 0.88;
       const eqContrib = equalShare;
-      const goal = (histContrib * wHist + potContrib * wPot + eqContrib * wEqual) / 100;
-      return { ...r, histContrib: Math.round(histContrib), potContrib: Math.round(potContrib), eqContrib: Math.round(eqContrib), goal: Math.round(goal) };
+      const goal = (histContrib * w.wHist + potContrib * w.wPot + eqContrib * w.wEqual) / 100;
+      return {
+        ...r,
+        histContrib: Math.round(histContrib),
+        potContrib: Math.round(potContrib),
+        eqContrib: Math.round(eqContrib),
+        goal: Math.round(goal),
+      };
     });
-  }, [wHist, wPot, wEqual, growth, equalShare]);
+
+  const preview = useMemo(
+    () => computeGoals({ wHist, wPot, wEqual }, growth),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [wHist, wPot, wEqual, growth, equalShare, product.factor],
+  );
+
+  const comparison = useMemo(() => {
+    const oldGoals = computeGoals(BASELINE, BASELINE.growth);
+    return preview.map((r, i) => {
+      const oldGoal = oldGoals[i].goal;
+      const delta = r.goal - oldGoal;
+      return { rep: r.rep, region: r.region, oldGoal, newGoal: r.goal, delta, deltaPct: oldGoal ? (delta / oldGoal) * 100 : 0 };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preview]);
 
   const sample = preview[0];
+
 
   const handleContinue = () => {
     if (!balanced) { setShowInvalid(true); return; }
@@ -123,11 +183,25 @@ function GoalSetting() {
       )}
 
       <div className="px-8 py-5 max-w-[1600px] mx-auto space-y-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <p className="text-[12.5px] text-muted-foreground leading-relaxed">
             Goal = (Historical × W₁) + (Potential × W₂) + (Equal Distribution × W₃). Weights must sum to 100%.
           </p>
+          <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px] shrink-0">
+            <Package className="size-3.5 text-muted-foreground" />
+            <span className="text-muted-foreground">Product</span>
+            <select
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+              className="bg-transparent text-foreground font-medium focus:outline-none"
+            >
+              {PRODUCTS.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </label>
         </div>
+
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* Historical */}
           <ComponentCard
@@ -196,6 +270,49 @@ function GoalSetting() {
           </ComponentCard>
         </div>
 
+        {/* Old vs New goal comparison — after applying fairness recommendations */}
+        {appliedRecs && (
+          <Card className="p-0 overflow-hidden">
+            <div className="px-5 pt-4 pb-3 border-b border-border flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <div className="text-[14px] font-semibold tracking-tight">Existing vs Recommended Goals</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">
+                  {product.name} · baseline weights {BASELINE.wHist}/{BASELINE.wPot}/{BASELINE.wEqual} at {BASELINE.growth.toFixed(2)}x vs recommended {wHist}/{wPot}/{wEqual} at {growth.toFixed(2)}x
+                </div>
+              </div>
+              <Badge tone="primary">
+                Avg change {(comparison.reduce((s, c) => s + c.deltaPct, 0) / (comparison.length || 1)).toFixed(1)}%
+              </Badge>
+            </div>
+            <div className="overflow-auto">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground bg-muted/40">
+                    <th className="text-left font-medium px-5 py-2.5">Rep</th>
+                    <th className="text-left font-medium px-5 py-2.5">Geo ID</th>
+                    <th className="text-right font-medium px-5 py-2.5">Old Goal</th>
+                    <th className="text-right font-medium px-5 py-2.5">New Goal</th>
+                    <th className="text-right font-medium px-5 py-2.5 pr-6">Change</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {comparison.map((c) => (
+                    <tr key={c.rep} className="hover:bg-muted/30">
+                      <td className="px-5 py-2.5 font-medium">{c.rep}</td>
+                      <td className="px-5 py-2.5"><Badge tone="neutral">GEO-{c.region}</Badge></td>
+                      <td className="px-5 py-2.5 text-right num text-muted-foreground">${c.oldGoal.toLocaleString()}</td>
+                      <td className="px-5 py-2.5 text-right num font-semibold">${c.newGoal.toLocaleString()}</td>
+                      <td className={`px-5 py-2.5 text-right num font-semibold pr-6 ${c.delta > 0 ? "text-warning" : c.delta < 0 ? "text-success" : "text-muted-foreground"}`}>
+                        {c.delta > 0 ? "+" : ""}{c.delta.toLocaleString()} ({c.deltaPct >= 0 ? "+" : ""}{c.deltaPct.toFixed(1)}%)
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )}
+
         <div className="flex justify-end">
           <button
             type="button"
@@ -206,6 +323,8 @@ function GoalSetting() {
             Goal Preview
           </button>
         </div>
+
+
 
 
         {/* Preview modal */}

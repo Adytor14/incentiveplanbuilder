@@ -6,6 +6,9 @@ import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, TrendingUp, User
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ReferenceLine, ComposedChart, Line } from "recharts";
 import { computeRecommendations, storeRecommendations } from "@/lib/fairness-recommendations";
+import { supabase } from "@/integrations/supabase/client";
+import { usePlanPeriod } from "@/lib/plan-period";
+
 
 
 export const Route = createFileRoute("/fairness")({
@@ -69,7 +72,9 @@ const medianGrowthPct = 12; // illustrative
 
 function Fairness() {
   const navigate = useNavigate();
+  const { period } = usePlanPeriod();
   const [showApplyConfirm, setShowApplyConfirm] = useState(false);
+
 
   const hasActionableRecs = performerGapPts >= 20 || growthDist[3].count > 2;
 
@@ -78,11 +83,38 @@ function Fairness() {
     []
   );
 
-  const handleApply = () => {
+  const [applying, setApplying] = useState(false);
+
+  const handleApply = async () => {
+    setApplying(true);
     storeRecommendations(recs);
+
+    // Applying recommendations creates a NEW plan version rather than
+    // modifying the version currently being edited.
+    try {
+      const stamp = new Date();
+      const { data } = await supabase
+        .from("ic_plan_versions")
+        .insert({
+          name: `Fairness-adjusted · ${stamp.toLocaleDateString()} ${stamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
+          quarter: period,
+          status: "Draft",
+          created_by: "Shreya Mehta",
+        })
+        .select()
+        .maybeSingle();
+      if (data?.id && typeof window !== "undefined") {
+        localStorage.setItem("ic_active_version", data.id);
+      }
+    } catch {
+      // non-blocking — recommendations still apply locally
+    }
+
+    setApplying(false);
     setShowApplyConfirm(false);
-    navigate({ to: "/simulation" });
+    navigate({ to: "/goal-setting" });
   };
+
 
   return (
     <div>
@@ -249,7 +281,7 @@ function Fairness() {
               <div className="flex-1">
                 <div className="text-[14px] font-semibold">Apply Fairness Recommendations?</div>
                 <div className="text-[12px] text-muted-foreground mt-0.5">
-                  This will update plan inputs and rerun the Monte Carlo simulation automatically.
+                  This creates a new plan version with the adjusted inputs and opens Goal Setting.
                 </div>
               </div>
               <button onClick={() => setShowApplyConfirm(false)} className="size-7 grid place-items-center rounded-md hover:bg-muted">
@@ -298,10 +330,12 @@ function Fairness() {
               </button>
               <button
                 onClick={handleApply}
-                className="h-9 px-4 rounded-md bg-success text-success-foreground text-[13px] font-semibold hover:opacity-90 shadow-card inline-flex items-center gap-1.5"
+                disabled={applying}
+                className="h-9 px-4 rounded-md bg-success text-success-foreground text-[13px] font-semibold hover:opacity-90 shadow-card inline-flex items-center gap-1.5 disabled:opacity-60"
               >
-                <Wand2 className="size-3.5" /> Apply & Run Simulation
+                <Wand2 className="size-3.5" /> {applying ? "Creating version…" : "Create Version & Review Goals"}
               </button>
+
             </div>
           </Card>
         </div>

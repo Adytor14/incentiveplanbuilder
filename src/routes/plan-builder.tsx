@@ -3,6 +3,8 @@ import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/ui-kit";
 import { Plus, Trash2, AlertTriangle, X, Info } from "lucide-react";
+import { PRODUCTS } from "@/lib/products";
+
 
 export const Route = createFileRoute("/plan-builder")({
   head: () => ({
@@ -42,11 +44,13 @@ const makeProduct = (id: string, name: string): Product => ({
   ],
 });
 
+// Same set of products for every role (TMs, RMs, AMs).
 const INITIAL: Record<Role, Product[]> = {
-  rep: [makeProduct("rep-a", "Product A — Onclera"), makeProduct("rep-b", "Product B — Velorin"), makeProduct("rep-c", "Product C — Aurelix")],
-  rbm: [makeProduct("rbm-a", "Product A — Onclera"), makeProduct("rbm-b", "Product B — Velorin")],
-  asm: [makeProduct("asm-a", "Product A — Onclera"), makeProduct("asm-b", "Product B — Velorin")],
+  rep: PRODUCTS.map((p) => makeProduct(`rep-${p.id}`, p.name)),
+  rbm: PRODUCTS.map((p) => makeProduct(`rbm-${p.id}`, p.name)),
+  asm: PRODUCTS.map((p) => makeProduct(`asm-${p.id}`, p.name)),
 };
+
 
 function PlanBuilder() {
   const navigate = useNavigate();

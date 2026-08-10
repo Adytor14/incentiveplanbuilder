@@ -10,7 +10,7 @@ import {
   Sparkles,
   Database,
   Calendar,
-  Download,
+  
   Activity,
 } from "lucide-react";
 import { PlanPeriodProvider, usePlanPeriod, PLAN_PERIODS } from "@/lib/plan-period";
@@ -197,10 +197,8 @@ function Topbar() {
           ))}
         </select>
       </label>
-      <button className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-background text-[12.5px] font-medium hover:bg-muted">
-        <Download className="size-3.5" /> Export
-      </button>
       <div className="h-6 w-px bg-border" />
+
       <div className="size-8 rounded-full bg-gradient-to-br from-primary to-info text-primary-foreground text-[12px] font-semibold grid place-items-center">
         SM
       </div>
