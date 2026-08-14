@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
+import { ScopeStepper } from "@/components/ScopeStepper";
 import { Card, Badge } from "@/components/ui-kit";
 import { Info, AlertTriangle, X, Eye, CheckCircle2, Package, Users } from "lucide-react";
 import { loadRecommendations } from "@/lib/fairness-recommendations";

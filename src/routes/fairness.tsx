@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
+import { ScopeStepper } from "@/components/ScopeStepper";
 import { Card, Badge } from "@/components/ui-kit";
 import { ShieldCheck, AlertTriangle, CheckCircle2, AlertCircle, TrendingUp, Users, Sigma, Sparkles, Wand2, X } from "lucide-react";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";

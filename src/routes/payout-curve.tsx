@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
+import { ScopeStepper } from "@/components/ScopeStepper";
 import { Card, Badge } from "@/components/ui-kit";
 import { Plus, Trash2, Save, Info, Library, Check, X, Package, Users } from "lucide-react";
 import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
