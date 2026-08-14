@@ -148,39 +148,14 @@ function Fairness() {
         title="Fairness Testing"
         prev={{ to: "/goal-setting", label: "Goal Setting" }}
         next={{ to: "/payout-curve", label: "Payout Curve" }}
-        actions={
-          <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
-            <Users className="size-3.5 text-muted-foreground" />
-            <span className="text-muted-foreground">Role</span>
-            <select
-              value={roleId}
-              onChange={(e) => setRoleId(e.target.value)}
-              className="bg-transparent text-foreground font-medium focus:outline-none"
-            >
-              {ROLES.map((r) => (
-                <option key={r.id} value={r.id}>{r.name}</option>
-              ))}
-            </select>
-          </label>
-          <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
-            <Package className="size-3.5 text-muted-foreground" />
-            <span className="text-muted-foreground">Product</span>
-            <select
-              value={productId}
-              onChange={(e) => setProductId(e.target.value)}
-              className="bg-transparent text-foreground font-medium focus:outline-none"
-            >
-              {PRODUCTS.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-          </label>
-          </div>
-
-        }
       />
       <div className="px-8 py-4 max-w-[1600px] space-y-4">
+        <ScopeStepper
+          roleId={roleId}
+          productId={productId}
+          onRoleChange={setRoleId}
+          onProductChange={setProductId}
+        />
         {/* Row 1: Three tests side-by-side */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Test 1 — Achievability fairness */}
