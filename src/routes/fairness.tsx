@@ -176,6 +176,8 @@ function Fairness() {
               ))}
             </select>
           </label>
+          </div>
+
         }
       />
       <div className="px-8 py-4 max-w-[1600px] space-y-4">
