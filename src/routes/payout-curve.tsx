@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
+import { ScopeStepper } from "@/components/ScopeStepper";
 import { Card, Badge } from "@/components/ui-kit";
 import { Plus, Trash2, Save, Info, Library, Check, X, Package, Users } from "lucide-react";
 import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
@@ -171,42 +172,23 @@ function PayoutCurve() {
         prev={{ to: "/fairness", label: "Fairness Testing" }}
         next={{ to: "/simulation", label: "Monte Carlo" }}
         actions={
-          <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
-            <Users className="size-3.5 text-muted-foreground" />
-            <span className="text-muted-foreground">Role</span>
-            <select
-              value={roleId}
-              onChange={(e) => setRoleId(e.target.value)}
-              className="bg-transparent text-foreground font-medium focus:outline-none"
-            >
-              {ROLES.map((r) => (
-                <option key={r.id} value={r.id}>{r.name}</option>
-              ))}
-            </select>
-          </label>
-          <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
-            <Package className="size-3.5 text-muted-foreground" />
-            <span className="text-muted-foreground">Product</span>
-            <select
-              value={productId}
-              onChange={(e) => setProductId(e.target.value)}
-              className="bg-transparent text-foreground font-medium focus:outline-none"
-            >
-              {PRODUCTS.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-          </label>
           <button
             onClick={() => { setCurveName(""); setShowSave(true); }}
             className="h-9 px-3.5 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 shadow-card"
           >
             <Save className="size-3.5" /> Save to Curve Library
           </button>
-          </div>
         }
       />
+
+      <div className="px-8 pt-4 max-w-[1600px]">
+        <ScopeStepper
+          roleId={roleId}
+          productId={productId}
+          onRoleChange={setRoleId}
+          onProductChange={setProductId}
+        />
+      </div>
 
 
       <div className="px-8 py-7 max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_460px] gap-6">
