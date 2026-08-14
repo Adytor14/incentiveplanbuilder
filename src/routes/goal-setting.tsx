@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { Info, AlertTriangle, X, Eye, CheckCircle2, Package } from "lucide-react";
+import { Info, AlertTriangle, X, Eye, CheckCircle2, Package, Users } from "lucide-react";
 import { loadRecommendations } from "@/lib/fairness-recommendations";
 import {
   Tooltip,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { usePlanPeriod, previousQuarter, previousQuartersBefore } from "@/lib/plan-period";
 import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
+import { ROLES, DEFAULT_ROLE_ID, scopeKey } from "@/lib/roles";
 
 type ProductGoalConfig = {
   historicalPeriod: string;
@@ -53,12 +54,16 @@ function GoalSetting() {
   const { period } = usePlanPeriod();
   const historicalOptions = useMemo(() => previousQuartersBefore(period, 4), [period]);
   const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
+  const [roleId, setRoleId] = useState<string>(DEFAULT_ROLE_ID);
   const product = PRODUCTS.find((p) => p.id === productId) ?? PRODUCTS[0];
+  const role = ROLES.find((r) => r.id === roleId) ?? ROLES[0];
+  const scope = scopeKey(roleId, productId);
 
+  // Goals are configured per role AND product.
   const [byProduct, setByProduct] = useState<Record<string, ProductGoalConfig>>(() =>
     Object.fromEntries(
-      PRODUCTS.map((p) => [
-        p.id,
+      ROLES.flatMap((r) => PRODUCTS.map((p) => [
+        scopeKey(r.id, p.id),
         {
           historicalPeriod: previousQuarter(period),
           growth: BASELINE.growth,
@@ -66,12 +71,12 @@ function GoalSetting() {
           wPot: BASELINE.wPot,
           wEqual: BASELINE.wEqual,
         },
-      ]),
+      ])),
     ),
   );
-  const cfg = byProduct[productId];
+  const cfg = byProduct[scope];
   const patch = (p: Partial<ProductGoalConfig>) =>
-    setByProduct((prev) => ({ ...prev, [productId]: { ...prev[productId], ...p } }));
+    setByProduct((prev) => ({ ...prev, [scope]: { ...prev[scope], ...p } }));
 
   const { historicalPeriod, growth, wHist, wPot, wEqual } = cfg;
   const setHistoricalPeriod = (v: string) => patch({ historicalPeriod: v });
@@ -101,12 +106,12 @@ function GoalSetting() {
 
   const total = wHist + wPot + wEqual;
   const balanced = total === 100;
-  const equalShare = (NATIONAL_TARGET_K * product.factor) / REP_COUNT;
+  const equalShare = (NATIONAL_TARGET_K * product.factor * role.factor) / REP_COUNT;
 
   const computeGoals = (w: { wHist: number; wPot: number; wEqual: number }, g: number) =>
     REPS.map((r) => {
-      const histContrib = r.historical * product.factor * g;
-      const potContrib = r.potential * product.factor * 0.88;
+      const histContrib = r.historical * product.factor * role.factor * g;
+      const potContrib = r.potential * product.factor * role.factor * 0.88;
       const eqContrib = equalShare;
       const goal = (histContrib * w.wHist + potContrib * w.wPot + eqContrib * w.wEqual) / 100;
       return {
@@ -121,7 +126,7 @@ function GoalSetting() {
   const preview = useMemo(
     () => computeGoals({ wHist, wPot, wEqual }, growth),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [wHist, wPot, wEqual, growth, equalShare, product.factor],
+    [wHist, wPot, wEqual, growth, equalShare, product.factor, role.factor],
   );
 
   const comparison = useMemo(() => {
@@ -187,6 +192,20 @@ function GoalSetting() {
           <p className="text-[12.5px] text-muted-foreground leading-relaxed">
             Goal = (Historical × W₁) + (Potential × W₂) + (Equal Distribution × W₃). Weights must sum to 100%.
           </p>
+          <div className="flex items-center gap-3 shrink-0">
+          <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px] shrink-0">
+            <Users className="size-3.5 text-muted-foreground" />
+            <span className="text-muted-foreground">Role</span>
+            <select
+              value={roleId}
+              onChange={(e) => setRoleId(e.target.value)}
+              className="bg-transparent text-foreground font-medium focus:outline-none"
+            >
+              {ROLES.map((r) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </select>
+          </label>
           <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px] shrink-0">
             <Package className="size-3.5 text-muted-foreground" />
             <span className="text-muted-foreground">Product</span>
@@ -200,6 +219,7 @@ function GoalSetting() {
               ))}
             </select>
           </label>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
