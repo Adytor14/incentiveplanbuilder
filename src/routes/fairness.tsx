@@ -9,6 +9,7 @@ import { computeRecommendations, storeRecommendations } from "@/lib/fairness-rec
 import { supabase } from "@/integrations/supabase/client";
 import { usePlanPeriod } from "@/lib/plan-period";
 import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
+import { ROLES, DEFAULT_ROLE_ID, roleIndex } from "@/lib/roles";
 import { Package } from "lucide-react";
 
 
@@ -87,11 +88,14 @@ function Fairness() {
   const { period } = usePlanPeriod();
   const [showApplyConfirm, setShowApplyConfirm] = useState(false);
   const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
+  const [roleId, setRoleId] = useState<string>(DEFAULT_ROLE_ID);
   const productIndex = Math.max(0, PRODUCTS.findIndex((p) => p.id === productId));
+  // Fairness is evaluated per role AND product.
+  const scopeIndex = (productIndex + roleIndex(roleId)) % 3;
 
   const { attainmentDist, quartileAttain, growthDist, medianGrowthPct } = useMemo(
-    () => buildProductFairness(productIndex),
-    [productIndex],
+    () => buildProductFairness(scopeIndex),
+    [scopeIndex],
   );
   const performerGapPts = performerGap(quartileAttain);
   const performerVerdict = performerAssessment(performerGapPts);
@@ -145,6 +149,20 @@ function Fairness() {
         prev={{ to: "/goal-setting", label: "Goal Setting" }}
         next={{ to: "/payout-curve", label: "Payout Curve" }}
         actions={
+          <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
+            <Users className="size-3.5 text-muted-foreground" />
+            <span className="text-muted-foreground">Role</span>
+            <select
+              value={roleId}
+              onChange={(e) => setRoleId(e.target.value)}
+              className="bg-transparent text-foreground font-medium focus:outline-none"
+            >
+              {ROLES.map((r) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </select>
+          </label>
           <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
             <Package className="size-3.5 text-muted-foreground" />
             <span className="text-muted-foreground">Product</span>
@@ -158,6 +176,8 @@ function Fairness() {
               ))}
             </select>
           </label>
+          </div>
+
         }
       />
       <div className="px-8 py-4 max-w-[1600px] space-y-4">

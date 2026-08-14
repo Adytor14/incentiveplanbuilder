@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { Plus, Trash2, Save, Info, Library, Check, X, Package } from "lucide-react";
+import { Plus, Trash2, Save, Info, Library, Check, X, Package, Users } from "lucide-react";
 import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
+import { ROLES, DEFAULT_ROLE_ID, scopeKey } from "@/lib/roles";
 import {
   CURVE_PRESETS,
   loadCurveLibrary,
@@ -87,27 +88,31 @@ function buildCurve(points: Point[]) {
 function PayoutCurve() {
   // Payout curve is defined per product.
   const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
-  const [pointsByProduct, setPointsByProduct] = useState<Record<string, Point[]>>(() =>
+  const [roleId, setRoleId] = useState<string>(DEFAULT_ROLE_ID);
+  const scope = scopeKey(roleId, productId);
+  const [pointsByScope, setPointsByScope] = useState<Record<string, Point[]>>(() =>
     Object.fromEntries(
-      PRODUCTS.map((p) => [
-        p.id,
-        DEFAULT_POINTS.map((pt) => ({ ...pt, id: `${p.id}-${pt.id}` })),
-      ]),
+      ROLES.flatMap((r) =>
+        PRODUCTS.map((p) => [
+          scopeKey(r.id, p.id),
+          DEFAULT_POINTS.map((pt) => ({ ...pt, id: `${r.id}-${p.id}-${pt.id}` })),
+        ]),
+      ),
     ),
   );
-  const points = pointsByProduct[productId] ?? DEFAULT_POINTS;
+  const points = pointsByScope[scope] ?? DEFAULT_POINTS;
   const setPoints = (updater: Point[] | ((prev: Point[]) => Point[])) =>
-    setPointsByProduct((prev) => ({
+    setPointsByScope((prev) => ({
       ...prev,
-      [productId]: typeof updater === "function" ? (updater as (p: Point[]) => Point[])(prev[productId]) : updater,
+      [scope]: typeof updater === "function" ? (updater as (p: Point[]) => Point[])(prev[scope]) : updater,
     }));
   const [library, setLibrary] = useState<SavedCurve[]>(CURVE_PRESETS);
-  const [activeCurveByProduct, setActiveCurveByProduct] = useState<Record<string, string>>(
-    () => Object.fromEntries(PRODUCTS.map((p) => [p.id, "preset-standard"])),
+  const [activeCurveByScope, setActiveCurveByScope] = useState<Record<string, string>>(() =>
+    Object.fromEntries(ROLES.flatMap((r) => PRODUCTS.map((p) => [scopeKey(r.id, p.id), "preset-standard"]))),
   );
-  const activeCurveId = activeCurveByProduct[productId];
+  const activeCurveId = activeCurveByScope[scope];
   const setActiveCurveId = (id: string) =>
-    setActiveCurveByProduct((prev) => ({ ...prev, [productId]: id }));
+    setActiveCurveByScope((prev) => ({ ...prev, [scope]: id }));
   const [showSave, setShowSave] = useState(false);
   const [curveName, setCurveName] = useState("");
 
@@ -116,7 +121,7 @@ function PayoutCurve() {
   }, []);
 
   const applyCurve = (c: SavedCurve) => {
-    setPoints(c.points.map((p, i) => ({ ...p, id: `${productId}-${c.id}-${i}` })));
+    setPoints(c.points.map((p, i) => ({ ...p, id: `${scope}-${c.id}-${i}` })));
     setActiveCurveId(c.id);
   };
 
@@ -168,6 +173,19 @@ function PayoutCurve() {
         actions={
           <div className="flex items-center gap-3">
           <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
+            <Users className="size-3.5 text-muted-foreground" />
+            <span className="text-muted-foreground">Role</span>
+            <select
+              value={roleId}
+              onChange={(e) => setRoleId(e.target.value)}
+              className="bg-transparent text-foreground font-medium focus:outline-none"
+            >
+              {ROLES.map((r) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </select>
+          </label>
+          <label className="flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
             <Package className="size-3.5 text-muted-foreground" />
             <span className="text-muted-foreground">Product</span>
             <select
@@ -195,7 +213,7 @@ function PayoutCurve() {
         {/* Chart */}
         <Card className="p-0">
           <div className="px-5 pt-5 pb-3 border-b border-border">
-            <div className="text-[14px] font-semibold tracking-tight">Curve Preview · {PRODUCTS.find((p) => p.id === productId)?.name}</div>
+            <div className="text-[14px] font-semibold tracking-tight">Curve Preview · {ROLES.find((r) => r.id === roleId)?.short} · {PRODUCTS.find((p) => p.id === productId)?.name}</div>
             <div className="text-[12px] text-muted-foreground mt-0.5">
               Line is interpolated between the inflexion points defined on the right.
             </div>
