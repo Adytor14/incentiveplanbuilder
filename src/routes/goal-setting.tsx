@@ -190,10 +190,16 @@ function GoalSetting() {
 
       <div className="px-8 py-5 max-w-[1600px] mx-auto space-y-4">
         <ScopeStepper
-          roleId={roleId}
+          productOnly
           productId={productId}
-          onRoleChange={setRoleId}
           onProductChange={setProductId}
+          note={
+            <>
+              Goals are set per product at{" "}
+              <span className="font-semibold text-foreground">Rep</span> level. RBM and ASM goals
+              roll up automatically from their assigned TMs and RMs.
+            </>
+          }
         />
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <p className="text-[12.5px] text-muted-foreground leading-relaxed">
