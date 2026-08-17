@@ -55,16 +55,16 @@ function GoalSetting() {
   const { period } = usePlanPeriod();
   const historicalOptions = useMemo(() => previousQuartersBefore(period, 4), [period]);
   const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
-  const [roleId, setRoleId] = useState<string>(DEFAULT_ROLE_ID);
   const product = PRODUCTS.find((p) => p.id === productId) ?? PRODUCTS[0];
-  const role = ROLES.find((r) => r.id === roleId) ?? ROLES[0];
-  const scope = scopeKey(roleId, productId);
+  // Goals are set for Reps only; RBM/ASM goals roll up from their assigned teams.
+  const role = ROLES.find((r) => r.id === DEFAULT_ROLE_ID) ?? ROLES[0];
+  const scope = productId;
 
-  // Goals are configured per role AND product.
+  // Goals are configured per product (Rep level).
   const [byProduct, setByProduct] = useState<Record<string, ProductGoalConfig>>(() =>
     Object.fromEntries(
-      ROLES.flatMap((r) => PRODUCTS.map((p) => [
-        scopeKey(r.id, p.id),
+      PRODUCTS.map((p) => [
+        p.id,
         {
           historicalPeriod: previousQuarter(period),
           growth: BASELINE.growth,
