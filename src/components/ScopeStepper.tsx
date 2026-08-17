@@ -72,6 +72,8 @@ export function ScopeStepper({
   onRoleChange,
   onProductChange,
   className,
+  productOnly,
+  note,
 }: Props) {
   const role = ROLES.find((r) => r.id === roleId);
   const product = PRODUCTS.find((p) => p.id === productId);
@@ -84,25 +86,34 @@ export function ScopeStepper({
       )}
     >
       {/* Step 1 — Role */}
-      <div className="flex items-center gap-2.5 flex-wrap">
-        <StepLabel index={1} icon={Users} label="Role" />
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {ROLES.map((r) => (
-            <Chip
-              key={r.id}
-              label={r.short}
-              active={r.id === roleId}
-              onClick={() => onRoleChange(r.id)}
-            />
-          ))}
+      {!productOnly && (
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <StepLabel index={1} icon={Users} label="Role" />
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {ROLES.map((r) => (
+              <Chip
+                key={r.id}
+                label={r.short}
+                active={r.id === roleId}
+                onClick={() => onRoleChange?.(r.id)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Step 2 — Product, nested under the selected role */}
-      <div className="flex items-start gap-2.5 flex-wrap pl-[18px] border-l-2 border-dashed border-border ml-[9px]">
+      {/* Product step — nested under the selected role when roles are shown */}
+      <div
+        className={cn(
+          "flex items-start gap-2.5 flex-wrap",
+          !productOnly && "pl-[18px] border-l-2 border-dashed border-border ml-[9px]",
+        )}
+      >
         <div className="flex items-center gap-1.5 pt-0.5">
-          <CornerDownRight className="size-3.5 text-muted-foreground/70 -ml-1" />
-          <StepLabel index={2} icon={Package} label="Product" />
+          {!productOnly && (
+            <CornerDownRight className="size-3.5 text-muted-foreground/70 -ml-1" />
+          )}
+          <StepLabel index={productOnly ? 1 : 2} icon={Package} label="Product" />
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
           {PRODUCTS.map((p) => (
@@ -117,10 +128,19 @@ export function ScopeStepper({
         </div>
       </div>
 
-      <div className="pl-[18px] ml-[9px] text-[11.5px] text-muted-foreground">
-        Editing <span className="font-semibold text-foreground">{role?.name}</span> ·{" "}
-        <span className="font-semibold text-foreground">{product?.name}</span> — enter Goal
-        Setting, Fairness Testing and Payout Curve values for each role × product combination.
+      <div
+        className={cn(
+          "text-[11.5px] text-muted-foreground",
+          !productOnly && "pl-[18px] ml-[9px]",
+        )}
+      >
+        {note ?? (
+          <>
+            Editing <span className="font-semibold text-foreground">{role?.name}</span> ·{" "}
+            <span className="font-semibold text-foreground">{product?.name}</span> — enter Goal
+            Setting, Fairness Testing and Payout Curve values for each role × product combination.
+          </>
+        )}
       </div>
     </div>
   );
