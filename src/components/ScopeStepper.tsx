@@ -4,11 +4,15 @@ import { ROLES } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 
 interface Props {
-  roleId: string;
+  roleId?: string;
   productId: string;
-  onRoleChange: (id: string) => void;
+  onRoleChange?: (id: string) => void;
   onProductChange: (id: string) => void;
   className?: string;
+  /** Hide the role step — used where configuration is product-only (e.g. Goal Setting). */
+  productOnly?: boolean;
+  /** Optional override for the footnote text. */
+  note?: React.ReactNode;
 }
 
 function Chip({
