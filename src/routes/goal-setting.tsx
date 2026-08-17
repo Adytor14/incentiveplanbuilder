@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/tooltip";
 import { usePlanPeriod, previousQuarter, previousQuartersBefore } from "@/lib/plan-period";
 import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
-import { ROLES, DEFAULT_ROLE_ID, scopeKey } from "@/lib/roles";
+import { ROLES, DEFAULT_ROLE_ID } from "@/lib/roles";
 
 type ProductGoalConfig = {
   historicalPeriod: string;
@@ -55,16 +55,16 @@ function GoalSetting() {
   const { period } = usePlanPeriod();
   const historicalOptions = useMemo(() => previousQuartersBefore(period, 4), [period]);
   const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
-  const [roleId, setRoleId] = useState<string>(DEFAULT_ROLE_ID);
   const product = PRODUCTS.find((p) => p.id === productId) ?? PRODUCTS[0];
-  const role = ROLES.find((r) => r.id === roleId) ?? ROLES[0];
-  const scope = scopeKey(roleId, productId);
+  // Goals are set for Reps only; RBM/ASM goals roll up from their assigned teams.
+  const role = ROLES.find((r) => r.id === DEFAULT_ROLE_ID) ?? ROLES[0];
+  const scope = productId;
 
-  // Goals are configured per role AND product.
+  // Goals are configured per product (Rep level).
   const [byProduct, setByProduct] = useState<Record<string, ProductGoalConfig>>(() =>
     Object.fromEntries(
-      ROLES.flatMap((r) => PRODUCTS.map((p) => [
-        scopeKey(r.id, p.id),
+      PRODUCTS.map((p) => [
+        p.id,
         {
           historicalPeriod: previousQuarter(period),
           growth: BASELINE.growth,
@@ -72,7 +72,7 @@ function GoalSetting() {
           wPot: BASELINE.wPot,
           wEqual: BASELINE.wEqual,
         },
-      ])),
+      ]),
     ),
   );
   const cfg = byProduct[scope];
@@ -190,10 +190,16 @@ function GoalSetting() {
 
       <div className="px-8 py-5 max-w-[1600px] mx-auto space-y-4">
         <ScopeStepper
-          roleId={roleId}
+          productOnly
           productId={productId}
-          onRoleChange={setRoleId}
           onProductChange={setProductId}
+          note={
+            <>
+              Goals are set per product at{" "}
+              <span className="font-semibold text-foreground">Rep</span> level. RBM and ASM goals
+              roll up automatically from their assigned TMs and RMs.
+            </>
+          }
         />
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <p className="text-[12.5px] text-muted-foreground leading-relaxed">
