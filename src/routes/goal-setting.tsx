@@ -72,7 +72,7 @@ function GoalSetting() {
           wPot: BASELINE.wPot,
           wEqual: BASELINE.wEqual,
         },
-      ])),
+      ]),
     ),
   );
   const cfg = byProduct[scope];
