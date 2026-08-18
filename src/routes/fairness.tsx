@@ -87,10 +87,9 @@ function Fairness() {
   const { period } = usePlanPeriod();
   const [showApplyConfirm, setShowApplyConfirm] = useState(false);
   const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
-  const [roleId, setRoleId] = useState<string>(DEFAULT_ROLE_ID);
   const productIndex = Math.max(0, PRODUCTS.findIndex((p) => p.id === productId));
-  // Fairness is evaluated per role AND product.
-  const scopeIndex = (productIndex + roleIndex(roleId)) % 3;
+  // Fairness is evaluated per product at Rep level; RBM/ASM roll up from their teams.
+  const scopeIndex = productIndex;
 
   const { attainmentDist, quartileAttain, growthDist, medianGrowthPct } = useMemo(
     () => buildProductFairness(scopeIndex),
