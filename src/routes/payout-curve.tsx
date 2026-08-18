@@ -47,6 +47,32 @@ const DEFAULT_POINTS: Point[] = [
   { id: "p4", name: "Stretch", attainment: 150, payout: 200 },
 ];
 
+// Each role + product combination starts from a distinct shape so the
+// variation between curves is visible without any manual editing.
+function scopeDefaults(roleId: string, productId: string): Point[] {
+  const r = ROLES.findIndex((x) => x.id === roleId);
+  const p = PRODUCTS.findIndex((x) => x.id === productId);
+  const ri = r < 0 ? 0 : r;
+  const pi = p < 0 ? 0 : p;
+
+  // Managers get flatter thresholds (team roll-up) and richer upside.
+  const threshold = 80 + ri * 3 - pi * 2; // 76 … 86
+  const excellence = 115 + pi * 5; // 115 … 125
+  const stretch = 145 + ri * 5 + pi * 3; // 145 … 161
+
+  const thresholdPay = 40 + ri * 5 + pi * 5; // 40 … 60
+  const excellencePay = 135 + ri * 15 + pi * 10; // 135 … 185
+  const stretchPay = 180 + ri * 25 + pi * 15; // 180 … 260
+
+  return [
+    { id: "p1", name: "Threshold", attainment: threshold, payout: thresholdPay },
+    { id: "p2", name: "Target", attainment: 100, payout: 100 },
+    { id: "p3", name: "Excellence", attainment: excellence, payout: excellencePay },
+    { id: "p4", name: "Stretch", attainment: stretch, payout: stretchPay },
+  ];
+}
+
+
 
 const PALETTE = [
   "var(--warning)",
