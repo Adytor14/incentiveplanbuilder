@@ -10,8 +10,6 @@ import { computeRecommendations, storeRecommendations } from "@/lib/fairness-rec
 import { supabase } from "@/integrations/supabase/client";
 import { usePlanPeriod } from "@/lib/plan-period";
 import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
-import { ROLES, DEFAULT_ROLE_ID, roleIndex } from "@/lib/roles";
-import { Package } from "lucide-react";
 
 
 
