@@ -149,10 +149,16 @@ function Fairness() {
       />
       <div className="px-8 py-4 max-w-[1600px] space-y-4">
         <ScopeStepper
-          roleId={roleId}
+          productOnly
           productId={productId}
-          onRoleChange={setRoleId}
           onProductChange={setProductId}
+          note={
+            <>
+              Fairness is evaluated per product at{" "}
+              <span className="font-semibold text-foreground">Rep</span> level. RBM and ASM fairness
+              rolls up automatically from their assigned TMs and RMs.
+            </>
+          }
         />
         {/* Row 1: Three tests side-by-side */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
