@@ -10,8 +10,6 @@ import { computeRecommendations, storeRecommendations } from "@/lib/fairness-rec
 import { supabase } from "@/integrations/supabase/client";
 import { usePlanPeriod } from "@/lib/plan-period";
 import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
-import { ROLES, DEFAULT_ROLE_ID, roleIndex } from "@/lib/roles";
-import { Package } from "lucide-react";
 
 
 
@@ -89,10 +87,9 @@ function Fairness() {
   const { period } = usePlanPeriod();
   const [showApplyConfirm, setShowApplyConfirm] = useState(false);
   const [productId, setProductId] = useState<string>(DEFAULT_PRODUCT_ID);
-  const [roleId, setRoleId] = useState<string>(DEFAULT_ROLE_ID);
   const productIndex = Math.max(0, PRODUCTS.findIndex((p) => p.id === productId));
-  // Fairness is evaluated per role AND product.
-  const scopeIndex = (productIndex + roleIndex(roleId)) % 3;
+  // Fairness is evaluated per product at Rep level; RBM/ASM roll up from their teams.
+  const scopeIndex = productIndex;
 
   const { attainmentDist, quartileAttain, growthDist, medianGrowthPct } = useMemo(
     () => buildProductFairness(scopeIndex),
@@ -152,10 +149,16 @@ function Fairness() {
       />
       <div className="px-8 py-4 max-w-[1600px] space-y-4">
         <ScopeStepper
-          roleId={roleId}
+          productOnly
           productId={productId}
-          onRoleChange={setRoleId}
           onProductChange={setProductId}
+          note={
+            <>
+              Fairness is evaluated per product at{" "}
+              <span className="font-semibold text-foreground">Rep</span> level. RBM and ASM fairness
+              rolls up automatically from their assigned TMs and RMs.
+            </>
+          }
         />
         {/* Row 1: Three tests side-by-side */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
