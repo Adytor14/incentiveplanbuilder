@@ -135,7 +135,7 @@ function PayoutCurve() {
     }));
   const [library, setLibrary] = useState<SavedCurve[]>(CURVE_PRESETS);
   const [activeCurveByScope, setActiveCurveByScope] = useState<Record<string, string>>(() =>
-    Object.fromEntries(ROLES.flatMap((r) => PRODUCTS.map((p) => [scopeKey(r.id, p.id), "preset-standard"]))),
+    Object.fromEntries(ROLES.flatMap((r) => PRODUCTS.map((p) => [scopeKey(r.id, p.id), ""]))),
   );
   const activeCurveId = activeCurveByScope[scope];
   const setActiveCurveId = (id: string) =>
