@@ -9,11 +9,9 @@ import {
   FileText,
   Sparkles,
   Database,
-  Calendar,
-  
   Activity,
 } from "lucide-react";
-import { PlanPeriodProvider, usePlanPeriod, PLAN_PERIODS } from "@/lib/plan-period";
+import { PlanPeriodProvider, usePlanPeriod } from "@/lib/plan-period";
 
 function NotFoundComponent() {
   return (
@@ -169,7 +167,7 @@ function Sidebar() {
 function Topbar() {
   const { pathname } = useLocation();
   const current = NAV.find((n) => n.to === pathname);
-  const { period, setPeriod } = usePlanPeriod();
+  const { period } = usePlanPeriod();
 
   return (
     <header className="h-14 border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-30 flex items-center px-6 gap-4">
@@ -184,20 +182,6 @@ function Topbar() {
         )}
       </div>
       <div className="flex-1" />
-      <label className="hidden md:flex items-center gap-2 h-9 px-2.5 rounded-md border border-border bg-background text-[12.5px]">
-        <Calendar className="size-3.5 text-muted-foreground" />
-        <span className="text-muted-foreground">Plan Period</span>
-        <select
-          value={period}
-          onChange={(e) => setPeriod(e.target.value as typeof period)}
-          className="bg-transparent text-foreground font-medium focus:outline-none"
-        >
-          {PLAN_PERIODS.map((p) => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
-      </label>
-      <div className="h-6 w-px bg-border" />
 
       <div className="size-8 rounded-full bg-gradient-to-br from-primary to-info text-primary-foreground text-[12px] font-semibold grid place-items-center">
         SM

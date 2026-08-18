@@ -74,13 +74,10 @@ function PlanBuilder() {
 
   const [showInvalid, setShowInvalid] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [showAddProduct, setShowAddProduct] = useState(false);
   const [newType, setNewType] = useState<ComponentType>("Goal Attainment");
   const [newSubtype, setNewSubtype] = useState<string>(SUBTYPES["Goal Attainment"][0]);
   const [newWeight, setNewWeight] = useState<number | "">(0);
-  const [newProductName, setNewProductName] = useState("");
   const [addErrors, setAddErrors] = useState<{ subtype?: string; weight?: string }>({});
-  const [productError, setProductError] = useState<string | null>(null);
 
   const products = data[role];
   const activeProduct = products.find((p) => p.id === activeProductId[role]) ?? products[0];
@@ -153,23 +150,6 @@ function PlanBuilder() {
     setShowAdd(false);
   };
 
-  const submitAddProduct = () => {
-    const name = newProductName.trim();
-    if (!name) { setProductError("Product name is required."); return; }
-    if (products.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
-      setProductError("A product with this name already exists."); return;
-    }
-    const id = `${role}-p${Date.now()}`;
-    setData((prev) => ({
-      ...prev,
-      [role]: [...prev[role], { id, name, weight: 0, components: [] }],
-    }));
-    setActiveProductId((p) => ({ ...p, [role]: id }));
-    setNewProductName("");
-    setProductError(null);
-    setShowAddProduct(false);
-  };
-
   const handleContinue = () => {
     const anyInvalid = products.some(
       (p) => p.components.length > 0 && p.components.reduce((s, c) => s + c.weight, 0) !== 100,
@@ -238,21 +218,12 @@ function PlanBuilder() {
                 Weight each product for this role. Total must equal 100%. Select a product to edit its IC components.
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className={`text-[12.5px] px-2.5 py-1 rounded-md border ${
-                productWeightBalanced
-                  ? "border-success/30 bg-success/10 text-success"
-                  : "border-warning/30 bg-warning/10 text-warning"
-              }`}>
-                Total: <span className="font-semibold num">{productWeightTotal}%</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => { setShowAddProduct(true); setNewProductName(""); setProductError(null); }}
-                className="h-8 px-2.5 inline-flex items-center gap-1 rounded-md border border-border bg-background text-[12px] font-medium hover:bg-muted"
-              >
-                <Plus className="size-3" /> Add Product
-              </button>
+            <div className={`text-[12.5px] px-2.5 py-1 rounded-md border ${
+              productWeightBalanced
+                ? "border-success/30 bg-success/10 text-success"
+                : "border-warning/30 bg-warning/10 text-warning"
+            }`}>
+              Total: <span className="font-semibold num">{productWeightTotal}%</span>
             </div>
           </div>
           <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -425,28 +396,6 @@ function PlanBuilder() {
           <p className="text-[12.5px] text-muted-foreground">
             Product weightage and every product's IC component weights must each sum to 100% before continuing.
           </p>
-        </Modal>
-      )}
-
-      {showAddProduct && (
-        <Modal onClose={() => setShowAddProduct(false)} title="Add Product" tone="primary">
-          <label className="block">
-            <div className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-1">Product Name</div>
-            <input
-              type="text"
-              value={newProductName}
-              onChange={(e) => { setNewProductName(e.target.value); setProductError(null); }}
-              placeholder="e.g. Product D — Nexalin"
-              className={`w-full h-9 px-2.5 rounded-md border bg-background text-[13px] focus:outline-none focus:ring-2 focus:ring-ring/30 ${
-                productError ? "border-destructive" : "border-border focus:border-primary"
-              }`}
-            />
-            {productError && <div className="mt-1 text-[11.5px] text-destructive">{productError}</div>}
-          </label>
-          <div className="mt-4 flex justify-end gap-2">
-            <button onClick={() => setShowAddProduct(false)} className="h-9 px-3.5 rounded-md border border-border bg-background text-[13px] font-medium hover:bg-muted">Cancel</button>
-            <button onClick={submitAddProduct} className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90">Add Product</button>
-          </div>
         </Modal>
       )}
 
