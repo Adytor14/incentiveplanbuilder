@@ -122,7 +122,7 @@ function PayoutCurve() {
       ROLES.flatMap((r) =>
         PRODUCTS.map((p) => [
           scopeKey(r.id, p.id),
-          DEFAULT_POINTS.map((pt) => ({ ...pt, id: `${r.id}-${p.id}-${pt.id}` })),
+          scopeDefaults(r.id, p.id).map((pt) => ({ ...pt, id: `${r.id}-${p.id}-${pt.id}` })),
         ]),
       ),
     ),
