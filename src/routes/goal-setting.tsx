@@ -32,6 +32,13 @@ export const Route = createFileRoute("/goal-setting")({
         name: "description",
         content: "Allocate weights across Historical Sales, Territory Potential and Equal Distribution components.",
       },
+      { property: "og:title", content: "Goal Setting · IC Design" },
+      {
+        property: "og:description",
+        content: "Allocate weights across Historical Sales, Territory Potential and Equal Distribution components.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: GoalSetting,
