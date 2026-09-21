@@ -16,30 +16,39 @@ export type Database = {
     Tables: {
       ic_plan_versions: {
         Row: {
+          approval_status: string
+          comments: string | null
           created_at: string
           created_by: string | null
           id: string
           last_used_at: string
           name: string
           quarter: string | null
+          request_status: string
           status: string
         }
         Insert: {
+          approval_status?: string
+          comments?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           last_used_at?: string
           name: string
           quarter?: string | null
+          request_status?: string
           status?: string
         }
         Update: {
+          approval_status?: string
+          comments?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           last_used_at?: string
           name?: string
           quarter?: string | null
+          request_status?: string
           status?: string
         }
         Relationships: []
