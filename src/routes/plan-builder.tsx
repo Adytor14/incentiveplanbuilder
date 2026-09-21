@@ -13,6 +13,8 @@ export const Route = createFileRoute("/plan-builder")({
       { name: "description", content: "Configure IC components per role and product with numeric weight allocation." },
       { property: "og:title", content: "Plan Builder · IC Design" },
       { property: "og:description", content: "Configure product weightage and IC components per role." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PlanBuilder,
@@ -232,12 +234,19 @@ function PlanBuilder() {
               const t = p.components.reduce((s, c) => s + c.weight, 0);
               const ok = p.components.length === 0 || t === 100;
               return (
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   key={p.id}
                   onClick={() => setActiveProductId((s) => ({ ...s, [role]: p.id }))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveProductId((s) => ({ ...s, [role]: p.id }));
+                    }
+                  }}
                   aria-pressed={active}
-                  className={`relative overflow-hidden rounded-lg border p-3 text-left transition-all ${
+                  className={`relative overflow-hidden rounded-lg border p-3 text-left transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring/30 ${
                     active
                       ? "border-primary bg-primary-muted shadow-elevated ring-2 ring-primary/25"
                       : "border-border bg-background hover:bg-muted/40 hover:border-border-strong"
@@ -274,7 +283,7 @@ function PlanBuilder() {
                       <span className="ml-1 text-[12px] text-muted-foreground">%</span>
                     </div>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
