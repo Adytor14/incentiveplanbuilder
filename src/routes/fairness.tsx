@@ -18,6 +18,10 @@ export const Route = createFileRoute("/fairness")({
     meta: [
       { title: "Fairness Testing · Helix IC" },
       { name: "description", content: "Validate whether goals are equitable and achievable across reps." },
+      { property: "og:title", content: "Fairness Testing · Helix IC" },
+      { property: "og:description", content: "Validate whether goals are equitable and achievable across reps." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Fairness,

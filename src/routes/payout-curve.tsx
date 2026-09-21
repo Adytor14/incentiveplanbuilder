@@ -33,6 +33,13 @@ export const Route = createFileRoute("/payout-curve")({
         name: "description",
         content: "Define payout inflexion points with direct numeric inputs — no slider clamping.",
       },
+      { property: "og:title", content: "Payout Curve · IC Design" },
+      {
+        property: "og:description",
+        content: "Define payout inflexion points with direct numeric inputs — no slider clamping.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PayoutCurve,

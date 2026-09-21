@@ -20,6 +20,10 @@ export const Route = createFileRoute("/simulation")({
     meta: [
       { title: "Monte Carlo Simulation · Helix IC" },
       { name: "description", content: "Run thousands of scenarios to validate goal fairness, payout risk, and budget exposure." },
+      { property: "og:title", content: "Monte Carlo Simulation · Helix IC" },
+      { property: "og:description", content: "Run thousands of scenarios to validate goal fairness, payout risk, and budget exposure." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Simulation,

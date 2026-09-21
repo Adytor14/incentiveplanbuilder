@@ -11,6 +11,9 @@ type PlanVersion = {
   last_used_at: string | null;
   created_by: string | null;
   status: string;
+  request_status: string;
+  approval_status: string;
+  comments: string | null;
 };
 
 type StatusFilter = "All" | "Draft" | "In Review" | "Approved";
@@ -19,6 +22,18 @@ const STATUS_STYLES: Record<string, string> = {
   Draft: "bg-muted text-muted-foreground border border-border",
   "In Review": "bg-warning/15 text-warning border border-warning/30",
   Approved: "bg-success/15 text-success border border-success/30",
+};
+
+const REQUEST_STATUS_STYLES: Record<string, string> = {
+  "Not Requested": "bg-muted text-muted-foreground border border-border",
+  Requested: "bg-info/10 text-info border border-info/25",
+  "Change Requested": "bg-warning/15 text-warning border border-warning/30",
+};
+
+const APPROVAL_STATUS_STYLES: Record<string, string> = {
+  Pending: "bg-warning/15 text-warning border border-warning/30",
+  Approved: "bg-success/15 text-success border border-success/30",
+  Rejected: "bg-destructive/10 text-destructive border border-destructive/25",
 };
 
 export const Route = createFileRoute("/")({
@@ -30,6 +45,14 @@ export const Route = createFileRoute("/")({
         content:
           "Design incentive plans that drive motivation, fairness, and business results.",
       },
+      { property: "og:title", content: "Home · Helix IC" },
+      {
+        property: "og:description",
+        content:
+          "Design incentive plans that drive motivation, fairness, and business results.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Home,
@@ -73,7 +96,7 @@ function Home() {
     iso ? new Date(iso).toLocaleString() : "—";
 
   return (
-    <div className="px-8 py-12 max-w-[1100px] mx-auto">
+    <div className="px-8 py-12 max-w-[1400px] mx-auto">
       <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary via-primary to-[oklch(0.32_0.13_262)] text-primary-foreground shadow-premium">
         <div className="absolute inset-0 bg-grid opacity-[0.07]" />
         <div className="absolute -right-20 -top-20 size-80 rounded-full bg-info/20 blur-3xl" />
@@ -116,12 +139,15 @@ function Home() {
           ))}
         </div>
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
-          <table className="w-full text-[13px]">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[1280px] text-[13px]">
             <thead className="bg-muted/40 text-[11.5px] uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="text-left font-semibold px-5 py-3">Version</th>
                 <th className="text-left font-semibold px-5 py-3">Quarter</th>
                 <th className="text-left font-semibold px-5 py-3">Status</th>
+                <th className="text-left font-semibold px-5 py-3">Requests</th>
+                <th className="text-left font-semibold px-5 py-3">Approvals</th>
                 <th className="text-left font-semibold px-5 py-3">Created by</th>
                 <th className="text-left font-semibold px-5 py-3">Created</th>
                 <th className="text-left font-semibold px-5 py-3">Last autosaved</th>
@@ -130,10 +156,10 @@ function Home() {
             </thead>
             <tbody className="divide-y divide-border">
               {loadingVersions && (
-                <tr><td colSpan={7} className="px-5 py-6 text-center text-muted-foreground">Loading…</td></tr>
+                <tr><td colSpan={9} className="px-5 py-6 text-center text-muted-foreground">Loading…</td></tr>
               )}
               {!loadingVersions && filteredVersions.length === 0 && (
-                <tr><td colSpan={7} className="px-5 py-6 text-center text-muted-foreground">No saved versions yet.</td></tr>
+                <tr><td colSpan={9} className="px-5 py-6 text-center text-muted-foreground">No saved versions yet.</td></tr>
               )}
               {filteredVersions.map((v) => (
                 <tr key={v.id} className="hover:bg-muted/30">
@@ -143,6 +169,19 @@ function Home() {
                     <span className={`inline-flex items-center h-6 px-2 rounded-full text-[11px] font-semibold ${STATUS_STYLES[v.status] ?? "bg-muted text-muted-foreground"}`}>
                       {v.status}
                     </span>
+                  </td>
+                  <td className="px-5 py-3">
+                    <span className={`inline-flex items-center h-6 px-2 rounded-full text-[11px] font-semibold whitespace-nowrap ${REQUEST_STATUS_STYLES[v.request_status] ?? REQUEST_STATUS_STYLES["Not Requested"]}`}>
+                      {v.request_status}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3 min-w-[190px]">
+                    <span className={`inline-flex items-center h-6 px-2 rounded-full text-[11px] font-semibold whitespace-nowrap ${APPROVAL_STATUS_STYLES[v.approval_status] ?? APPROVAL_STATUS_STYLES.Pending}`}>
+                      {v.approval_status}
+                    </span>
+                    <div className="mt-1 text-[11.5px] text-muted-foreground line-clamp-2">
+                      {v.comments ?? "No comments"}
+                    </div>
                   </td>
                   <td className="px-5 py-3 text-muted-foreground">{v.created_by ?? "—"}</td>
                   <td className="px-5 py-3 text-muted-foreground">{fmt(v.created_at)}</td>
@@ -160,6 +199,7 @@ function Home() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>

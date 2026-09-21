@@ -232,16 +232,28 @@ function PlanBuilder() {
               const t = p.components.reduce((s, c) => s + c.weight, 0);
               const ok = p.components.length === 0 || t === 100;
               return (
-                <div
+                <button
+                  type="button"
                   key={p.id}
                   onClick={() => setActiveProductId((s) => ({ ...s, [role]: p.id }))}
-                  className={`rounded-lg border p-3 cursor-pointer transition-all ${
-                    active ? "border-primary bg-primary-muted/40" : "border-border bg-background hover:bg-muted/40"
+                  aria-pressed={active}
+                  className={`relative overflow-hidden rounded-lg border p-3 text-left transition-all ${
+                    active
+                      ? "border-primary bg-primary-muted shadow-elevated ring-2 ring-primary/25"
+                      : "border-border bg-background hover:bg-muted/40 hover:border-border-strong"
                   }`}
                 >
+                  {active && <span className="absolute inset-y-0 left-0 w-1 bg-primary" />}
                   <div className="flex items-center justify-between gap-2">
-                    <div className="text-[13px] font-semibold truncate">{p.name}</div>
-                    <span className={`size-1.5 rounded-full shrink-0 ${ok ? "bg-success" : "bg-warning"}`} />
+                    <div className={`text-[13px] font-semibold truncate ${active ? "text-primary" : "text-foreground"}`}>{p.name}</div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {active && (
+                        <span className="h-5 px-2 inline-flex items-center rounded-full bg-primary text-primary-foreground text-[10.5px] font-semibold">
+                          Selected
+                        </span>
+                      )}
+                      <span className={`size-1.5 rounded-full ${ok ? "bg-success" : "bg-warning"}`} />
+                    </div>
                   </div>
                   <div className="mt-2.5 flex items-center gap-2">
                     <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
@@ -262,7 +274,7 @@ function PlanBuilder() {
                       <span className="ml-1 text-[12px] text-muted-foreground">%</span>
                     </div>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>

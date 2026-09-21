@@ -10,6 +10,10 @@ export const Route = createFileRoute("/reports")({
     meta: [
       { title: "Reports & Outputs · Helix IC" },
       { name: "description", content: "Final plan reports and exports — goals, territory, MBO, compensation, payout and IC design." },
+      { property: "og:title", content: "Reports & Outputs · Helix IC" },
+      { property: "og:description", content: "Final plan reports and exports — goals, territory, MBO, compensation, payout and IC design." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Reports,

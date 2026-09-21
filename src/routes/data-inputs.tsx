@@ -32,6 +32,14 @@ export const Route = createFileRoute("/data-inputs")({
         content:
           "Validate the source datasets that drive plan design — HCP sales, alignment, roster, territory potential and MBOs.",
       },
+      { property: "og:title", content: "Data Inputs · IC Design" },
+      {
+        property: "og:description",
+        content:
+          "Validate the source datasets that drive plan design — HCP sales, alignment, roster, territory potential and MBOs.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: DataInputsPage,
