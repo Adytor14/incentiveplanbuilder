@@ -10,6 +10,7 @@ import {
   Sparkles,
   Database,
   Activity,
+  Inbox,
 } from "lucide-react";
 import { PlanPeriodProvider, usePlanPeriod } from "@/lib/plan-period";
 
@@ -91,6 +92,7 @@ const NAV = [
   { to: "/payout-curve", label: "Payout Curve", icon: TrendingUp, step: 5 },
   { to: "/simulation", label: "Monte Carlo", icon: Activity, step: 6 },
   { to: "/reports", label: "Reports & Outputs", icon: FileText, step: 7 },
+  { to: "/requests", label: "Requests (HQ)", icon: Inbox, step: null },
 ] as const;
 
 function Sidebar() {
