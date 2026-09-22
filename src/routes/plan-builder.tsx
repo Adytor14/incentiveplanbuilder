@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { saveDraftPart } from "@/lib/plan-draft";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/ui-kit";
 import { Plus, Trash2, AlertTriangle, X, Info } from "lucide-react";
@@ -89,6 +90,27 @@ function PlanBuilder() {
   const remainingWeight = Math.max(0, 100 - totalWeight);
   const productWeightTotal = products.reduce((s, p) => s + p.weight, 0);
   const productWeightBalanced = productWeightTotal === 100;
+
+  // Keep the plan draft in sync so the HQ request shows the latest weights.
+  useEffect(() => {
+    saveDraftPart(
+      "weights",
+      Object.fromEntries(
+        Object.entries(data).map(([r, prods]) => [
+          r,
+          prods.map((p) => ({
+            product: p.name,
+            weight: p.weight,
+            components: p.components.map((c) => ({
+              type: c.type,
+              subtype: c.subtype,
+              weight: c.weight,
+            })),
+          })),
+        ]),
+      ),
+    );
+  }, [data]);
 
   const updateComponent = (id: string, patch: Partial<Component>) =>
     setData((prev) => ({

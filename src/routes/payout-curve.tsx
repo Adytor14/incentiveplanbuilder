@@ -13,6 +13,7 @@ import {
   deleteCurve,
   type SavedCurve,
 } from "@/lib/curve-library";
+import { saveDraftPart } from "@/lib/plan-draft";
 
 import {
   ResponsiveContainer,
@@ -153,6 +154,19 @@ function PayoutCurve() {
   useEffect(() => {
     setLibrary(loadCurveLibrary());
   }, []);
+
+  // Keep the plan draft in sync so the HQ request shows the latest curves.
+  useEffect(() => {
+    saveDraftPart(
+      "curves",
+      Object.fromEntries(
+        Object.entries(pointsByScope).map(([k, pts]) => [
+          k,
+          pts.map((p) => ({ name: p.name, attainment: p.attainment, payout: p.payout })),
+        ]),
+      ),
+    );
+  }, [pointsByScope]);
 
   const applyCurve = (c: SavedCurve) => {
     setPoints(c.points.map((p, i) => ({ ...p, id: `${scope}-${c.id}-${i}` })));
