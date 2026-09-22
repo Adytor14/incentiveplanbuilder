@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SimulationRouteImport } from './routes/simulation'
+import { Route as RequestsRouteImport } from './routes/requests'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as PlanBuilderRouteImport } from './routes/plan-builder'
 import { Route as PayoutCurveRouteImport } from './routes/payout-curve'
@@ -21,6 +22,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const SimulationRoute = SimulationRouteImport.update({
   id: '/simulation',
   path: '/simulation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequestsRoute = RequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportsRoute = ReportsRouteImport.update({
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
   '/reports': typeof ReportsRoute
+  '/requests': typeof RequestsRoute
   '/simulation': typeof SimulationRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
   '/reports': typeof ReportsRoute
+  '/requests': typeof RequestsRoute
   '/simulation': typeof SimulationRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/payout-curve': typeof PayoutCurveRoute
   '/plan-builder': typeof PlanBuilderRoute
   '/reports': typeof ReportsRoute
+  '/requests': typeof RequestsRoute
   '/simulation': typeof SimulationRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/payout-curve'
     | '/plan-builder'
     | '/reports'
+    | '/requests'
     | '/simulation'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/payout-curve'
     | '/plan-builder'
     | '/reports'
+    | '/requests'
     | '/simulation'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/payout-curve'
     | '/plan-builder'
     | '/reports'
+    | '/requests'
     | '/simulation'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +143,7 @@ export interface RootRouteChildren {
   PayoutCurveRoute: typeof PayoutCurveRoute
   PlanBuilderRoute: typeof PlanBuilderRoute
   ReportsRoute: typeof ReportsRoute
+  RequestsRoute: typeof RequestsRoute
   SimulationRoute: typeof SimulationRoute
 }
 
@@ -141,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/simulation'
       fullPath: '/simulation'
       preLoaderRoute: typeof SimulationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/requests': {
+      id: '/requests'
+      path: '/requests'
+      fullPath: '/requests'
+      preLoaderRoute: typeof RequestsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reports': {
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   PayoutCurveRoute: PayoutCurveRoute,
   PlanBuilderRoute: PlanBuilderRoute,
   ReportsRoute: ReportsRoute,
+  RequestsRoute: RequestsRoute,
   SimulationRoute: SimulationRoute,
 }
 export const routeTree = rootRouteImport
