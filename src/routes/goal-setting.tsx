@@ -14,6 +14,7 @@ import {
 import { usePlanPeriod, previousQuarter, previousQuartersBefore } from "@/lib/plan-period";
 import { PRODUCTS, DEFAULT_PRODUCT_ID } from "@/lib/products";
 import { ROLES, DEFAULT_ROLE_ID } from "@/lib/roles";
+import { saveDraftPart } from "@/lib/plan-draft";
 
 type ProductGoalConfig = {
   historicalPeriod: string;
