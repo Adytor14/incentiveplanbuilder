@@ -8,6 +8,13 @@
       "when": 1790002954564,
       "tag": "0000_add_plan_version_request_approval_tracking",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790060318554,
+      "tag": "0001_add_plan_snapshot_and_active_flag",
+      "breakpoints": true
     }
   ]
 }

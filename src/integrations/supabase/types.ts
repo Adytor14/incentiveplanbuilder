@@ -21,11 +21,14 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          is_active: boolean
           last_used_at: string
           name: string
+          plan_snapshot: Json | null
           quarter: string | null
           request_status: string
           status: string
+          submitted_at: string | null
         }
         Insert: {
           approval_status?: string
@@ -33,11 +36,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_active?: boolean
           last_used_at?: string
           name: string
+          plan_snapshot?: Json | null
           quarter?: string | null
           request_status?: string
           status?: string
+          submitted_at?: string | null
         }
         Update: {
           approval_status?: string
@@ -45,11 +51,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_active?: boolean
           last_used_at?: string
           name?: string
+          plan_snapshot?: Json | null
           quarter?: string | null
           request_status?: string
           status?: string
+          submitted_at?: string | null
         }
         Relationships: []
       }
