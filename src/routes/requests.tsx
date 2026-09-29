@@ -112,13 +112,26 @@ function RequestsPage() {
       : decision === "Approved"
         ? "Approved by HQ."
         : "Rejected by HQ.";
+    const approved = decision === "Approved";
     const patch = {
       approval_status: decision,
-      status: decision === "Approved" ? "Approved" : "Draft",
+      status: approved ? "Approved" : "Draft",
       request_status: decision === "Rejected" ? "Change Requested" : row.request_status,
       comments,
+      is_active: approved,
     };
-    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, ...patch } : r)));
+    setRows((prev) =>
+      prev.map((r) =>
+        r.id === row.id ? { ...r, ...patch } : approved ? { ...r, is_active: false } : r,
+      ),
+    );
+    if (approved) {
+      // Only one approved plan can be active at a time.
+      await supabase
+        .from("ic_plan_versions")
+        .update({ is_active: false })
+        .neq("id", row.id);
+    }
     await supabase.from("ic_plan_versions").update(patch).eq("id", row.id);
     setSaving(false);
     setDetail(null);
