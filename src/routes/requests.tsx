@@ -303,7 +303,7 @@ function RequestsPage() {
                   onClick={() => decide(detail, "Approved")}
                   className="h-9 px-4 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90 disabled:opacity-60"
                 >
-                  <CheckCircle2 className="size-4" /> Approve
+                  <CheckCircle2 className="size-4" /> Approve &amp; Make Active
                 </button>
               </div>
             </div>
@@ -321,6 +321,119 @@ function Field({ label, value }: { label: string; value: string }) {
         {label}
       </div>
       <div className="text-[13px] text-foreground mt-0.5">{value}</div>
+    </div>
+  );
+}
+
+function PlanSnapshotView({
+  snapshot,
+}: {
+  snapshot: (PlanDraft & { capturedAt?: string }) | null;
+}) {
+  if (!snapshot || (!snapshot.goals && !snapshot.curves && !snapshot.weights)) {
+    return (
+      <div className="mt-4 rounded-lg border border-dashed border-border px-4 py-3 text-[12.5px] text-muted-foreground">
+        No plan design was attached to this request. Ask the requester to resubmit from the Reports
+        screen so goals, payout curves and weights travel with the request.
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 space-y-4">
+      {snapshot.goals && (
+        <Section title="Goal setting — per product">
+          <table className="w-full text-[12.5px]">
+            <thead className="text-[10.5px] uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="text-left font-semibold py-1.5">Product</th>
+                <th className="text-left font-semibold py-1.5">Historical period</th>
+                <th className="text-right font-semibold py-1.5">Growth</th>
+                <th className="text-right font-semibold py-1.5">Historical %</th>
+                <th className="text-right font-semibold py-1.5">Potential %</th>
+                <th className="text-right font-semibold py-1.5">Equal %</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {Object.entries(snapshot.goals).map(([pid, g]) => (
+                <tr key={pid}>
+                  <td className="py-1.5 font-medium">{productName(pid)}</td>
+                  <td className="py-1.5 text-muted-foreground">{g.historicalPeriod}</td>
+                  <td className="py-1.5 text-right num">{g.growth.toFixed(2)}×</td>
+                  <td className="py-1.5 text-right num">{g.wHist}</td>
+                  <td className="py-1.5 text-right num">{g.wPot}</td>
+                  <td className="py-1.5 text-right num">{g.wEqual}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Section>
+      )}
+
+      {snapshot.curves && (
+        <Section title="Payout curves — per role and product">
+          <div className="grid grid-cols-2 gap-3">
+            {Object.entries(snapshot.curves).map(([key, pts]) => (
+              <div key={key} className="rounded-md border border-border p-3">
+                <div className="text-[12px] font-semibold">{scopeLabel(key)}</div>
+                <div className="mt-1.5 space-y-0.5">
+                  {pts.map((pt, i) => (
+                    <div key={i} className="flex items-center justify-between text-[12px]">
+                      <span className="text-muted-foreground">{pt.name}</span>
+                      <span className="num">
+                        {pt.attainment}% → {pt.payout}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {snapshot.weights && (
+        <Section title="Plan builder — product weightage and components">
+          <div className="space-y-3">
+            {Object.entries(snapshot.weights).map(([rid, prods]) => (
+              <div key={rid}>
+                <div className="text-[12px] font-semibold">{roleName(rid)}</div>
+                <div className="mt-1.5 space-y-1.5">
+                  {prods.map((p) => (
+                    <div key={p.product} className="rounded-md border border-border p-2.5">
+                      <div className="flex items-center justify-between text-[12.5px]">
+                        <span className="font-medium">{p.product}</span>
+                        <span className="num text-muted-foreground">{p.weight}% of plan</span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        {p.components.map((c, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center h-5 px-2 rounded-full bg-muted text-[10.5px] text-muted-foreground"
+                          >
+                            {c.subtype} · {c.weight}%
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border border-border p-4">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-2">
+        {title}
+      </div>
+      {children}
     </div>
   );
 }
