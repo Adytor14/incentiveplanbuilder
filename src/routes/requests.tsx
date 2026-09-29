@@ -198,7 +198,16 @@ function RequestsPage() {
                 )}
                 {visible.map((r) => (
                   <tr key={r.id} className="hover:bg-muted/30">
-                    <td className="px-5 py-3 font-medium text-foreground">{r.name}</td>
+                    <td className="px-5 py-3 font-medium text-foreground">
+                      <span className="inline-flex items-center gap-2">
+                        {r.name}
+                        {r.is_active && (
+                          <span className="inline-flex items-center gap-1 h-5 px-2 rounded-full bg-success/15 text-success border border-success/30 text-[10.5px] font-semibold">
+                            <Star className="size-3" /> Active plan
+                          </span>
+                        )}
+                      </span>
+                    </td>
                     <td className="px-5 py-3 text-muted-foreground">{r.quarter ?? "—"}</td>
                     <td className="px-5 py-3 text-muted-foreground">{r.created_by ?? "—"}</td>
                     <td className="px-5 py-3">
@@ -233,7 +242,7 @@ function RequestsPage() {
 
       {detail && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/40 backdrop-blur-sm px-4">
-          <Card className="w-full max-w-2xl max-h-[88vh] overflow-y-auto">
+          <Card className="w-full max-w-3xl max-h-[88vh] overflow-y-auto">
             <CardHeader
               title="Request Summary"
               description={detail.name}
@@ -256,6 +265,8 @@ function RequestsPage() {
                 <Field label="Submitted" value={fmt(detail.created_at)} />
                 <Field label="Last autosaved" value={fmt(detail.last_used_at)} />
               </div>
+
+              <PlanSnapshotView snapshot={detail.plan_snapshot} />
 
               <div className="mt-4">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
