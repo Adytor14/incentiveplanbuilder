@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, XCircle, Info, ShieldAlert, X } from "lucide-react";
+import { CheckCircle2, XCircle, Info, ShieldAlert, X, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardHeader, Badge } from "@/components/ui-kit";
+import { PRODUCTS } from "@/lib/products";
+import { ROLES } from "@/lib/roles";
+import type { PlanDraft } from "@/lib/plan-draft";
 
 type PlanVersion = {
   id: string;
@@ -16,6 +19,16 @@ type PlanVersion = {
   request_status: string;
   approval_status: string;
   comments: string | null;
+  is_active: boolean;
+  submitted_at: string | null;
+  plan_snapshot: (PlanDraft & { capturedAt?: string }) | null;
+};
+
+const productName = (id: string) => PRODUCTS.find((p) => p.id === id)?.name ?? id;
+const roleName = (id: string) => ROLES.find((r) => r.id === id)?.name ?? id;
+const scopeLabel = (key: string) => {
+  const [r, p] = key.split("::");
+  return `${roleName(r)} · ${productName(p)}`;
 };
 
 type Filter = "Pending" | "Approved" | "Rejected" | "All";
