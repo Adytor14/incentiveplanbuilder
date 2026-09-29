@@ -2,8 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { FileText, Eye, Download, FileSpreadsheet, FileType, CheckCircle2 } from "lucide-react";
+import { FileText, Eye, Download, FileSpreadsheet, FileType, CheckCircle2, Send } from "lucide-react";
 import { usePlanPeriod } from "@/lib/plan-period";
+import { supabase } from "@/integrations/supabase/client";
+import { activeVersionId, loadDraft, ACTIVE_VERSION_KEY } from "@/lib/plan-draft";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
@@ -33,10 +35,50 @@ const REPORTS: Report[] = [
 function Reports() {
   const { period } = usePlanPeriod();
   const [toast, setToast] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [requestNote, setRequestNote] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
   const fire = (label: string) => {
     setToast(label);
     window.setTimeout(() => setToast(null), 2200);
+  };
+
+  const submitForApproval = async () => {
+    setSubmitting(true);
+    const draft = loadDraft();
+    const snapshot = { ...draft, period, capturedAt: new Date().toISOString() };
+    const patch = {
+      status: "In Review",
+      request_status: "Requested",
+      approval_status: "Pending",
+      comments: requestNote.trim() || "Submitted for HQ approval.",
+      plan_snapshot: snapshot,
+      submitted_at: new Date().toISOString(),
+    };
+
+    let id = activeVersionId();
+    if (id) {
+      await supabase.from("ic_plan_versions").update(patch).eq("id", id);
+    } else {
+      const { data } = await supabase
+        .from("ic_plan_versions")
+        .insert({
+          name: `IC Plan · ${period} · ${new Date().toLocaleDateString()}`,
+          quarter: period,
+          created_by: "Shreya Mehta",
+          ...patch,
+        })
+        .select()
+        .single();
+      if (data && typeof window !== "undefined") {
+        id = data.id;
+        localStorage.setItem(ACTIVE_VERSION_KEY, data.id);
+      }
+    }
+    setSubmitting(false);
+    setSubmitted(true);
+    fire("Plan submitted to HQ for approval");
   };
 
   return (
@@ -58,6 +100,37 @@ function Reports() {
             </div>
           </div>
           <Badge tone="success">{period}</Badge>
+        </Card>
+
+        <Card className="p-5">
+          <div className="flex items-start gap-3">
+            <div className="size-9 rounded-lg bg-primary-muted text-primary grid place-items-center shrink-0">
+              <Send className="size-4" />
+            </div>
+            <div className="flex-1">
+              <div className="text-[13.5px] font-semibold">Send this plan version to HQ</div>
+              <div className="text-[12px] text-muted-foreground mt-0.5">
+                Goals, payout curves and component weights are attached to the request so HQ can
+                review the full design and approve it as the active plan.
+              </div>
+              <textarea
+                value={requestNote}
+                onChange={(e) => setRequestNote(e.target.value)}
+                rows={2}
+                placeholder="Add a note for HQ (optional)"
+                className="mt-3 w-full rounded-md border border-border bg-background px-3 py-2 text-[12.5px] outline-none focus:border-primary"
+              />
+            </div>
+            <button
+              type="button"
+              disabled={submitting}
+              onClick={submitForApproval}
+              className="h-9 px-4 shrink-0 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[12.5px] font-semibold hover:bg-primary/90 disabled:opacity-60"
+            >
+              <Send className="size-3.5" />
+              {submitted ? "Resubmit for Approval" : "Submit for Approval"}
+            </button>
+          </div>
         </Card>
 
         <Card className="p-0">

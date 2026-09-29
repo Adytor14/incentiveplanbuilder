@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, History } from "lucide-react";
+import { ArrowRight, History, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,6 +14,7 @@ type PlanVersion = {
   request_status: string;
   approval_status: string;
   comments: string | null;
+  is_active: boolean;
 };
 
 type StatusFilter = "All" | "Draft" | "In Review" | "Approved";
@@ -163,7 +164,16 @@ function Home() {
               )}
               {filteredVersions.map((v) => (
                 <tr key={v.id} className="hover:bg-muted/30">
-                  <td className="px-5 py-3 font-medium text-foreground">{v.name}</td>
+                  <td className="px-5 py-3 font-medium text-foreground">
+                    <span className="inline-flex items-center gap-2">
+                      {v.name}
+                      {v.is_active && (
+                        <span className="inline-flex items-center gap-1 h-5 px-2 rounded-full bg-success/15 text-success border border-success/30 text-[10.5px] font-semibold">
+                          <Star className="size-3" /> Active
+                        </span>
+                      )}
+                    </span>
+                  </td>
                   <td className="px-5 py-3 text-muted-foreground">{v.quarter ?? "—"}</td>
                   <td className="px-5 py-3">
                     <span className={`inline-flex items-center h-6 px-2 rounded-full text-[11px] font-semibold ${STATUS_STYLES[v.status] ?? "bg-muted text-muted-foreground"}`}>

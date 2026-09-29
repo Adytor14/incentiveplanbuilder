@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, XCircle, Info, ShieldAlert, X } from "lucide-react";
+import { CheckCircle2, XCircle, Info, ShieldAlert, X, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardHeader, Badge } from "@/components/ui-kit";
+import { PRODUCTS } from "@/lib/products";
+import { ROLES } from "@/lib/roles";
+import type { PlanDraft } from "@/lib/plan-draft";
 
 type PlanVersion = {
   id: string;
@@ -16,6 +19,16 @@ type PlanVersion = {
   request_status: string;
   approval_status: string;
   comments: string | null;
+  is_active: boolean;
+  submitted_at: string | null;
+  plan_snapshot: (PlanDraft & { capturedAt?: string }) | null;
+};
+
+const productName = (id: string) => PRODUCTS.find((p) => p.id === id)?.name ?? id;
+const roleName = (id: string) => ROLES.find((r) => r.id === id)?.name ?? id;
+const scopeLabel = (key: string) => {
+  const [r, p] = key.split("::");
+  return `${roleName(r)} · ${productName(p)}`;
 };
 
 type Filter = "Pending" | "Approved" | "Rejected" | "All";
@@ -99,13 +112,26 @@ function RequestsPage() {
       : decision === "Approved"
         ? "Approved by HQ."
         : "Rejected by HQ.";
+    const approved = decision === "Approved";
     const patch = {
       approval_status: decision,
-      status: decision === "Approved" ? "Approved" : "Draft",
+      status: approved ? "Approved" : "Draft",
       request_status: decision === "Rejected" ? "Change Requested" : row.request_status,
       comments,
+      is_active: approved,
     };
-    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, ...patch } : r)));
+    setRows((prev) =>
+      prev.map((r) =>
+        r.id === row.id ? { ...r, ...patch } : approved ? { ...r, is_active: false } : r,
+      ),
+    );
+    if (approved) {
+      // Only one approved plan can be active at a time.
+      await supabase
+        .from("ic_plan_versions")
+        .update({ is_active: false })
+        .neq("id", row.id);
+    }
     await supabase.from("ic_plan_versions").update(patch).eq("id", row.id);
     setSaving(false);
     setDetail(null);
@@ -172,7 +198,16 @@ function RequestsPage() {
                 )}
                 {visible.map((r) => (
                   <tr key={r.id} className="hover:bg-muted/30">
-                    <td className="px-5 py-3 font-medium text-foreground">{r.name}</td>
+                    <td className="px-5 py-3 font-medium text-foreground">
+                      <span className="inline-flex items-center gap-2">
+                        {r.name}
+                        {r.is_active && (
+                          <span className="inline-flex items-center gap-1 h-5 px-2 rounded-full bg-success/15 text-success border border-success/30 text-[10.5px] font-semibold">
+                            <Star className="size-3" /> Active plan
+                          </span>
+                        )}
+                      </span>
+                    </td>
                     <td className="px-5 py-3 text-muted-foreground">{r.quarter ?? "—"}</td>
                     <td className="px-5 py-3 text-muted-foreground">{r.created_by ?? "—"}</td>
                     <td className="px-5 py-3">
@@ -207,7 +242,7 @@ function RequestsPage() {
 
       {detail && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/40 backdrop-blur-sm px-4">
-          <Card className="w-full max-w-2xl max-h-[88vh] overflow-y-auto">
+          <Card className="w-full max-w-3xl max-h-[88vh] overflow-y-auto">
             <CardHeader
               title="Request Summary"
               description={detail.name}
@@ -230,6 +265,8 @@ function RequestsPage() {
                 <Field label="Submitted" value={fmt(detail.created_at)} />
                 <Field label="Last autosaved" value={fmt(detail.last_used_at)} />
               </div>
+
+              <PlanSnapshotView snapshot={detail.plan_snapshot} />
 
               <div className="mt-4">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
@@ -266,7 +303,7 @@ function RequestsPage() {
                   onClick={() => decide(detail, "Approved")}
                   className="h-9 px-4 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold hover:bg-primary/90 disabled:opacity-60"
                 >
-                  <CheckCircle2 className="size-4" /> Approve
+                  <CheckCircle2 className="size-4" /> Approve &amp; Make Active
                 </button>
               </div>
             </div>
@@ -284,6 +321,119 @@ function Field({ label, value }: { label: string; value: string }) {
         {label}
       </div>
       <div className="text-[13px] text-foreground mt-0.5">{value}</div>
+    </div>
+  );
+}
+
+function PlanSnapshotView({
+  snapshot,
+}: {
+  snapshot: (PlanDraft & { capturedAt?: string }) | null;
+}) {
+  if (!snapshot || (!snapshot.goals && !snapshot.curves && !snapshot.weights)) {
+    return (
+      <div className="mt-4 rounded-lg border border-dashed border-border px-4 py-3 text-[12.5px] text-muted-foreground">
+        No plan design was attached to this request. Ask the requester to resubmit from the Reports
+        screen so goals, payout curves and weights travel with the request.
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 space-y-4">
+      {snapshot.goals && (
+        <Section title="Goal setting — per product">
+          <table className="w-full text-[12.5px]">
+            <thead className="text-[10.5px] uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="text-left font-semibold py-1.5">Product</th>
+                <th className="text-left font-semibold py-1.5">Historical period</th>
+                <th className="text-right font-semibold py-1.5">Growth</th>
+                <th className="text-right font-semibold py-1.5">Historical %</th>
+                <th className="text-right font-semibold py-1.5">Potential %</th>
+                <th className="text-right font-semibold py-1.5">Equal %</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {Object.entries(snapshot.goals).map(([pid, g]) => (
+                <tr key={pid}>
+                  <td className="py-1.5 font-medium">{productName(pid)}</td>
+                  <td className="py-1.5 text-muted-foreground">{g.historicalPeriod}</td>
+                  <td className="py-1.5 text-right num">{g.growth.toFixed(2)}×</td>
+                  <td className="py-1.5 text-right num">{g.wHist}</td>
+                  <td className="py-1.5 text-right num">{g.wPot}</td>
+                  <td className="py-1.5 text-right num">{g.wEqual}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Section>
+      )}
+
+      {snapshot.curves && (
+        <Section title="Payout curves — per role and product">
+          <div className="grid grid-cols-2 gap-3">
+            {Object.entries(snapshot.curves).map(([key, pts]) => (
+              <div key={key} className="rounded-md border border-border p-3">
+                <div className="text-[12px] font-semibold">{scopeLabel(key)}</div>
+                <div className="mt-1.5 space-y-0.5">
+                  {pts.map((pt, i) => (
+                    <div key={i} className="flex items-center justify-between text-[12px]">
+                      <span className="text-muted-foreground">{pt.name}</span>
+                      <span className="num">
+                        {pt.attainment}% → {pt.payout}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {snapshot.weights && (
+        <Section title="Plan builder — product weightage and components">
+          <div className="space-y-3">
+            {Object.entries(snapshot.weights).map(([rid, prods]) => (
+              <div key={rid}>
+                <div className="text-[12px] font-semibold">{roleName(rid)}</div>
+                <div className="mt-1.5 space-y-1.5">
+                  {prods.map((p) => (
+                    <div key={p.product} className="rounded-md border border-border p-2.5">
+                      <div className="flex items-center justify-between text-[12.5px]">
+                        <span className="font-medium">{p.product}</span>
+                        <span className="num text-muted-foreground">{p.weight}% of plan</span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        {p.components.map((c, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center h-5 px-2 rounded-full bg-muted text-[10.5px] text-muted-foreground"
+                          >
+                            {c.subtype} · {c.weight}%
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border border-border p-4">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-2">
+        {title}
+      </div>
+      {children}
     </div>
   );
 }
