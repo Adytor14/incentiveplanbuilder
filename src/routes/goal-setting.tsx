@@ -113,6 +113,12 @@ function GoalSetting() {
     );
   }, []);
 
+  // Keep the plan draft in sync so the HQ request shows the latest goals.
+  useEffect(() => {
+    saveDraftPart("goals", byProduct);
+    saveDraftPart("period", period);
+  }, [byProduct, period]);
+
   const total = wHist + wPot + wEqual;
   const balanced = total === 100;
   const equalShare = (NATIONAL_TARGET_K * product.factor * role.factor) / REP_COUNT;
