@@ -2,8 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, Badge } from "@/components/ui-kit";
-import { FileText, Eye, Download, FileSpreadsheet, FileType, CheckCircle2 } from "lucide-react";
+import { FileText, Eye, Download, FileSpreadsheet, FileType, CheckCircle2, Send } from "lucide-react";
 import { usePlanPeriod } from "@/lib/plan-period";
+import { supabase } from "@/integrations/supabase/client";
+import { activeVersionId, loadDraft, ACTIVE_VERSION_KEY } from "@/lib/plan-draft";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
